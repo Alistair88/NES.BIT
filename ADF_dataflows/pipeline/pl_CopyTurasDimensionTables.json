@@ -1,0 +1,117 @@
+{
+	"name": "pl_CopyTurasDimensionTables",
+	"properties": {
+		"description": "Copy Turas Dimension Tables from Warehouse Alpha to MySampleDB using a query.",
+		"activities": [
+			{
+				"name": "CopyTurasDimensionTables",
+				"type": "Copy",
+				"policy": {
+					"timeout": "7.00:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [
+					{
+						"name": "Destination",
+						"value": "[dbo].[TurasDimensions]"
+					}
+				],
+				"typeProperties": {
+					"source": {
+						"type": "AzureSqlSource",
+						"sqlReaderQuery": "SELECT CAST(TableName AS NVARCHAR(80)) DimTableName, \r\n   CAST(DimID AS BIGINT) DimID,\r\n   CAST(DimCode AS NVARCHAR(20)) DimCode, CAST(SUBSTRING(DimName, 1, 250) AS NVARCHAR(250)) DimName,\r\n   CAST(SUBSTRING(ISNULL(DimDescription, ''), 1, 500) AS NVARCHAR(500)) DimDescription,  CAST(ISNULL(DimActive, 0) AS BIT) DimActive\r\nFROM\r\n(\r\nSELECT N'ODSTuras.RefCCTDateModifiedReason' TableName, Id DimID, NULL DimCode, Name DimName, Description DimDescription, Active DimActive FROM ODSTuras.RefCCTDateModifiedReason\r\nUNION\r\nSELECT N'ODSTuras.Programme' TableName, Id DimID, SUBSTRING(ProgrammeCode, 1, 20) DimCode, ProgrammeName DimName, \r\n   convert(varchar,StartDate, 105) + ' - ' + convert(varchar,EndDate, 105) DimDescription, Active DimActive FROM ODSTuras.Programme\r\nUNION\r\nSELECT N'ODSTuras.RefEducationalOrganiser' TableName, Id DimID, NULL DimCode, Name DimName, Description DimDescription, Active DimActive FROM ODSTuras.RefEducationalOrganiser\r\nUNION\r\nSELECT N'ODSTuras.RefEducationProviderApprovalType' TableName, Id DimID, NULL DimCode, Name DimName, Description DimDescription, Active DimActive FROM ODSTuras.RefEducationProviderApprovalType\r\nUNION\r\nSELECT N'ODSTuras.RefEducationProviderVisitRequiredReason' TableName, Id DimID, NULL DimCode, Name DimName, Description DimDescription, Active DimActive FROM ODSTuras.RefEducationProviderVisitRequiredReason\r\nUNION\r\nSELECT N'ODSTuras.RefEducationProviderVisitType' TableName, Id DimID, NULL DimCode, Name DimName, Description DimDescription, Active DimActive FROM ODSTuras.RefEducationProviderVisitType\r\nUNION\r\nSELECT N'ODSTuras.RefExitRecordDestination' TableName, Id DimID, NULL DimCode, Name DimName, Description DimDescription, Active DimActive FROM ODSTuras.RefExitRecordDestination\r\nUNION\r\nSELECT N'ODSTuras.RefFeedbackArea' TableName, Id DimID, NULL DimCode, Name DimName, Description DimDescription, Active DimActive FROM ODSTuras.RefFeedbackArea\r\nUNION\r\nSELECT N'ODSTuras.RefFinancialYear' TableName, Id DimID, NULL DimCode, CAST(Year AS NVARCHAR) DimName, \r\n    convert(varchar, [From], 105) + ' - ' + convert(varchar, [To], 105) DimDescription, \r\n    Active DimActive FROM ODSTuras.RefFinancialYear\r\nUNION\r\nSELECT N'ODSTuras.RefImmigrationStatus' TableName, Id DimID, NULL DimCode, Name DimName, Description DimDescription, Active DimActive FROM ODSTuras.RefImmigrationStatus\r\nUNION\r\nSELECT N'ODSTuras.RefJobTitle' TableName, Id DimID, NULL DimCode, Name DimName, Description DimDescription, Active DimActive FROM ODSTuras.RefJobTitle\r\nUNION\r\nSELECT N'ODSTuras.RefLevel' TableName, Id DimID, NULL DimCode, Name DimName, Description DimDescription, Active DimActive FROM ODSTuras.RefLevel\r\nUNION\r\nSELECT N'ODSTuras.RefLtftApprovedReason' TableName, Id DimID, NULL DimCode, Name DimName, Description DimDescription, Active DimActive FROM ODSTuras.RefLtftApprovedReason\r\nUNION\r\nSELECT N'ODSTuras.RefParentEducationProvider' TableName, Id DimID, NULL DimCode, Name DimName, Description DimDescription, Active DimActive FROM ODSTuras.RefParentEducationProvider\r\nUNION\r\nSELECT N'ODSTuras.RefRegion' TableName, Id DimID, NULL DimCode, Name DimName, Description DimDescription, Active DimActive FROM ODSTuras.RefRegion\r\nUNION\r\nSELECT N'ODSTuras.RefRegistrationStatus' TableName, Id DimID, NULL DimCode, Name DimName, Description DimDescription, Active DimActive FROM ODSTuras.RefRegistrationStatus\r\nUNION\r\nSELECT N'ODSTuras.RefRoyalCollege' TableName, Id DimID, NULL DimCode, Name DimName, Description DimDescription, Active DimActive FROM ODSTuras.RefRoyalCollege\r\nUNION\r\nSELECT N'ODSTuras.RefSpecialityTrainingBoard' TableName, Id DimID, NULL DimCode, Name DimName, Description DimDescription, Active DimActive FROM ODSTuras.RefSpecialityTrainingBoard\r\nUNION\r\nSELECT N'ODSTuras.RefStudyLeaveActivityProvider' TableName, Id DimID, NULL DimCode, Name DimName, Description DimDescription, Active DimActive FROM ODSTuras.RefStudyLeaveActivityProvider\r\nUNION\r\nSELECT N'ODSTuras.RefStudyLeaveActivityType' TableName, Id DimID, NULL DimCode, Name DimName, Description DimDescription, Active DimActive FROM ODSTuras.RefStudyLeaveActivityType\r\nUNION\r\nSELECT N'ODSTuras.RefStudyLeaveWithdrawalReason' TableName, Id DimID, NULL DimCode, Name DimName, Description DimDescription, Active DimActive FROM ODSTuras.RefStudyLeaveWithdrawalReason\r\nUNION\r\nSELECT N'ODSTuras.RefTitle' TableName, Id DimID, NULL DimCode, Name DimName, Description DimDescription, Active DimActive FROM ODSTuras.RefTitle\r\nUNION\r\nSELECT N'ODSTuras.RefTraineeTimeLinePeriod' TableName, Id DimID, NULL DimCode, \r\n   CAST(Year AS NVARCHAR) + ' ' + convert(NVARCHAR, [From], 105) + ' - ' + convert(NVARCHAR, [To], 105) DimName,\r\n   NULL DimDescription, \r\n    Active DimActive FROM ODSTuras.RefTraineeTimeLinePeriod\r\nUNION\r\nSELECT N'ODSTuras.RefTrainingType' TableName, Id DimID, NULL DimCode, Name DimName, Description DimDescription, Active DimActive FROM ODSTuras.RefTrainingType\r\nUNION\r\nSELECT N'ODSTuras.SysRefAnalysisTypes' TableName, Id DimID, NULL DimCode, Name DimName, Description DimDescription, Active DimActive FROM ODSTuras.SysRefAnalysisTypes\r\nUNION\r\nSELECT N'ODSTuras.SysRefApprovedStatus' TableName, Id DimID, NULL DimCode, Name DimName, Description DimDescription, Active DimActive FROM ODSTuras.SysRefApprovedStatus\r\nUNION\r\nSELECT N'ODSTuras.SysRefARCPOutcome' TableName, Id DimID, NULL DimCode, Name DimName, Description DimDescription, Active DimActive FROM ODSTuras.SysRefARCPOutcome\r\nUNION\r\nSELECT N'ODSTuras.SysRefARCPOutcomeReasonType' TableName, Id DimID, NULL DimCode, Name DimName, Description DimDescription, Active DimActive FROM ODSTuras.SysRefARCPOutcomeReasonType\r\nUNION\r\nSELECT N'ODSTuras.SysRefClaimScope' TableName, Id DimID, NULL DimCode, Name DimName, Description DimDescription, Active DimActive FROM ODSTuras.SysRefClaimScope\r\nUNION\r\nSELECT N'ODSTuras.SysRefClaimType' TableName, Id DimID, NULL DimCode, Name DimName, Description DimDescription, Active DimActive FROM ODSTuras.SysRefClaimType\r\nUNION\r\nSELECT N'ODSTuras.SysRefDentalApprovalCondition' TableName, Id DimID, NULL DimCode, Name DimName, Description DimDescription, Active DimActive FROM ODSTuras.SysRefDentalApprovalCondition\r\nUNION\r\nSELECT N'ODSTuras.SysRefDentalAssessmentOutcome' TableName, Id DimID, NULL DimCode, Name DimName, Description DimDescription, Active DimActive FROM ODSTuras.SysRefDentalAssessmentOutcome\r\nUNION\r\nSELECT N'ODSTuras.SysRefDentalAssessmentOutcomeReason' TableName, Id DimID, NULL DimCode, Name DimName, Description DimDescription, Active DimActive FROM ODSTuras.SysRefDentalAssessmentOutcomeReason\r\nUNION\r\nSELECT N'ODSTuras.SysRefEducationProviderAppealOutcome' TableName, Id DimID, NULL DimCode, Name DimName, Description DimDescription, Active DimActive FROM ODSTuras.SysRefEducationProviderAppealOutcome\r\nUNION\r\nSELECT N'ODSTuras.SysRefEducationProviderEndReason' TableName, Id DimID, NULL DimCode, Name DimName, Description DimDescription, Active DimActive FROM ODSTuras.SysRefEducationProviderEndReason\r\nUNION\r\nSELECT N'ODSTuras.SysRefEducationProviderType' TableName, Id DimID, NULL DimCode, Name DimName, Description DimDescription, Active DimActive FROM ODSTuras.SysRefEducationProviderType\r\nUNION\r\nSELECT N'ODSTuras.SysRefEntityType' TableName, Id DimID, NULL DimCode, Name DimName, Description DimDescription, Active DimActive FROM ODSTuras.SysRefEntityType\r\nUNION\r\nSELECT N'ODSTuras.SysRefEstablishmentSourceEndReason' TableName, Id DimID, NULL DimCode, Name DimName, Description DimDescription, Active DimActive FROM ODSTuras.SysRefEstablishmentSourceEndReason\r\nUNION\r\nSELECT N'ODSTuras.SysRefEstablishmentSourceStartReason' TableName, Id DimID, NULL DimCode, Name DimName, Description DimDescription, Active DimActive FROM ODSTuras.SysRefEstablishmentSourceStartReason\r\nUNION\r\nSELECT N'ODSTuras.SysRefEstablishmentSourceType' TableName, Id DimID, NULL DimCode, Name DimName, Description DimDescription, Active DimActive FROM ODSTuras.SysRefEstablishmentSourceType\r\nUNION\r\nSELECT N'ODSTuras.SysRefExitRecordCategory' TableName, Id DimID, NULL DimCode, Name DimName, Description DimDescription, Active DimActive FROM ODSTuras.SysRefExitRecordCategory\r\nUNION\r\nSELECT N'ODSTuras.SysRefExitRecordReason' TableName, Id DimID, NULL DimCode, Name DimName, Description DimDescription, Active DimActive FROM ODSTuras.SysRefExitRecordReason\r\nUNION\r\nSELECT N'ODSTuras.SysRefOOPApprovalStatus' TableName, Id DimID, NULL DimCode, Name DimName, Description DimDescription, Active DimActive FROM ODSTuras.SysRefOOPApprovalStatus\r\nUNION\r\nSELECT N'ODSTuras.SysRefOOPType' TableName, Id DimID, NULL DimCode, Name DimName, Description DimDescription, Active DimActive FROM ODSTuras.SysRefOOPType\r\nUNION\r\nSELECT N'ODSTuras.SysRefPermission' TableName, Id DimID, NULL DimCode, Name DimName, Description DimDescription, Active DimActive FROM ODSTuras.SysRefPermission\r\nUNION\r\nSELECT N'ODSTuras.SysRefProgrammeClass' TableName, Id DimID, NULL DimCode, Name DimName, Description DimDescription, Active DimActive FROM ODSTuras.SysRefProgrammeClass\r\nUNION\r\nSELECT N'ODSTuras.SysRefProgrammeEndReason' TableName, Id DimID, NULL DimCode, Name DimName, Description DimDescription, Active DimActive FROM ODSTuras.SysRefProgrammeEndReason\r\nUNION\r\nSELECT N'ODSTuras.SysRefProgrammeType' TableName, Id DimID, NULL DimCode, Name DimName, Description DimDescription, Active DimActive FROM ODSTuras.SysRefProgrammeType\r\nUNION\r\nSELECT N'ODSTuras.SysRefRegistrationNumberType' TableName, Id DimID, NULL DimCode, Name DimName, Description DimDescription, Active DimActive FROM ODSTuras.SysRefRegistrationNumberType\r\nUNION\r\nSELECT N'ODSTuras.SysRefReportTypes' TableName, Id DimID, NULL DimCode, Name DimName, Description DimDescription, Active DimActive FROM ODSTuras.SysRefReportTypes\r\nUNION\r\nSELECT N'ODSTuras.SysRefSpeciality' TableName, Id DimID, NULL DimCode, Name DimName, Description DimDescription, Active DimActive FROM ODSTuras.SysRefSpeciality\r\nUNION\r\nSELECT N'ODSTuras.SysRefStudyLeaveApplicationStatus' TableName, Id DimID, NULL DimCode, Name DimName, Description DimDescription, Active DimActive FROM ODSTuras.SysRefStudyLeaveApplicationStatus\r\nUNION\r\nSELECT N'ODSTuras.SysRefStudyLeaveApprovalOutcome' TableName, Id DimID, NULL DimCode, Name DimName, Description DimDescription, Active DimActive FROM ODSTuras.SysRefStudyLeaveApprovalOutcome\r\nUNION\r\nSELECT N'ODSTuras.SysRefStudyLeaveClaimStatus' TableName, Id DimID, NULL DimCode, Name DimName, Description DimDescription, Active DimActive FROM ODSTuras.SysRefStudyLeaveClaimStatus\r\nUNION\r\nSELECT N'ODSTuras.SysRefStudyLeaveNotApprovedReason' TableName, Id DimID, NULL DimCode, Name DimName, Description DimDescription, Active DimActive FROM ODSTuras.SysRefStudyLeaveNotApprovedReason\r\nUNION\r\nSELECT N'ODSTuras.SysRefStudyLeaveTransactionsReason' TableName, Id DimID, NULL DimCode, Name DimName, Description DimDescription, Active DimActive FROM ODSTuras.SysRefStudyLeaveTransactionsReason\r\nUNION\r\nSELECT N'ODSTuras.SysRefSubSpeciality' TableName, Id DimID, NULL DimCode, Name DimName, Description DimDescription, Active DimActive FROM ODSTuras.SysRefSubSpeciality\r\nUNION\r\nSELECT N'ODSTuras.SysRefTraineeLtftRequestCategory' TableName, Id DimID, NULL DimCode, Name DimName, Description DimDescription, Active DimActive FROM ODSTuras.SysRefTraineeLtftRequestCategory\r\nUNION\r\nSELECT N'ODSTuras.SysRefTraineePostType' TableName, Id DimID, NULL DimCode, Name DimName, Description DimDescription, Active DimActive FROM ODSTuras.SysRefTraineePostType\r\nUNION\r\nSELECT N'ODSTuras.SysRefTraineeType' TableName, Id DimID, NULL DimCode, Name DimName, Description DimDescription, Active DimActive FROM ODSTuras.SysRefTraineeType\r\nUNION\r\nSELECT N'ODSTuras.SysRefTrainerRole' TableName, Id DimID, NULL DimCode, Name DimName, Description DimDescription, Active DimActive FROM ODSTuras.SysRefTrainerRole\r\nUNION\r\nSELECT N'ODSTuras.SysRefTrainerRoleType' TableName, Id DimID, NULL DimCode, Name DimName, Description DimDescription, Active DimActive FROM ODSTuras.SysRefTrainerRoleType\r\nUNION\r\nSELECT N'ODSTuras.SysRefTypeofUser' TableName, Id DimID, NULL DimCode, Name DimName, Description DimDescription, Active DimActive FROM ODSTuras.SysRefTypeofUser\r\nUNION\r\nSELECT N'ODSTuras.SysRefARCPOutcomeReasonType' TableName, Id DimID, NULL DimCode, Name DimName, Description DimDescription, Active DimActive FROM ODSTuras.SysRefARCPOutcomeReasonType\r\nUNION\r\nSELECT N'ODSTuras.SysRefExitRecordReason' TableName, Id DimID, NULL DimCode, Name DimName, Description DimDescription, Active DimActive FROM ODSTuras.SysRefExitRecordReason\r\nUNION\r\nSELECT N'ODSTuras.RefDisabled' TableName, Id DimID, NULL DimCode, Name DimName, Description DimDescription, Active DimActive FROM ODSTuras.RefDisabled\r\nUNION\r\nSELECT N'ODSTuras.RefEthnicOrigin' TableName, Id DimID, NULL DimCode, Name DimName, Description DimDescription, Active DimActive FROM ODSTuras.RefEthnicOrigin\r\nUNION\r\nSELECT N'ODSTuras.RefGender' TableName, Id DimID, NULL DimCode, Name DimName, Description DimDescription, Active DimActive FROM ODSTuras.RefGender\r\nUNION\r\nSELECT N'ODSTuras.RefMaritalStatus' TableName, Id DimID, NULL DimCode, Name DimName, Description DimDescription, Active DimActive FROM ODSTuras.RefMaritalStatus\r\nUNION\r\nSELECT N'ODSTuras.RefReligion' TableName, Id DimID, NULL DimCode, Name DimName, Description DimDescription, Active DimActive FROM ODSTuras.RefReligion\r\nUNION\r\nSELECT N'ODSTuras.RefSexualOrientation' TableName, Id DimID, NULL DimCode, Name DimName, Description DimDescription, Active DimActive FROM ODSTuras.RefSexualOrientation\r\nUNION\r\nSELECT N'ODSTuras.RefTransgender' TableName, Id DimID, NULL DimCode, Name DimName, Description DimDescription, Active DimActive FROM ODSTuras.RefTransgender\r\nUNION\r\nSELECT N'ODSTuras.SysRefPerformanceSupportEndReason' TableName, Id DimID, NULL DimCode, Name DimName, Description DimDescription, Active DimActive FROM ODSTuras.SysRefPerformanceSupportEndReason\r\nUNION\r\nSELECT N'ODSTuras.SysRefPerformanceSupportLevel' TableName, Id DimID, NULL DimCode, Name DimName, Description DimDescription, Active DimActive FROM ODSTuras.SysRefPerformanceSupportLevel\r\nUNION\r\nSELECT N'ODSTuras.SysRefTrainerEndReason' TableName, Id DimID, NULL DimCode, Name DimName, Description DimDescription, Active DimActive FROM ODSTuras.SysRefTrainerEndReason\r\n) AllDims  \r\nORDER BY DimTableName, DimID;"
+					},
+					"sink": {
+						"type": "AzureSqlSink",
+						"writeBatchSize": 10000
+					},
+					"enableStaging": false,
+					"translator": {
+						"type": "TabularTranslator",
+						"mappings": [
+							{
+								"source": {
+									"name": "DimTableName",
+									"type": "String"
+								},
+								"sink": {
+									"name": "DimTableName",
+									"type": "String"
+								}
+							},
+							{
+								"source": {
+									"name": "DimID",
+									"type": "Int64"
+								},
+								"sink": {
+									"name": "DimID",
+									"type": "Int64"
+								}
+							},
+							{
+								"source": {
+									"name": "DimCode",
+									"type": "String"
+								},
+								"sink": {
+									"name": "DimCode",
+									"type": "String"
+								}
+							},
+							{
+								"source": {
+									"name": "DimName",
+									"type": "String"
+								},
+								"sink": {
+									"name": "DimName",
+									"type": "String"
+								}
+							},
+							{
+								"source": {
+									"name": "DimDescription",
+									"type": "String"
+								},
+								"sink": {
+									"name": "DimDescription",
+									"type": "String"
+								}
+							},
+							{
+								"source": {
+									"name": "DimActive",
+									"type": "Boolean"
+								},
+								"sink": {
+									"name": "DimActive",
+									"type": "Boolean"
+								}
+							}
+						]
+					}
+				},
+				"inputs": [
+					{
+						"referenceName": "SourceWATest",
+						"type": "DatasetReference"
+					}
+				],
+				"outputs": [
+					{
+						"referenceName": "DestinationTurasDimensions",
+						"type": "DatasetReference"
+					}
+				]
+			}
+		],
+		"folder": {
+			"name": "MergeTurasDimensions"
+		}
+	},
+	"type": "Microsoft.DataFactory/factories/pipelines"
+}

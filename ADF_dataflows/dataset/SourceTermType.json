@@ -1,0 +1,33 @@
+{
+	"name": "SourceTermType",
+	"properties": {
+		"linkedServiceName": {
+			"referenceName": "LocalhostTermType",
+			"type": "LinkedServiceReference"
+		},
+		"type": "SqlServerTable",
+		"structure": [
+			{
+				"name": "TermTypeID",
+				"type": "Int16"
+			},
+			{
+				"name": "TypeName",
+				"type": "String"
+			},
+			{
+				"name": "TypeDescription",
+				"type": "String"
+			},
+			{
+				"name": "TypeAvailable",
+				"type": "Boolean"
+			},
+			{
+				"name": "TypeSourceID",
+				"type": "Int16"
+			}
+		]
+	},
+	"type": "Microsoft.DataFactory/factories/datasets"
+}

@@ -1,0 +1,38 @@
+{
+	"name": "InsertTermTypeSink",
+	"properties": {
+		"linkedServiceName": {
+			"referenceName": "WarehouseAlphaTest",
+			"type": "LinkedServiceReference"
+		},
+		"type": "AzureSqlTable",
+		"schema": [
+			{
+				"name": "DimId",
+				"type": "int",
+				"precision": 10
+			},
+			{
+				"name": "DimTypeName",
+				"type": "nvarchar"
+			},
+			{
+				"name": "DimTypeDescription",
+				"type": "nvarchar"
+			},
+			{
+				"name": "DimAvailable",
+				"type": "bit"
+			},
+			{
+				"name": "DimSourceId",
+				"type": "int",
+				"precision": 10
+			}
+		],
+		"typeProperties": {
+			"tableName": "[dbo].[TermTypeSinkInsert]"
+		}
+	},
+	"type": "Microsoft.DataFactory/factories/datasets"
+}

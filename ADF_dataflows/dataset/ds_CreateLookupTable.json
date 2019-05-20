@@ -1,0 +1,30 @@
+{
+	"name": "ds_CreateLookupTable",
+	"properties": {
+		"description": "Created: 09-05-19",
+		"linkedServiceName": {
+			"referenceName": "WarehouseAlphaTest",
+			"type": "LinkedServiceReference"
+		},
+		"folder": {
+			"name": "CreateRelationships"
+		},
+		"type": "AzureSqlTable",
+		"schema": [
+			{
+				"name": "TermID",
+				"type": "int",
+				"precision": 10
+			},
+			{
+				"name": "DimID",
+				"type": "int",
+				"precision": 10
+			}
+		],
+		"typeProperties": {
+			"tableName": "[Taxonomy].[CreateRelsLookup]"
+		}
+	},
+	"type": "Microsoft.DataFactory/factories/datasets"
+}

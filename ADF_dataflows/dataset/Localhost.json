@@ -1,0 +1,28 @@
+{
+	"name": "Localhost",
+	"properties": {
+		"linkedServiceName": {
+			"referenceName": "LocalhostSqlServer",
+			"type": "LinkedServiceReference"
+		},
+		"type": "SqlServerTable",
+		"structure": [
+			{
+				"name": "DimID",
+				"type": "Int16"
+			},
+			{
+				"name": "DimName",
+				"type": "String"
+			},
+			{
+				"name": "DimDescription",
+				"type": "String"
+			}
+		],
+		"typeProperties": {
+			"tableName": "[dbo].[Term]"
+		}
+	},
+	"type": "Microsoft.DataFactory/factories/datasets"
+}

@@ -1,0 +1,156 @@
+{
+	"name": "RunMergePortfolioDimensions",
+	"properties": {
+		"activities": [
+			{
+				"name": "df_MergePortfolioDimensions",
+				"type": "ExecuteDataFlow",
+				"policy": {
+					"timeout": "7.00:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"typeProperties": {
+					"dataflow": {
+						"referenceName": "df_MergePortfolioDimensions",
+						"type": "DataFlowReference"
+					}
+				}
+			},
+			{
+				"name": "UpsertToTermTable",
+				"description": "Pipeline to upsert to the term table in the PortThesaurus DB",
+				"type": "Copy",
+				"dependsOn": [
+					{
+						"activity": "df_MergePortfolioDimensions",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"policy": {
+					"timeout": "7.00:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"typeProperties": {
+					"source": {
+						"type": "AzureSqlSource"
+					},
+					"sink": {
+						"type": "AzureSqlSink",
+						"sqlWriterStoredProcedureName": "[dbo].[spUpsertTerm]",
+						"sqlWriterTableType": "Term"
+					},
+					"enableStaging": false,
+					"translator": {
+						"type": "TabularTranslator",
+						"mappings": [
+							{
+								"source": {
+									"name": "TermID",
+									"type": "Int32"
+								},
+								"sink": {
+									"name": "TermID",
+									"type": "Int32"
+								}
+							},
+							{
+								"source": {
+									"name": "DimID",
+									"type": "Int32"
+								},
+								"sink": {
+									"name": "DimID",
+									"type": "Int32"
+								}
+							},
+							{
+								"source": {
+									"name": "TermCode",
+									"type": "String"
+								},
+								"sink": {
+									"name": "TermCode",
+									"type": "String"
+								}
+							},
+							{
+								"source": {
+									"name": "TermName",
+									"type": "String"
+								},
+								"sink": {
+									"name": "TermName",
+									"type": "String"
+								}
+							},
+							{
+								"source": {
+									"name": "Description",
+									"type": "String"
+								},
+								"sink": {
+									"name": "Description",
+									"type": "String"
+								}
+							},
+							{
+								"source": {
+									"name": "Preferred",
+									"type": "Boolean"
+								},
+								"sink": {
+									"name": "Preferred",
+									"type": "Boolean"
+								}
+							},
+							{
+								"source": {
+									"name": "Available",
+									"type": "Boolean"
+								},
+								"sink": {
+									"name": "Available",
+									"type": "Boolean"
+								}
+							},
+							{
+								"source": {
+									"name": "TermTypeID",
+									"type": "Int16"
+								},
+								"sink": {
+									"name": "TermTypeID",
+									"type": "Int16"
+								}
+							}
+						]
+					}
+				},
+				"inputs": [
+					{
+						"referenceName": "datasetIntermediateTermTable",
+						"type": "DatasetReference"
+					}
+				],
+				"outputs": [
+					{
+						"referenceName": "DestinationTermTable",
+						"type": "DatasetReference"
+					}
+				]
+			}
+		],
+		"folder": {
+			"name": "MergePortfolioDimensions"
+		}
+	},
+	"type": "Microsoft.DataFactory/factories/pipelines"
+}

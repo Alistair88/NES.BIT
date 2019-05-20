@@ -1,0 +1,42 @@
+{
+	"name": "OriginalTermTypeTable",
+	"properties": {
+		"linkedServiceName": {
+			"referenceName": "WarehouseAlphaTest",
+			"type": "LinkedServiceReference"
+		},
+		"type": "AzureSqlTable",
+		"schema": [
+			{
+				"name": "TermTypeID",
+				"type": "smallint",
+				"precision": 5
+			},
+			{
+				"name": "TypeName",
+				"type": "nvarchar"
+			},
+			{
+				"name": "Description",
+				"type": "nvarchar"
+			},
+			{
+				"name": "Available",
+				"type": "bit"
+			},
+			{
+				"name": "SourceID",
+				"type": "smallint",
+				"precision": 5
+			},
+			{
+				"name": "DimTable",
+				"type": "nvarchar"
+			}
+		],
+		"typeProperties": {
+			"tableName": "[dbo].[TermType]"
+		}
+	},
+	"type": "Microsoft.DataFactory/factories/datasets"
+}

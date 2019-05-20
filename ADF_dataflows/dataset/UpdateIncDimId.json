@@ -1,0 +1,43 @@
+{
+	"name": "UpdateIncDimId",
+	"properties": {
+		"linkedServiceName": {
+			"referenceName": "WarehouseAlphaTest",
+			"type": "LinkedServiceReference"
+		},
+		"type": "AzureSqlTable",
+		"schema": [
+			{
+				"name": "TermTypeId",
+				"type": "int",
+				"precision": 10
+			},
+			{
+				"name": "TypeName",
+				"type": "nvarchar"
+			},
+			{
+				"name": "TypeDescription",
+				"type": "nvarchar"
+			},
+			{
+				"name": "TypeAvailable",
+				"type": "bit"
+			},
+			{
+				"name": "SourceId",
+				"type": "int",
+				"precision": 10
+			},
+			{
+				"name": "DimId",
+				"type": "int",
+				"precision": 10
+			}
+		],
+		"typeProperties": {
+			"tableName": "[dbo].[TermTypeSinkIncDimId]"
+		}
+	},
+	"type": "Microsoft.DataFactory/factories/datasets"
+}

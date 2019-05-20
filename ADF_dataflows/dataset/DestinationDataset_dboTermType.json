@@ -1,0 +1,52 @@
+{
+	"name": "DestinationDataset_dboTermType",
+	"properties": {
+		"linkedServiceName": {
+			"referenceName": "PortThesaurusDB",
+			"type": "LinkedServiceReference"
+		},
+		"type": "AzureSqlTable",
+		"schema": [
+			{
+				"name": "TermTypeID",
+				"type": "smallint",
+				"precision": 5,
+				"scale": 255
+			},
+			{
+				"name": "TypeName",
+				"type": "nvarchar",
+				"precision": 255,
+				"scale": 255
+			},
+			{
+				"name": "Description",
+				"type": "nvarchar",
+				"precision": 255,
+				"scale": 255
+			},
+			{
+				"name": "Available",
+				"type": "bit",
+				"precision": 255,
+				"scale": 255
+			},
+			{
+				"name": "DimTable",
+				"type": "nvarchar",
+				"precision": 255,
+				"scale": 255
+			},
+			{
+				"name": "SourceID",
+				"type": "smallint",
+				"precision": 5,
+				"scale": 255
+			}
+		],
+		"typeProperties": {
+			"tableName": "[dbo].[TermType]"
+		}
+	},
+	"type": "Microsoft.DataFactory/factories/datasets"
+}

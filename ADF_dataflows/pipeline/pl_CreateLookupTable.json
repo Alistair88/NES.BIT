@@ -1,0 +1,77 @@
+{
+	"name": "pl_CreateLookupTable",
+	"properties": {
+		"description": "Create a dataset to lookup data from Taxonomy.term",
+		"activities": [
+			{
+				"name": "CreateLookupTable",
+				"type": "Copy",
+				"policy": {
+					"timeout": "7.00:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [
+					{
+						"name": "Destination",
+						"value": "[Taxonomy].[CreateRelsLookup]"
+					}
+				],
+				"typeProperties": {
+					"source": {
+						"type": "AzureSqlSource",
+						"sqlReaderQuery": "SELECT Term.TermID,\r\n       Term.DimID\r\nFROM [Taxonomy].[Term];"
+					},
+					"sink": {
+						"type": "AzureSqlSink",
+						"writeBatchSize": 10000
+					},
+					"enableStaging": false,
+					"translator": {
+						"type": "TabularTranslator",
+						"mappings": [
+							{
+								"source": {
+									"name": "TermID",
+									"type": "Int32"
+								},
+								"sink": {
+									"name": "TermID",
+									"type": "Int32"
+								}
+							},
+							{
+								"source": {
+									"name": "DimID",
+									"type": "Int32"
+								},
+								"sink": {
+									"name": "DimID",
+									"type": "Int32"
+								}
+							}
+						]
+					}
+				},
+				"inputs": [
+					{
+						"referenceName": "ds_SourceTaxonomyTerm",
+						"type": "DatasetReference"
+					}
+				],
+				"outputs": [
+					{
+						"referenceName": "ds_CreateLookupTable",
+						"type": "DatasetReference"
+					}
+				]
+			}
+		],
+		"folder": {
+			"name": "CreateRelationships"
+		}
+	},
+	"type": "Microsoft.DataFactory/factories/pipelines"
+}

@@ -1,0 +1,49 @@
+{
+	"name": "SourceWATest",
+	"properties": {
+		"linkedServiceName": {
+			"referenceName": "WarehouseAlphaTest2",
+			"type": "LinkedServiceReference"
+		},
+		"type": "AzureSqlTable",
+		"schema": [
+			{
+				"name": "DimTableName",
+				"type": "nvarchar",
+				"precision": 255,
+				"scale": 255
+			},
+			{
+				"name": "DimID",
+				"type": "bigint",
+				"precision": 19,
+				"scale": 255
+			},
+			{
+				"name": "DimCode",
+				"type": "nvarchar",
+				"precision": 255,
+				"scale": 255
+			},
+			{
+				"name": "DimName",
+				"type": "nvarchar",
+				"precision": 255,
+				"scale": 255
+			},
+			{
+				"name": "DimDescription",
+				"type": "nvarchar",
+				"precision": 255,
+				"scale": 255
+			},
+			{
+				"name": "DimActive",
+				"type": "bit",
+				"precision": 255,
+				"scale": 255
+			}
+		]
+	},
+	"type": "Microsoft.DataFactory/factories/datasets"
+}

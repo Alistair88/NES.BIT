@@ -1,0 +1,46 @@
+{
+	"name": "DestinationTermTypeUpdate",
+	"properties": {
+		"linkedServiceName": {
+			"referenceName": "WarehouseAlphaTest",
+			"type": "LinkedServiceReference"
+		},
+		"type": "AzureSqlTable",
+		"structure": [
+			{
+				"name": "TermTypeID",
+				"type": "Int32",
+				"precision": 10,
+				"scale": 255
+			},
+			{
+				"name": "TypeName",
+				"type": "String",
+				"precision": 255,
+				"scale": 255
+			},
+			{
+				"name": "Description",
+				"type": "String",
+				"precision": 255,
+				"scale": 255
+			},
+			{
+				"name": "Available",
+				"type": "Boolean",
+				"precision": 255,
+				"scale": 255
+			},
+			{
+				"name": "SourceID",
+				"type": "Int32",
+				"precision": 10,
+				"scale": 255
+			}
+		],
+		"typeProperties": {
+			"tableName": "TermType"
+		}
+	},
+	"type": "Microsoft.DataFactory/factories/datasets"
+}

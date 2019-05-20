@@ -1,0 +1,36 @@
+{
+	"name": "Taxonomy_tst",
+	"properties": {
+		"linkedServiceName": {
+			"referenceName": "LocalhostTermType",
+			"type": "LinkedServiceReference"
+		},
+		"type": "SqlServerTable",
+		"structure": [
+			{
+				"name": "TermTypeID",
+				"type": "Int16"
+			},
+			{
+				"name": "TypeName",
+				"type": "String"
+			},
+			{
+				"name": "Description",
+				"type": "String"
+			},
+			{
+				"name": "Available",
+				"type": "Boolean"
+			},
+			{
+				"name": "SourceID",
+				"type": "Int16"
+			}
+		],
+		"typeProperties": {
+			"tableName": "[dbo].[TermType]"
+		}
+	},
+	"type": "Microsoft.DataFactory/factories/datasets"
+}

@@ -1,0 +1,44 @@
+{
+	"name": "PortfolioDimensionTables",
+	"properties": {
+		"linkedServiceName": {
+			"referenceName": "WarehouseAlphaTest",
+			"type": "LinkedServiceReference"
+		},
+		"folder": {
+			"name": "MergePortfolioDimensions"
+		},
+		"type": "AzureSqlTable",
+		"schema": [
+			{
+				"name": "DimTableName",
+				"type": "nvarchar"
+			},
+			{
+				"name": "DimID",
+				"type": "int",
+				"precision": 10
+			},
+			{
+				"name": "DimCode",
+				"type": "nvarchar"
+			},
+			{
+				"name": "DimName",
+				"type": "nvarchar"
+			},
+			{
+				"name": "DimDescription",
+				"type": "nvarchar"
+			},
+			{
+				"name": "DimActive",
+				"type": "bit"
+			}
+		],
+		"typeProperties": {
+			"tableName": "[dbo].[PortfolioDimension]"
+		}
+	},
+	"type": "Microsoft.DataFactory/factories/datasets"
+}

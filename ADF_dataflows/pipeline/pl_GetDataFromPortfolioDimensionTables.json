@@ -1,0 +1,117 @@
+{
+	"name": "pl_GetDataFromPortfolioDimensionTables",
+	"properties": {
+		"description": "Connect to WarehouseAlpha and get data from Portfolio Dimension Tables using a query.",
+		"activities": [
+			{
+				"name": "CopyFromPortfolioDimensionTables",
+				"type": "Copy",
+				"policy": {
+					"timeout": "7.00:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [
+					{
+						"name": "Destination",
+						"value": "[dbo].[PortfolioDimension]"
+					}
+				],
+				"typeProperties": {
+					"source": {
+						"type": "AzureSqlSource",
+						"sqlReaderQuery": "SELECT CAST('ODSPortfolio.SysRefData(' + parent.[Name] + ')' AS NVARCHAR(80)) DimTableName,\r\n       child.Id DimID,\r\n       CAST(NULL AS NVARCHAR(20)) DimCode,\r\n       CAST(child.[Name] AS NVARCHAR(250)) DimName,\r\n       CAST(ISNULL(child.[Description], '') AS NVARCHAR(250)) DimDescription,\r\n       CAST(ISNULL(child.IsActive, 0) AS BIT) DimActive\r\nFROM ODSPortfolio.SysRefData child\r\n    LEFT JOIN ODSPortfolio.SysRefData parent\r\n        ON parent.Id = child.ParentId\r\nWHERE child.ParentId IS NOT NULL\r\nORDER BY DimTableName,\r\n         DimID;"
+					},
+					"sink": {
+						"type": "AzureSqlSink",
+						"writeBatchSize": 10000
+					},
+					"enableStaging": false,
+					"translator": {
+						"type": "TabularTranslator",
+						"mappings": [
+							{
+								"source": {
+									"name": "DimTableName",
+									"type": "String"
+								},
+								"sink": {
+									"name": "DimTableName",
+									"type": "String"
+								}
+							},
+							{
+								"source": {
+									"name": "DimID",
+									"type": "Int32"
+								},
+								"sink": {
+									"name": "DimID",
+									"type": "Int32"
+								}
+							},
+							{
+								"source": {
+									"name": "DimCode",
+									"type": "String"
+								},
+								"sink": {
+									"name": "DimCode",
+									"type": "String"
+								}
+							},
+							{
+								"source": {
+									"name": "DimName",
+									"type": "String"
+								},
+								"sink": {
+									"name": "DimName",
+									"type": "String"
+								}
+							},
+							{
+								"source": {
+									"name": "DimDescription",
+									"type": "String"
+								},
+								"sink": {
+									"name": "DimDescription",
+									"type": "String"
+								}
+							},
+							{
+								"source": {
+									"name": "DimActive",
+									"type": "Boolean"
+								},
+								"sink": {
+									"name": "DimActive",
+									"type": "Boolean"
+								}
+							}
+						]
+					}
+				},
+				"inputs": [
+					{
+						"referenceName": "SourcePortfolioDimensionTables",
+						"type": "DatasetReference"
+					}
+				],
+				"outputs": [
+					{
+						"referenceName": "DestinationPortfolioDimension",
+						"type": "DatasetReference"
+					}
+				]
+			}
+		],
+		"folder": {
+			"name": "MergePortfolioDimensions"
+		}
+	},
+	"type": "Microsoft.DataFactory/factories/pipelines"
+}

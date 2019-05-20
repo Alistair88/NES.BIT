@@ -1,0 +1,35 @@
+{
+	"name": "GetDimRelationship",
+	"properties": {
+		"description": "Created  from a query",
+		"linkedServiceName": {
+			"referenceName": "WarehouseAlphaTest",
+			"type": "LinkedServiceReference"
+		},
+		"folder": {
+			"name": "CreateRelationships"
+		},
+		"type": "AzureSqlTable",
+		"schema": [
+			{
+				"name": "XDimID",
+				"type": "int",
+				"precision": 10
+			},
+			{
+				"name": "YDimID",
+				"type": "int",
+				"precision": 10
+			},
+			{
+				"name": "DimKindID",
+				"type": "int",
+				"precision": 10
+			}
+		],
+		"typeProperties": {
+			"tableName": "[dbo].[GetDimRelationship]"
+		}
+	},
+	"type": "Microsoft.DataFactory/factories/datasets"
+}

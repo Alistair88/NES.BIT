@@ -1,0 +1,28 @@
+{
+	"name": "DestinationDataset_mgm",
+	"properties": {
+		"linkedServiceName": {
+			"referenceName": "WarehouseAlphaTest",
+			"type": "LinkedServiceReference"
+		},
+		"type": "AzureSqlTable",
+		"structure": [
+			{
+				"name": "TermID",
+				"type": "Int32",
+				"precision": 10,
+				"scale": 0
+			},
+			{
+				"name": "DimID",
+				"type": "Int32",
+				"precision": 10,
+				"scale": 0
+			}
+		],
+		"typeProperties": {
+			"tableName": "[dbo].[LookupTable]"
+		}
+	},
+	"type": "Microsoft.DataFactory/factories/datasets"
+}

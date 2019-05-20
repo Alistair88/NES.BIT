@@ -1,0 +1,36 @@
+{
+	"name": "ThesaurusNESOnAzure",
+	"properties": {
+		"linkedServiceName": {
+			"referenceName": "WarehouseAlphaTest",
+			"type": "LinkedServiceReference"
+		},
+		"type": "AzureSqlTable",
+		"schema": [
+			{
+				"name": "id",
+				"type": "int",
+				"precision": 10
+			},
+			{
+				"name": "maintermid",
+				"type": "int",
+				"precision": 10
+			},
+			{
+				"name": "relatedtermid",
+				"type": "int",
+				"precision": 10
+			},
+			{
+				"name": "relationship",
+				"type": "int",
+				"precision": 10
+			}
+		],
+		"typeProperties": {
+			"tableName": "[ThesaurusNES].[Relation]"
+		}
+	},
+	"type": "Microsoft.DataFactory/factories/datasets"
+}

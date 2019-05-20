@@ -1,0 +1,64 @@
+{
+	"name": "pl_CopyLocalToTermRelationships-old",
+	"properties": {
+		"description": "Uses a query to copy from the TermRelationship and Term table on the Taxonomy db.  Used in the Term relationships sink in the Create relationships dataflow.",
+		"activities": [
+			{
+				"name": "CopyLocalToTermRelationships",
+				"description": "Uses a query to create the TermRelationships table on the AzureDB",
+				"type": "Copy",
+				"policy": {
+					"timeout": "7.00:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [
+					{
+						"name": "Destination",
+						"value": "[dbo].[TermRelationships]"
+					}
+				],
+				"typeProperties": {
+					"source": {
+						"type": "SqlSource",
+						"sqlReaderQuery": "SELECT TermRelationship.RelationshipID, TermX.TermID XTermID, TermX.DimID XTermDimID,\r\n  TermY.TermID YTermID, TermY.DimID YTermDimID,\r\n  TermRelationship.KindID TermKindID\r\nFROM dbo.TermRelationship\r\n  LEFT JOIN dbo.Term TermX on TermX.TermID = TermRelationship.TermXID\r\n  LEFT JOIN dbo.Term TermY on TermY.TermID = TermRelationship.TermYID\r\n  LEFT JOIN dbo.TermType on TermType.TermTypeID = TermX.TermTypeID\r\nWHERE TermType.SourceID = 2\r\nORDER BY TermX.DimID, TermY.DimID, TermKindID;"
+					},
+					"sink": {
+						"type": "SqlSink",
+						"writeBatchSize": 10000
+					},
+					"enableStaging": false,
+					"translator": {
+						"type": "TabularTranslator",
+						"columnMappings": {
+							"RelationshipID": "RelationshipID",
+							"XTermID": "XTermID",
+							"XTermDimID": "XTermDimID",
+							"YTermID": "YTermID",
+							"YTermDimID": "YTermDimID",
+							"TermKindID": "TermKindID"
+						}
+					}
+				},
+				"inputs": [
+					{
+						"referenceName": "SourceLocalToTermRelationships",
+						"type": "DatasetReference"
+					}
+				],
+				"outputs": [
+					{
+						"referenceName": "DestinationTermRelationships",
+						"type": "DatasetReference"
+					}
+				]
+			}
+		],
+		"folder": {
+			"name": "CreateRelationships"
+		}
+	},
+	"type": "Microsoft.DataFactory/factories/pipelines"
+}

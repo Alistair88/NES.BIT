@@ -1,0 +1,36 @@
+{
+	"name": "LocalTaxonomySchema",
+	"properties": {
+		"linkedServiceName": {
+			"referenceName": "LocalhostTermType",
+			"type": "LinkedServiceReference"
+		},
+		"type": "SqlServerTable",
+		"structure": [
+			{
+				"name": "RelationshipID",
+				"type": "Int32"
+			},
+			{
+				"name": "TermXID",
+				"type": "Int32"
+			},
+			{
+				"name": "TermYID",
+				"type": "Int32"
+			},
+			{
+				"name": "KindID",
+				"type": "Int16"
+			},
+			{
+				"name": "Description",
+				"type": "String"
+			}
+		],
+		"typeProperties": {
+			"tableName": "[dbo].[TermRelationship]"
+		}
+	},
+	"type": "Microsoft.DataFactory/factories/datasets"
+}

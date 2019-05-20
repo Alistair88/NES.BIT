@@ -1,0 +1,61 @@
+{
+	"name": "pl_TermInsertToTermRelationship",
+	"properties": {
+		"description": "Uses a query to copy from the TermInsert table to TermRelationship table. Used in the Term relationships sink in the Create relationships dataflow.",
+		"activities": [
+			{
+				"name": "CopyToTermRel",
+				"description": "Copy from the 'Create terms' dataflow sink table to the termInsert table.  This is one of the sink table used in the 'Create Relationships' dataflow.",
+				"type": "Copy",
+				"policy": {
+					"timeout": "7.00:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [
+					{
+						"name": "Destination",
+						"value": "[dbo].[TermRelationships]"
+					}
+				],
+				"typeProperties": {
+					"source": {
+						"type": "SqlSource",
+						"sqlReaderQuery": "SELECT TermRelationship.RelationshipID,\n       TermX.TermID XTermID,\n       TermX.DimID XTermDimID,\n       TermY.TermID YTermID,\n       TermY.DimID YTermDimID,\n       TermRelationship.KindID TermKindID\nFROM [Taxonomy].[TermRelationship] TermRelationship\n    LEFT JOIN [Taxonomy].[Term] TermX\n        ON TermX.TermID = TermRelationship.TermXID\n    LEFT JOIN [Taxonomy].[Term] TermY\n        ON TermY.TermID = TermRelationship.TermYID\n    LEFT JOIN [Taxonomy].[TermTypeSINK] TermType\n        ON TermType.TermTypeID = TermX.TermTypeID\nWHERE TermType.SourceID = 2\nORDER BY TermX.DimID,\n         TermY.DimID,\n         TermKindID;"
+					},
+					"sink": {
+						"type": "SqlSink",
+						"writeBatchSize": 10000
+					},
+					"enableStaging": false,
+					"translator": {
+						"type": "TabularTranslator",
+						"columnMappings": {
+							"RelationshipID": "RelationshipID",
+							"XTermID": "XTermID",
+							"XTermDimID": "XTermDimID",
+							"YTermID": "YTermID",
+							"YTermDimID": "YTermDimID",
+							"TermKindID": "TermKindID"
+						}
+					}
+				},
+				"inputs": [
+					{
+						"referenceName": "AzureSqlTable3",
+						"type": "DatasetReference"
+					}
+				],
+				"outputs": [
+					{
+						"referenceName": "DestinationTermRelationships",
+						"type": "DatasetReference"
+					}
+				]
+			}
+		]
+	},
+	"type": "Microsoft.DataFactory/factories/pipelines"
+}

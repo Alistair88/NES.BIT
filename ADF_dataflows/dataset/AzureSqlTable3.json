@@ -1,0 +1,40 @@
+{
+	"name": "AzureSqlTable3",
+	"properties": {
+		"linkedServiceName": {
+			"referenceName": "WarehouseAlphaTest",
+			"type": "LinkedServiceReference"
+		},
+		"type": "AzureSqlTable",
+		"structure": [
+			{
+				"name": "RelationshipID",
+				"type": "Int32"
+			},
+			{
+				"name": "XTermID",
+				"type": "Int32"
+			},
+			{
+				"name": "XTermDimID",
+				"type": "Int32"
+			},
+			{
+				"name": "YTermID",
+				"type": "Int32"
+			},
+			{
+				"name": "YTermDimID",
+				"type": "Int32"
+			},
+			{
+				"name": "TermKindID",
+				"type": "Int16"
+			}
+		],
+		"typeProperties": {
+			"tableName": "[dbo].[TermInsert]"
+		}
+	},
+	"type": "Microsoft.DataFactory/factories/datasets"
+}

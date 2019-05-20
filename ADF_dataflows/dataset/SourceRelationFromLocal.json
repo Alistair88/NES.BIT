@@ -1,0 +1,25 @@
+{
+	"name": "SourceRelationFromLocal",
+	"properties": {
+		"linkedServiceName": {
+			"referenceName": "LocalhostSqlServer",
+			"type": "LinkedServiceReference"
+		},
+		"type": "SqlServerTable",
+		"structure": [
+			{
+				"name": "XDimID",
+				"type": "Int32"
+			},
+			{
+				"name": "YDimID",
+				"type": "Int32"
+			},
+			{
+				"name": "DimKindID",
+				"type": "Int16"
+			}
+		]
+	},
+	"type": "Microsoft.DataFactory/factories/datasets"
+}

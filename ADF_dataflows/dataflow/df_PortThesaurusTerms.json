@@ -1,0 +1,110 @@
+{
+	"name": "df_PortThesaurusTerms",
+	"properties": {
+		"type": "MappingDataFlow",
+		"typeProperties": {
+			"sources": [
+				{
+					"dataset": {
+						"referenceName": "TermTable",
+						"type": "DatasetReference"
+					},
+					"name": "GetThesaurusTypes",
+					"script": "source(output(\n\t\tDimId as integer,\n\t\tDimName as string,\n\t\tDimDescription as string\n\t),\n\tallowSchemaDrift: false,\n\tvalidateSchema: false,\n\tformat: 'table') ~> GetThesaurusTypes"
+				},
+				{
+					"dataset": {
+						"referenceName": "AzureSqlTermTypes",
+						"type": "DatasetReference"
+					},
+					"name": "GetTaxonomyTermTypes",
+					"script": "source(output(\n\t\tTermTypeID as integer,\n\t\tTypeName as string,\n\t\tTypeDescription as string,\n\t\tTypeAvailable as boolean,\n\t\tTypeSourceID as integer\n\t),\n\tallowSchemaDrift: false,\n\tvalidateSchema: false,\n\tformat: 'table') ~> GetTaxonomyTermTypes"
+				}
+			],
+			"sinks": [
+				{
+					"dataset": {
+						"referenceName": "TermTypeSink",
+						"type": "DatasetReference"
+					},
+					"name": "InsertSink",
+					"script": "AssignForInsertion sink(input(\n\t\tTermTypeID as integer,\n\t\tTypeName as string,\n\t\tDescription as string,\n\t\tAvailable as boolean,\n\t\tDimTable as string,\n\t\tSourceID as integer\n\t),\n\tallowSchemaDrift: false,\n\tvalidateSchema: false,\n\tformat: 'table',\n\tdeletable:false,\n\tinsertable:true,\n\tupdateable:false,\n\tupsertable:false,\n\tkeys:['TermTypeID'],\n\tmapColumn(\n\t\tTermTypeID,\n\t\tTypeName,\n\t\tDescription = TypeName,\n\t\tAvailable = TypeAvailable,\n\t\tSourceID = DimSourceID\n\t)) ~> InsertSink"
+				},
+				{
+					"dataset": {
+						"referenceName": "TermTypeSink",
+						"type": "DatasetReference"
+					},
+					"name": "UpdateSink",
+					"script": "SelectForUpdate sink(input(\n\t\tTermTypeID as integer,\n\t\tTypeName as string,\n\t\tDescription as string,\n\t\tAvailable as boolean,\n\t\tDimTable as string,\n\t\tSourceID as integer\n\t),\n\tallowSchemaDrift: false,\n\tvalidateSchema: false,\n\tformat: 'table',\n\tdeletable:false,\n\tinsertable:false,\n\tupdateable:true,\n\tupsertable:false,\n\tkeys:['TermTypeID'],\n\tmapColumn(\n\t\tTermTypeID,\n\t\tTypeName = DimTypeName,\n\t\tDescription = DimTypeDescription\n\t)) ~> UpdateSink"
+				},
+				{
+					"dataset": {
+						"referenceName": "TermTypeSink",
+						"type": "DatasetReference"
+					},
+					"name": "DeleteSink",
+					"script": "TermTypeSoftDelete sink(input(\n\t\tTermTypeID as integer,\n\t\tTypeName as string,\n\t\tDescription as string,\n\t\tAvailable as boolean,\n\t\tDimTable as string,\n\t\tSourceID as integer\n\t),\n\tallowSchemaDrift: false,\n\tvalidateSchema: false,\n\tformat: 'table',\n\tdeletable:false,\n\tinsertable:false,\n\tupdateable:true,\n\tupsertable:false,\n\tkeys:['TermTypeID'],\n\tmapColumn(\n\t\tTermTypeID,\n\t\tTypeName,\n\t\tDescription,\n\t\tAvailable = TypeAvailable,\n\t\tSourceID = TypeSourceID\n\t)) ~> DeleteSink"
+				},
+				{
+					"dataset": {
+						"referenceName": "TermSINK",
+						"type": "DatasetReference"
+					},
+					"name": "DeleteAvailableFromTermSink",
+					"script": "SoftDeleteTermTable sink(input(\n\t\tTermID as integer,\n\t\tDimID as integer,\n\t\tTermCode as string,\n\t\tTermName as string,\n\t\tDescription as string,\n\t\tPreferred as boolean,\n\t\tAvailable as boolean,\n\t\tTermTypeID as integer\n\t),\n\tallowSchemaDrift: false,\n\tvalidateSchema: false,\n\tformat: 'table',\n\tdeletable:false,\n\tinsertable:false,\n\tupdateable:true,\n\tupsertable:false,\n\tkeys:['TermTypeID'],\n\tmapColumn(\n\t\tTermTypeID\n\t)) ~> DeleteAvailableFromTermSink"
+				}
+			],
+			"transformations": [
+				{
+					"name": "MergeJoin",
+					"script": "GetThesaurusTypes, GetTaxonomyTermTypes join(DimId == TermTypeID,\n\tjoinType:'outer',\n\tbroadcast: 'none')~> MergeJoin"
+				},
+				{
+					"name": "ConditionalSplit1",
+					"script": "MergeJoin split(isNull(TermTypeID),\n\tisNull(DimId),\n\tdisjoint: true) ~> ConditionalSplit1@(insert, delete, update)"
+				},
+				{
+					"name": "ConvertDimToType",
+					"script": "ConditionalSplit1@insert derive(DimAvailable = true(),\n\t\tDimSourceID = 2,\n\t\tDimTypeName = left(DimName, 80),\n\t\tDimTypeDescription = left(DimDescription, 500)) ~> ConvertDimToType"
+				},
+				{
+					"name": "SelectColumnsToInsert",
+					"script": "ConvertDimToType select(mapColumn(\n\t\tTermTypeID = DimId,\n\t\tTypeName = DimTypeName,\n\t\tTypeDescription = DimTypeDescription,\n\t\tTypeAvailable = DimAvailable,\n\t\tDimSourceID\n\t))~> SelectColumnsToInsert"
+				},
+				{
+					"name": "ConvertNameAndDesc",
+					"script": "ConditionalSplit1@update derive(DimTypeName = left(DimName, 80),\n\t\tDimTypeDescription = left(DimDescription, 500)) ~> ConvertNameAndDesc"
+				},
+				{
+					"name": "SelectForUpdate",
+					"script": "ConditionForUpdate select(mapColumn(\n\t\tTermTypeID,\n\t\tDimTypeName,\n\t\tDimTypeDescription\n\t))~> SelectForUpdate"
+				},
+				{
+					"name": "ConditionForUpdate",
+					"script": "ConvertNameAndDesc alterRow(updateIf(not(isNull(DimName)))) ~> ConditionForUpdate"
+				},
+				{
+					"name": "ConditionForDelete",
+					"script": "ConditionalSplit1@delete alterRow(updateIf(isNull(DimId))) ~> ConditionForDelete"
+				},
+				{
+					"name": "TermTypeSoftDelete",
+					"script": "SelectValueToModify select(mapColumn(\n\t\tTermTypeID,\n\t\tTypeName,\n\t\tTypeAvailable,\n\t\tTypeSourceID,\n\t\tDescription = TypeDescription\n\t))~> TermTypeSoftDelete"
+				},
+				{
+					"name": "SelectValueToModify",
+					"script": "ConditionForDelete derive(TypeAvailable = TypeAvailable == false()) ~> SelectValueToModify"
+				},
+				{
+					"name": "SoftDeleteTermTable",
+					"script": "SelectValueToModify select(mapColumn(\n\t\tTermTypeID,\n\t\tTypeName,\n\t\tTypeDescription,\n\t\tTypeAvailable\n\t))~> SoftDeleteTermTable"
+				},
+				{
+					"name": "AssignForInsertion",
+					"script": "SelectColumnsToInsert alterRow(insertIf(isNull(TermTypeID))) ~> AssignForInsertion"
+				}
+			]
+		}
+	}
+}

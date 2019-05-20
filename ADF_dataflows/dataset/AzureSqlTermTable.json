@@ -1,0 +1,29 @@
+{
+	"name": "AzureSqlTermTable",
+	"properties": {
+		"description": "Term table used as a sink for Thesaurus data",
+		"linkedServiceName": {
+			"referenceName": "WarehouseAlphaTest",
+			"type": "LinkedServiceReference"
+		},
+		"type": "AzureSqlTable",
+		"structure": [
+			{
+				"name": "DimId",
+				"type": "Int32"
+			},
+			{
+				"name": "DimName",
+				"type": "String"
+			},
+			{
+				"name": "DimDescription",
+				"type": "String"
+			}
+		],
+		"typeProperties": {
+			"tableName": "[dbo].[Term]"
+		}
+	},
+	"type": "Microsoft.DataFactory/factories/datasets"
+}

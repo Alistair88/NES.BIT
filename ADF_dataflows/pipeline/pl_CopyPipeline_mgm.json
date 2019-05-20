@@ -1,0 +1,55 @@
+{
+	"name": "pl_CopyPipeline_mgm",
+	"properties": {
+		"activities": [
+			{
+				"name": "Copy_mgm",
+				"type": "Copy",
+				"policy": {
+					"timeout": "7.00:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [
+					{
+						"name": "Destination",
+						"value": "[dbo].[LookupTable]"
+					}
+				],
+				"typeProperties": {
+					"source": {
+						"type": "SqlSource",
+						"sqlReaderQuery": "SELECT Term.TermID,\r\n       Term.DimID\r\nFROM dbo.term_taxonomy AS Term\r\n    JOIN dbo.TermTypeOriginal AS TermType\r\n        ON Term.TermTypeID = TermType.TermTypeID\r\nWHERE TermType.SourceID = 2 AND Term.DimID in (SELECT XDimID FROM [dbo].[GetDimRelationship])"
+					},
+					"sink": {
+						"type": "SqlSink",
+						"writeBatchSize": 10000
+					},
+					"enableStaging": false,
+					"translator": {
+						"type": "TabularTranslator",
+						"columnMappings": {
+							"TermID": "TermID",
+							"DimID": "DimID"
+						}
+					}
+				},
+				"inputs": [
+					{
+						"referenceName": "SourceDataset_mgm",
+						"type": "DatasetReference"
+					}
+				],
+				"outputs": [
+					{
+						"referenceName": "DestinationDataset_mgm",
+						"type": "DatasetReference"
+					}
+				]
+			}
+		]
+	},
+	"type": "Microsoft.DataFactory/factories/pipelines"
+}

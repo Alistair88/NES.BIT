@@ -1,0 +1,38 @@
+{
+	"name": "df_DeleteTermRelationships",
+	"properties": {
+		"type": "MappingDataFlow",
+		"typeProperties": {
+			"sources": [
+				{
+					"dataset": {
+						"referenceName": "TermRelationshipSink",
+						"type": "DatasetReference"
+					},
+					"name": "TermRelationships",
+					"script": "source(output(\n\t\tRelationshipID as integer,\n\t\tTermXID as integer,\n\t\tTermYID as integer,\n\t\tKindID as integer,\n\t\tDescription as string\n\t),\n\tallowSchemaDrift: false,\n\tvalidateSchema: false,\n\tformat: 'table') ~> TermRelationships"
+				}
+			],
+			"sinks": [
+				{
+					"dataset": {
+						"referenceName": "TermRelationshipSink",
+						"type": "DatasetReference"
+					},
+					"name": "DeleteSink",
+					"script": "DelIfTermYIDIsNull sink(input(\n\t\tRelationshipID as integer,\n\t\tTermXID as integer,\n\t\tTermYID as integer,\n\t\tKindID as integer,\n\t\tDescription as string\n\t),\n\tallowSchemaDrift: false,\n\tvalidateSchema: false,\n\tformat: 'table',\n\tdeletable:true,\n\tinsertable:false,\n\tupdateable:false,\n\tupsertable:false,\n\tkeys:['RelationshipID']) ~> DeleteSink"
+				}
+			],
+			"transformations": [
+				{
+					"name": "DelIfTermXIDIsNull",
+					"script": "TermRelationships alterRow(deleteIf(isNull(TermXID))) ~> DelIfTermXIDIsNull"
+				},
+				{
+					"name": "DelIfTermYIDIsNull",
+					"script": "DelIfTermXIDIsNull alterRow(deleteIf(isNull(TermYID))) ~> DelIfTermYIDIsNull"
+				}
+			]
+		}
+	}
+}

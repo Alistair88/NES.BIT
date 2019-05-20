@@ -1,0 +1,40 @@
+{
+	"name": "AzureTaxonomySchema",
+	"properties": {
+		"linkedServiceName": {
+			"referenceName": "WarehouseAlphaTest",
+			"type": "LinkedServiceReference"
+		},
+		"type": "AzureSqlTable",
+		"schema": [
+			{
+				"name": "RelationshipID",
+				"type": "int",
+				"precision": 10
+			},
+			{
+				"name": "TermXID",
+				"type": "int",
+				"precision": 10
+			},
+			{
+				"name": "TermYID",
+				"type": "int",
+				"precision": 10
+			},
+			{
+				"name": "KindID",
+				"type": "smallint",
+				"precision": 5
+			},
+			{
+				"name": "Description",
+				"type": "nvarchar"
+			}
+		],
+		"typeProperties": {
+			"tableName": "[Taxonomy].[TermRelationship]"
+		}
+	},
+	"type": "Microsoft.DataFactory/factories/datasets"
+}

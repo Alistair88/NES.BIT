@@ -1,0 +1,32 @@
+{
+	"name": "LocalThesaurusNESTerm",
+	"properties": {
+		"linkedServiceName": {
+			"referenceName": "LocalhostSqlServer",
+			"type": "LinkedServiceReference"
+		},
+		"type": "SqlServerTable",
+		"structure": [
+			{
+				"name": "id",
+				"type": "Int32"
+			},
+			{
+				"name": "maintermid",
+				"type": "Int32"
+			},
+			{
+				"name": "relatedtermid",
+				"type": "Int32"
+			},
+			{
+				"name": "relationship",
+				"type": "Int32"
+			}
+		],
+		"typeProperties": {
+			"tableName": "[dbo].[Relation]"
+		}
+	},
+	"type": "Microsoft.DataFactory/factories/datasets"
+}

@@ -1,0 +1,207 @@
+{
+	"name": "RunAllDataflows",
+	"properties": {
+		"description": "Run all PortThesaurus dataflows",
+		"activities": [
+			{
+				"name": "df_PortThesaurusTerms",
+				"type": "ExecuteDataFlow",
+				"dependsOn": [
+					{
+						"activity": "LocalToDboTermType",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					},
+					{
+						"activity": "CreateTermTable",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"policy": {
+					"timeout": "7.00:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"typeProperties": {
+					"dataflow": {
+						"referenceName": "df_PortThesaurusTerms",
+						"type": "DataFlowReference"
+					}
+				}
+			},
+			{
+				"name": "df_CreateTerms",
+				"type": "ExecuteDataFlow",
+				"dependsOn": [
+					{
+						"activity": "ExecuteCreateTaxonomyTermsSource",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"policy": {
+					"timeout": "7.00:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"typeProperties": {
+					"dataflow": {
+						"referenceName": "df_CreateTerms",
+						"type": "DataFlowReference"
+					}
+				}
+			},
+			{
+				"name": "df_CreateRelationships",
+				"type": "ExecuteDataFlow",
+				"dependsOn": [
+					{
+						"activity": "df_CreateTerms",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"policy": {
+					"timeout": "7.00:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"typeProperties": {
+					"dataflow": {
+						"referenceName": "df_CreateRelationships",
+						"type": "DataFlowReference"
+					}
+				}
+			},
+			{
+				"name": "df_MergeTurasDimensions",
+				"type": "ExecuteDataFlow",
+				"dependsOn": [
+					{
+						"activity": "df_CreateRelationships",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"policy": {
+					"timeout": "7.00:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"typeProperties": {
+					"dataflow": {
+						"referenceName": "df_MergeTurasDimensions",
+						"type": "DataFlowReference"
+					}
+				}
+			},
+			{
+				"name": "df_MergePortfolioDimensions",
+				"type": "ExecuteDataFlow",
+				"dependsOn": [
+					{
+						"activity": "UpdatePortfolioDimensions",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"policy": {
+					"timeout": "7.00:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"typeProperties": {
+					"dataflow": {
+						"referenceName": "df_MergePortfolioDimensions",
+						"type": "DataFlowReference"
+					}
+				}
+			},
+			{
+				"name": "ExecuteCreateTaxonomyTermsSource",
+				"description": "Create the Taxonomy terms source tab using a query.",
+				"type": "ExecutePipeline",
+				"dependsOn": [
+					{
+						"activity": "df_PortThesaurusTerms",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"typeProperties": {
+					"pipeline": {
+						"referenceName": "pl_CreateTaxonomyTermsSource",
+						"type": "PipelineReference"
+					},
+					"waitOnCompletion": true
+				}
+			},
+			{
+				"name": "UpdatePortfolioDimensions",
+				"description": "Update the Portfolio Dimensions table",
+				"type": "ExecutePipeline",
+				"dependsOn": [
+					{
+						"activity": "df_MergeTurasDimensions",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"typeProperties": {
+					"pipeline": {
+						"referenceName": "pl_GetDataFromPortfolioDimensionTables",
+						"type": "PipelineReference"
+					},
+					"waitOnCompletion": true
+				}
+			},
+			{
+				"name": "LocalToDboTermType",
+				"description": "Create the TermType table on the Azure DB using a query.",
+				"type": "ExecutePipeline",
+				"typeProperties": {
+					"pipeline": {
+						"referenceName": "pl_CopyLocalToTermTypeSource",
+						"type": "PipelineReference"
+					},
+					"waitOnCompletion": true
+				}
+			},
+			{
+				"name": "CreateTermTable",
+				"description": "Create the term table using a query.",
+				"type": "ExecutePipeline",
+				"typeProperties": {
+					"pipeline": {
+						"referenceName": "pl_LocalToAzureDB",
+						"type": "PipelineReference"
+					},
+					"waitOnCompletion": true
+				}
+			}
+		],
+		"folder": {
+			"name": "RunAllDataflows"
+		}
+	},
+	"type": "Microsoft.DataFactory/factories/pipelines"
+}

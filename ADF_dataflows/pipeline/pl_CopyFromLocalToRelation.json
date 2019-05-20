@@ -1,0 +1,60 @@
+{
+	"name": "pl_CopyFromLocalToRelation",
+	"properties": {
+		"description": "Uses a query to create a table for use in the Create Relationships dataflow source table entitled 'Get Dim relationship'",
+		"activities": [
+			{
+				"name": "CreateDimRelationship",
+				"type": "Copy",
+				"policy": {
+					"timeout": "7.00:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [
+					{
+						"name": "Destination",
+						"value": "[dbo].[GetDimRelationship]"
+					}
+				],
+				"typeProperties": {
+					"source": {
+						"type": "SqlSource",
+						"sqlReaderQuery": "SELECT maintermid XDimID, relatedtermid YDimID,\r\nCAST(CASE relationship\r\n  WHEN 1 THEN 2 -- synonym\r\n  WHEN 4 THEN 1 -- parent/child\r\n  WHEN 5 THEN 4 --association\r\n  END AS SMALLINT) DimKindID\r\nFROM dbo.Relation WHERE relationship IN (1, 4, 5) \r\nAND relatedtermid <> maintermid\r\nORDER BY XDimID, YDimID, DimKindID;"
+					},
+					"sink": {
+						"type": "SqlSink",
+						"writeBatchSize": 10000
+					},
+					"enableStaging": false,
+					"translator": {
+						"type": "TabularTranslator",
+						"columnMappings": {
+							"XDimID": "XDimID",
+							"YDimID": "YDimID",
+							"DimKindID": "DimKindID"
+						}
+					}
+				},
+				"inputs": [
+					{
+						"referenceName": "SourceRelationFromLocal",
+						"type": "DatasetReference"
+					}
+				],
+				"outputs": [
+					{
+						"referenceName": "DestinationGetDimRelationship",
+						"type": "DatasetReference"
+					}
+				]
+			}
+		],
+		"folder": {
+			"name": "CreateRelationships"
+		}
+	},
+	"type": "Microsoft.DataFactory/factories/pipelines"
+}

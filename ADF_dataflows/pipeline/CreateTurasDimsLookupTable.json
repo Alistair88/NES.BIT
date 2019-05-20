@@ -1,0 +1,77 @@
+{
+	"name": "CreateTurasDimsLookupTable",
+	"properties": {
+		"description": "Create a Lookup table for use in the Merge Turas Dimensions and Merge Portfolio dimensions data flows",
+		"activities": [
+			{
+				"name": "CopyToTurasDimsLookupTable",
+				"description": "Used to create the TurasDimsLookup table",
+				"type": "Copy",
+				"policy": {
+					"timeout": "7.00:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [
+					{
+						"name": "Destination",
+						"value": "[dbo].[TurasDimsLookup]"
+					}
+				],
+				"typeProperties": {
+					"source": {
+						"type": "AzureSqlSource",
+						"sqlReaderQuery": "SELECT TermTypeID,\r\n       RTRIM(CAST(DimTable AS NVARCHAR(80))) DimTable\r\nFROM [Taxonomy].[TermType]\r\nWHERE DimTable IS NOT NULL\r\n      AND SourceID = 1;"
+					},
+					"sink": {
+						"type": "AzureSqlSink"
+					},
+					"enableStaging": false,
+					"translator": {
+						"type": "TabularTranslator",
+						"mappings": [
+							{
+								"source": {
+									"name": "TermTypeID",
+									"type": "Int16"
+								},
+								"sink": {
+									"name": "TermTypeID",
+									"type": "Int16"
+								}
+							},
+							{
+								"source": {
+									"name": "DimTable",
+									"type": "String"
+								},
+								"sink": {
+									"name": "DimTable",
+									"type": "String"
+								}
+							}
+						]
+					}
+				},
+				"inputs": [
+					{
+						"referenceName": "SourceTaxonomyTermType",
+						"type": "DatasetReference"
+					}
+				],
+				"outputs": [
+					{
+						"referenceName": "CreateTurasDimsLookup",
+						"type": "DatasetReference"
+					}
+				]
+			}
+		],
+		"folder": {
+			"name": "MergeTurasDimensions"
+		}
+	},
+	"type": "Microsoft.DataFactory/factories/pipelines"
+}

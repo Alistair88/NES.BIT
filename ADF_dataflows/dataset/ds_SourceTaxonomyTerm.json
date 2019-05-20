@@ -1,0 +1,26 @@
+{
+	"name": "ds_SourceTaxonomyTerm",
+	"properties": {
+		"description": "Created: 09-05-19",
+		"linkedServiceName": {
+			"referenceName": "WarehouseAlphaTest",
+			"type": "LinkedServiceReference"
+		},
+		"type": "AzureSqlTable",
+		"schema": [
+			{
+				"name": "TermID",
+				"type": "int",
+				"precision": 10,
+				"scale": 255
+			},
+			{
+				"name": "DimID",
+				"type": "int",
+				"precision": 10,
+				"scale": 255
+			}
+		]
+	},
+	"type": "Microsoft.DataFactory/factories/datasets"
+}

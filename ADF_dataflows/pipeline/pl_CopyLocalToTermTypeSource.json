@@ -1,0 +1,107 @@
+{
+	"name": "pl_CopyLocalToTermTypeSource",
+	"properties": {
+		"description": "Copy the contents of the TermType table on the local db to the TermTypeSource table on Azure. ",
+		"activities": [
+			{
+				"name": "CopyLocalToTermTypeSource",
+				"type": "Copy",
+				"policy": {
+					"timeout": "7.00:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [
+					{
+						"name": "Destination",
+						"value": "[dbo].[TermTypeSOURCE]"
+					}
+				],
+				"typeProperties": {
+					"source": {
+						"type": "SqlServerSource",
+						"sqlReaderQuery": "SELECT TermTypeID, TypeName, Description TypeDescription, Available TypeAvailable, SourceID TypeSourceID FROM dbo.TermType WHERE SourceID = 2"
+					},
+					"sink": {
+						"type": "AzureSqlSink",
+						"writeBatchSize": 10000
+					},
+					"enableStaging": false,
+					"translator": {
+						"type": "TabularTranslator",
+						"mappings": [
+							{
+								"source": {
+									"name": "TermTypeID",
+									"type": "Int16"
+								},
+								"sink": {
+									"name": "TermTypeID",
+									"type": "Int16"
+								}
+							},
+							{
+								"source": {
+									"name": "TypeName",
+									"type": "String"
+								},
+								"sink": {
+									"name": "TypeName",
+									"type": "String"
+								}
+							},
+							{
+								"source": {
+									"name": "TypeDescription",
+									"type": "String"
+								},
+								"sink": {
+									"name": "TypeDescription",
+									"type": "String"
+								}
+							},
+							{
+								"source": {
+									"name": "TypeAvailable",
+									"type": "Boolean"
+								},
+								"sink": {
+									"name": "TypeAvailable",
+									"type": "Boolean"
+								}
+							},
+							{
+								"source": {
+									"name": "TypeSourceID",
+									"type": "Int16"
+								},
+								"sink": {
+									"name": "TypeSourceID",
+									"type": "Int16"
+								}
+							}
+						]
+					}
+				},
+				"inputs": [
+					{
+						"referenceName": "SourceTermType",
+						"type": "DatasetReference"
+					}
+				],
+				"outputs": [
+					{
+						"referenceName": "DestinationTermTypeSOURCE",
+						"type": "DatasetReference"
+					}
+				]
+			}
+		],
+		"folder": {
+			"name": "PortThesaurus"
+		}
+	},
+	"type": "Microsoft.DataFactory/factories/pipelines"
+}

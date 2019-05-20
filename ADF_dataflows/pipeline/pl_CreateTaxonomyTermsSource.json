@@ -1,0 +1,128 @@
+{
+	"name": "pl_CreateTaxonomyTermsSource",
+	"properties": {
+		"description": "Create the TaxonomyTermsSource activity for the Create Terms dataflow",
+		"activities": [
+			{
+				"name": "CreateTaxonomyTermsSource",
+				"description": "This pipeline is used when creating the Term Relationships activity in the Create Relationships dataflow. Source is Taxonomy schema, destiation is [dbo].[TermRelationshipSOURCE]",
+				"type": "Copy",
+				"policy": {
+					"timeout": "7.00:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [
+					{
+						"name": "Destination",
+						"value": "[Taxonomy].[TaxonomyTermsSOURCE]"
+					}
+				],
+				"typeProperties": {
+					"source": {
+						"type": "AzureSqlSource",
+						"sqlReaderQuery": "SELECT Term.TermID,\n       Term.DimID TermDimID,\n       Term.TermCode,\n       Term.TermName,\n       Term.Description TermDescription,\n       Term.Preferred AS TermPreferred,\n       Term.TermTypeID\nFROM [Taxonomy].[Term] Term\n    LEFT OUTER JOIN Taxonomy.TermTypeSINK TermType\n        ON TermType.TermTypeID = Term.TermTypeID\nWHERE (TermType.SourceID = 2)\nORDER BY Term.DimID;"
+					},
+					"sink": {
+						"type": "AzureSqlSink",
+						"writeBatchSize": 10000
+					},
+					"enableStaging": false,
+					"translator": {
+						"type": "TabularTranslator",
+						"mappings": [
+							{
+								"source": {
+									"name": "TermID",
+									"type": "Int32"
+								},
+								"sink": {
+									"name": "TermID",
+									"type": "Int32"
+								}
+							},
+							{
+								"source": {
+									"name": "TermDimID",
+									"type": "Int32"
+								},
+								"sink": {
+									"name": "TermDimID",
+									"type": "Int32"
+								}
+							},
+							{
+								"source": {
+									"name": "TermCode",
+									"type": "String"
+								},
+								"sink": {
+									"name": "TermCode",
+									"type": "String"
+								}
+							},
+							{
+								"source": {
+									"name": "TermName",
+									"type": "String"
+								},
+								"sink": {
+									"name": "TermName",
+									"type": "String"
+								}
+							},
+							{
+								"source": {
+									"name": "TermDescription",
+									"type": "String"
+								},
+								"sink": {
+									"name": "TermDescription",
+									"type": "String"
+								}
+							},
+							{
+								"source": {
+									"name": "TermPreferred",
+									"type": "Boolean"
+								},
+								"sink": {
+									"name": "TermPreferred",
+									"type": "Boolean"
+								}
+							},
+							{
+								"source": {
+									"name": "TermTypeID",
+									"type": "Int16"
+								},
+								"sink": {
+									"name": "TermTypeID",
+									"type": "Int16"
+								}
+							}
+						]
+					}
+				},
+				"inputs": [
+					{
+						"referenceName": "TaxonomyTermsFromTaxonomy",
+						"type": "DatasetReference"
+					}
+				],
+				"outputs": [
+					{
+						"referenceName": "DestTaxonomyTermsSOURCE",
+						"type": "DatasetReference"
+					}
+				]
+			}
+		],
+		"folder": {
+			"name": "CreateTerms"
+		}
+	},
+	"type": "Microsoft.DataFactory/factories/pipelines"
+}

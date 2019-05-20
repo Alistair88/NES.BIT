@@ -1,0 +1,64 @@
+{
+	"name": "DestinationTermTable",
+	"properties": {
+		"linkedServiceName": {
+			"referenceName": "PortThesaurusDB",
+			"type": "LinkedServiceReference"
+		},
+		"type": "AzureSqlTable",
+		"schema": [
+			{
+				"name": "TermID",
+				"type": "int",
+				"precision": 10,
+				"scale": 255
+			},
+			{
+				"name": "DimID",
+				"type": "int",
+				"precision": 10,
+				"scale": 255
+			},
+			{
+				"name": "TermCode",
+				"type": "nvarchar",
+				"precision": 255,
+				"scale": 255
+			},
+			{
+				"name": "TermName",
+				"type": "nvarchar",
+				"precision": 255,
+				"scale": 255
+			},
+			{
+				"name": "Description",
+				"type": "nvarchar",
+				"precision": 255,
+				"scale": 255
+			},
+			{
+				"name": "Preferred",
+				"type": "bit",
+				"precision": 255,
+				"scale": 255
+			},
+			{
+				"name": "Available",
+				"type": "bit",
+				"precision": 255,
+				"scale": 255
+			},
+			{
+				"name": "TermTypeID",
+				"type": "smallint",
+				"precision": 5,
+				"scale": 255
+			}
+		],
+		"typeProperties": {
+			"tableName": "Term"
+		}
+	},
+	"type": "Microsoft.DataFactory/factories/datasets"
+}

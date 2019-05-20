@@ -1,0 +1,52 @@
+{
+	"name": "CreateRel_Taxonomy",
+	"properties": {
+		"linkedServiceName": {
+			"referenceName": "PortThesaurusDB",
+			"type": "LinkedServiceReference"
+		},
+		"type": "AzureSqlTable",
+		"schema": [
+			{
+				"name": "RelationshipID",
+				"type": "int",
+				"precision": 10,
+				"scale": 255
+			},
+			{
+				"name": "XTermID",
+				"type": "int",
+				"precision": 10,
+				"scale": 255
+			},
+			{
+				"name": "XTermDimID",
+				"type": "int",
+				"precision": 10,
+				"scale": 255
+			},
+			{
+				"name": "YTermID",
+				"type": "int",
+				"precision": 10,
+				"scale": 255
+			},
+			{
+				"name": "YTermDimID",
+				"type": "int",
+				"precision": 10,
+				"scale": 255
+			},
+			{
+				"name": "TermKindID",
+				"type": "smallint",
+				"precision": 5,
+				"scale": 255
+			}
+		],
+		"typeProperties": {
+			"tableName": "[dbo].[TermRelationship]"
+		}
+	},
+	"type": "Microsoft.DataFactory/factories/datasets"
+}

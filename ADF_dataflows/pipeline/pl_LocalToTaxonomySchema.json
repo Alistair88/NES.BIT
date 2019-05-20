@@ -1,0 +1,107 @@
+{
+	"name": "pl_LocalToTaxonomySchema",
+	"properties": {
+		"description": "Copy tables from the local db to the Taxonomy schema in MySampleDatabase on Azure",
+		"activities": [
+			{
+				"name": "LocalToTaxonomySchema",
+				"type": "Copy",
+				"policy": {
+					"timeout": "7.00:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [
+					{
+						"name": "Source",
+						"value": "[dbo].[Term]"
+					},
+					{
+						"name": "Destination",
+						"value": "[Taxonomy].[Term]"
+					}
+				],
+				"typeProperties": {
+					"source": {
+						"type": "SqlServerSource"
+					},
+					"sink": {
+						"type": "AzureSqlSink",
+						"writeBatchSize": 10000
+					},
+					"enableStaging": false,
+					"translator": {
+						"type": "TabularTranslator",
+						"mappings": [
+							{
+								"source": {
+									"name": "RelationshipID",
+									"type": "Int32"
+								},
+								"sink": {
+									"name": "RelationshipID",
+									"type": "Int32"
+								}
+							},
+							{
+								"source": {
+									"name": "TermXID",
+									"type": "Int32"
+								},
+								"sink": {
+									"name": "TermXID",
+									"type": "Int32"
+								}
+							},
+							{
+								"source": {
+									"name": "TermYID",
+									"type": "Int32"
+								},
+								"sink": {
+									"name": "TermYID",
+									"type": "Int32"
+								}
+							},
+							{
+								"source": {
+									"name": "KindID",
+									"type": "Int16"
+								},
+								"sink": {
+									"name": "KindID",
+									"type": "Int16"
+								}
+							},
+							{
+								"source": {
+									"name": "Description",
+									"type": "String"
+								},
+								"sink": {
+									"name": "Description",
+									"type": "String"
+								}
+							}
+						]
+					}
+				},
+				"inputs": [
+					{
+						"referenceName": "LocalTaxonomySchema",
+						"type": "DatasetReference"
+					}
+				],
+				"outputs": [
+					{
+						"referenceName": "AzureTaxonomySchema",
+						"type": "DatasetReference"
+					}
+				]
+			}
+		]
+	},
+	"type": "Microsoft.DataFactory/factories/pipelines"
+}

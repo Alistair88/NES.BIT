@@ -1,0 +1,55 @@
+{
+	"name": "pl_LocalToAzureDB",
+	"properties": {
+		"description": "Copy the term table from local host to an Azure DB",
+		"activities": [
+			{
+				"name": "LoadFromTermTable",
+				"description": "Load from local machine to Azure db",
+				"type": "Copy",
+				"policy": {
+					"timeout": "7.00:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"typeProperties": {
+					"source": {
+						"type": "SqlSource",
+						"sqlReaderQuery": "Select \n\t\tDISTINCT CAST(T.ID AS SMALLINT) DimID, \n\t\tCAST(T.name AS NVARCHAR(200)) DimName, \n\t\tCAST(T.scope + ' ' + T.additionalnotes AS NVARCHAR(2000)) DimDescription \nFROM \n\t\tdbo.Term T\n  LEFT OUTER JOIN \n\t\tdbo.Relation RB on RB.maintermid = T.id AND RB.Relationship =3\n  LEFT OUTER JOIN \n\t\tdbo.Relation RN on RN.maintermid = T.id AND RN.Relationship =4\n  WHERE \n\t\tRB.id IS NULL AND RN.id IS NOT NULL\n  ORDER BY \n\t\tDimID"
+					},
+					"sink": {
+						"type": "SqlSink",
+						"writeBatchSize": 10000
+					},
+					"enableStaging": false,
+					"translator": {
+						"type": "TabularTranslator",
+						"columnMappings": {
+							"DimID": "DimId",
+							"DimName": "DimName",
+							"DimDescription": "DimDescription"
+						}
+					}
+				},
+				"inputs": [
+					{
+						"referenceName": "Localhost",
+						"type": "DatasetReference"
+					}
+				],
+				"outputs": [
+					{
+						"referenceName": "AzureSqlTermTable",
+						"type": "DatasetReference"
+					}
+				]
+			}
+		],
+		"folder": {
+			"name": "PortThesaurus"
+		}
+	},
+	"type": "Microsoft.DataFactory/factories/pipelines"
+}

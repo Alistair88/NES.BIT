@@ -1,0 +1,90 @@
+{
+	"name": "dataflow1",
+	"properties": {
+		"type": "MappingDataFlow",
+		"typeProperties": {
+			"sources": [
+				{
+					"dataset": {
+						"referenceName": "PortfolioDimensionTables",
+						"type": "DatasetReference"
+					},
+					"name": "PortfolioDimensionTables",
+					"script": "source(output(\n\t\tDimTableName as string,\n\t\tDimID as integer,\n\t\tDimCode as string,\n\t\tDimName as string,\n\t\tDimDescription as string,\n\t\tDimActive as boolean\n\t),\n\tallowSchemaDrift: false,\n\tvalidateSchema: false,\n\tformat: 'table') ~> PortfolioDimensionTables"
+				},
+				{
+					"dataset": {
+						"referenceName": "TaxonomyDimensionTerms",
+						"type": "DatasetReference"
+					},
+					"name": "TaxonomyDimensionTerms",
+					"script": "source(output(\n\t\tTermDimTable as string,\n\t\tTermID as integer,\n\t\tTermDimID as long,\n\t\tTermCode as string,\n\t\tTermName as string,\n\t\tTermDescription as string,\n\t\tTermPreferred as boolean,\n\t\tTermAvailable as boolean,\n\t\tTermTypeID as integer\n\t),\n\tallowSchemaDrift: false,\n\tvalidateSchema: false,\n\tformat: 'table') ~> TaxonomyDimensionTerms"
+				},
+				{
+					"dataset": {
+						"referenceName": "CreateTurasDimsLookup",
+						"type": "DatasetReference"
+					},
+					"name": "LookupType",
+					"script": "source(output(\n\t\tTermTypeID as integer,\n\t\tDimTable as string\n\t),\n\tallowSchemaDrift: false,\n\tvalidateSchema: false,\n\tformat: 'table') ~> LookupType"
+				}
+			],
+			"sinks": [
+				{
+					"dataset": {
+						"referenceName": "TaxonomyTermTable",
+						"type": "DatasetReference"
+					},
+					"name": "DeleteTerm",
+					"script": "MarkForDeletion sink(input(\n\t\tTermID as integer,\n\t\tDimID as integer,\n\t\tTermCode as string,\n\t\tTermName as string,\n\t\tDescription as string,\n\t\tPreferred as boolean,\n\t\tAvailable as boolean,\n\t\tTermTypeID as integer\n\t),\n\tallowSchemaDrift: false,\n\tvalidateSchema: false,\n\tformat: 'table',\n\tdeletable:true,\n\tinsertable:false,\n\tupdateable:false,\n\tupsertable:false,\n\tkeys:['TermID'],\n\tmapColumn(\n\t\tTermID,\n\t\tDimID,\n\t\tTermCode,\n\t\tTermName\n\t)) ~> DeleteTerm"
+				},
+				{
+					"dataset": {
+						"referenceName": "TaxonomyTermTable",
+						"type": "DatasetReference"
+					},
+					"name": "sink1",
+					"script": "Select1 sink(input(\n\t\tTermID as integer,\n\t\tDimID as integer,\n\t\tTermCode as string,\n\t\tTermName as string,\n\t\tDescription as string,\n\t\tPreferred as boolean,\n\t\tAvailable as boolean,\n\t\tTermTypeID as integer\n\t),\n\tallowSchemaDrift: true,\n\tvalidateSchema: false,\n\tformat: 'table',\n\tdeletable:false,\n\tinsertable:true,\n\tupdateable:false,\n\tupsertable:false,\n\tmapColumn(\n\t\tDimID,\n\t\tTermCode = DimCode,\n\t\tTermName = DimName,\n\t\tDescription = DimDescription,\n\t\tPreferred,\n\t\tAvailable = DimActive\n\t)) ~> sink1"
+				}
+			],
+			"transformations": [
+				{
+					"name": "MergeJoin",
+					"script": "PortfolioDimensionTables, TaxonomyDimensionTerms join(DimID == TermDimID\n\t&& DimTableName == TermDimTable,\n\tjoinType:'outer',\n\tbroadcast: 'none')~> MergeJoin"
+				},
+				{
+					"name": "ConditionalSplit",
+					"script": "MergeJoin split(isNull(TermID),\n\tisNull(DimID),\n\tdisjoint: true) ~> ConditionalSplit@(Insert, Delete, Update)"
+				},
+				{
+					"name": "DerivedColumn",
+					"script": "ConditionalSplit@Insert derive(Preferred = true()) ~> DerivedColumn"
+				},
+				{
+					"name": "Lookup1",
+					"script": "DerivedColumn, LookupType lookup(DimTableName == DimTable,\n\tbroadcast: 'none')~> Lookup1"
+				},
+				{
+					"name": "SelectForDeletion",
+					"script": "ConditionalSplit@Delete select(mapColumn(\n\t\tDimID,\n\t\tTermID,\n\t\tTermCode,\n\t\tTermName\n\t))~> SelectForDeletion"
+				},
+				{
+					"name": "MarkForDeletion",
+					"script": "SelectForDeletion alterRow(deleteIf(isNull(DimID))) ~> MarkForDeletion"
+				},
+				{
+					"name": "AlterRow1",
+					"script": "Filter1 alterRow(insertIf(isNull(TermID))) ~> AlterRow1"
+				},
+				{
+					"name": "Select1",
+					"script": "AlterRow1 select(mapColumn(\n\t\tDimID,\n\t\tDimCode,\n\t\tDimName,\n\t\tDimDescription,\n\t\tDimActive,\n\t\tPreferred\n\t))~> Select1"
+				},
+				{
+					"name": "Filter1",
+					"script": "Lookup1 filter(not(isNull(DimTable))) ~> Filter1"
+				}
+			]
+		}
+	}
+}

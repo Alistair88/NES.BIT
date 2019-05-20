@@ -1,0 +1,16 @@
+{
+	"name": "LocalhostTermType",
+	"type": "Microsoft.DataFactory/factories/linkedservices",
+	"properties": {
+		"type": "SqlServer",
+		"typeProperties": {
+			"connectionString": "integrated security=True;data source=.;initial catalog=nes-ndp-tst-sqldb-taxonomydb",
+			"userName": "NES\\AlistairB",
+			"encryptedCredential": "eyJDcmVkZW50aWFsSWQiOiI2MDFlMWZjZS04YTEyLTQ0NWItOGJkMS0xZWExYTVlMjdmYmQiLCJWZXJzaW9uIjoiMi4wIiwiQ2xhc3NUeXBlIjoiTWljcm9zb2Z0LkRhdGFQcm94eS5Db3JlLkludGVyU2VydmljZURhdGFDb250cmFjdC5DcmVkZW50aWFsU1UwNkNZMTQifQ=="
+		},
+		"connectVia": {
+			"referenceName": "LocalhostIntegrationRuntime",
+			"type": "IntegrationRuntimeReference"
+		}
+	}
+}

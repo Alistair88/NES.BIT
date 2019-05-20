@@ -1,0 +1,117 @@
+{
+	"name": "pl_CreateTermRelationshipsSource",
+	"properties": {
+		"description": "Create the Term Relationships source activity in the Create Relationships dataflow.  This uses a query to get data from the Term, TermType, and Relationship tables in the Taxonomy schema.  The destination is [dbo].[TermRelationshipSOURCE]",
+		"activities": [
+			{
+				"name": "CreateTermRelationshipsSource",
+				"type": "Copy",
+				"policy": {
+					"timeout": "7.00:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [
+					{
+						"name": "Destination",
+						"value": "[dbo].[TermRelationshipSOURCE]"
+					}
+				],
+				"typeProperties": {
+					"source": {
+						"type": "AzureSqlSource",
+						"sqlReaderQuery": "SELECT TermRelationship.RelationshipID,\n       TermX.TermID XTermID,\n       TermX.DimID XTermDimID,\n       TermY.TermID YTermID,\n       TermY.DimID YTermDimID,\n       TermRelationship.KindID TermKindID\nFROM [Taxonomy].[TermRelationship] TermRelationship\n    LEFT JOIN dbo.TermInsert TermX\n        ON TermX.TermID = TermRelationship.TermXID\n    LEFT JOIN dbo.TermInsert TermY\n        ON TermY.TermID = TermRelationship.TermYID\n    LEFT JOIN [Taxonomy].[TermTypeSINK] TermType\n        ON TermType.TermTypeID = TermX.TermTypeID\nWHERE TermType.SourceID = 2\nORDER BY TermX.DimID,\n         TermY.DimID,\n         TermKindID;"
+					},
+					"sink": {
+						"type": "AzureSqlSink",
+						"writeBatchSize": 10000
+					},
+					"enableStaging": false,
+					"translator": {
+						"type": "TabularTranslator",
+						"mappings": [
+							{
+								"source": {
+									"name": "RelationshipID",
+									"type": "Int32"
+								},
+								"sink": {
+									"name": "RelationshipID",
+									"type": "Int32"
+								}
+							},
+							{
+								"source": {
+									"name": "XTermID",
+									"type": "Int32"
+								},
+								"sink": {
+									"name": "XTermID",
+									"type": "Int32"
+								}
+							},
+							{
+								"source": {
+									"name": "XTermDimID",
+									"type": "Int32"
+								},
+								"sink": {
+									"name": "XTermDimID",
+									"type": "Int32"
+								}
+							},
+							{
+								"source": {
+									"name": "YTermID",
+									"type": "Int32"
+								},
+								"sink": {
+									"name": "YTermID",
+									"type": "Int32"
+								}
+							},
+							{
+								"source": {
+									"name": "YTermDimID",
+									"type": "Int32"
+								},
+								"sink": {
+									"name": "YTermDimID",
+									"type": "Int32"
+								}
+							},
+							{
+								"source": {
+									"name": "TermKindID",
+									"type": "Int16"
+								},
+								"sink": {
+									"name": "TermKindID",
+									"type": "Int16"
+								}
+							}
+						]
+					}
+				},
+				"inputs": [
+					{
+						"referenceName": "CreateRel_Taxonomy",
+						"type": "DatasetReference"
+					}
+				],
+				"outputs": [
+					{
+						"referenceName": "CreateRel_TermRelationships",
+						"type": "DatasetReference"
+					}
+				]
+			}
+		],
+		"folder": {
+			"name": "CreateRelationships"
+		}
+	},
+	"type": "Microsoft.DataFactory/factories/pipelines"
+}

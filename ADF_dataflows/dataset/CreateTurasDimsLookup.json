@@ -1,0 +1,32 @@
+{
+	"name": "CreateTurasDimsLookup",
+	"properties": {
+		"description": "Create the TurasTimsLookup table",
+		"linkedServiceName": {
+			"referenceName": "WarehouseAlphaTest",
+			"type": "LinkedServiceReference"
+		},
+		"folder": {
+			"name": "MergeTurasDimensions"
+		},
+		"type": "AzureSqlTable",
+		"schema": [
+			{
+				"name": "TermTypeID",
+				"type": "smallint",
+				"precision": 5,
+				"scale": 255
+			},
+			{
+				"name": "DimTable",
+				"type": "nvarchar",
+				"precision": 255,
+				"scale": 255
+			}
+		],
+		"typeProperties": {
+			"tableName": "[dbo].[TurasDimsLookup]"
+		}
+	},
+	"type": "Microsoft.DataFactory/factories/datasets"
+}

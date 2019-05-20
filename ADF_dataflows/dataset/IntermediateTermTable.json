@@ -1,0 +1,51 @@
+{
+	"name": "IntermediateTermTable",
+	"properties": {
+		"linkedServiceName": {
+			"referenceName": "PortThesaurusDB",
+			"type": "LinkedServiceReference"
+		},
+		"type": "AzureSqlTable",
+		"schema": [
+			{
+				"name": "TermID",
+				"type": "int",
+				"precision": 10
+			},
+			{
+				"name": "DimID",
+				"type": "int",
+				"precision": 10
+			},
+			{
+				"name": "TermCode",
+				"type": "nvarchar"
+			},
+			{
+				"name": "TermName",
+				"type": "nvarchar"
+			},
+			{
+				"name": "Description",
+				"type": "nvarchar"
+			},
+			{
+				"name": "Preferred",
+				"type": "bit"
+			},
+			{
+				"name": "Available",
+				"type": "bit"
+			},
+			{
+				"name": "TermTypeID",
+				"type": "smallint",
+				"precision": 5
+			}
+		],
+		"typeProperties": {
+			"tableName": "[dbo].[IntermediateTerm]"
+		}
+	},
+	"type": "Microsoft.DataFactory/factories/datasets"
+}

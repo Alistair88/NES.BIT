@@ -1,0 +1,58 @@
+{
+	"name": "TaxonomyDimensionTerms",
+	"properties": {
+		"linkedServiceName": {
+			"referenceName": "WarehouseAlphaTest",
+			"type": "LinkedServiceReference"
+		},
+		"folder": {
+			"name": "MergeTurasDimensions"
+		},
+		"type": "AzureSqlTable",
+		"schema": [
+			{
+				"name": "TermDimTable",
+				"type": "nvarchar"
+			},
+			{
+				"name": "TermID",
+				"type": "int",
+				"precision": 10
+			},
+			{
+				"name": "TermDimID",
+				"type": "bigint",
+				"precision": 19
+			},
+			{
+				"name": "TermCode",
+				"type": "nvarchar"
+			},
+			{
+				"name": "TermName",
+				"type": "nvarchar"
+			},
+			{
+				"name": "TermDescription",
+				"type": "nvarchar"
+			},
+			{
+				"name": "TermPreferred",
+				"type": "bit"
+			},
+			{
+				"name": "TermAvailable",
+				"type": "bit"
+			},
+			{
+				"name": "TermTypeID",
+				"type": "smallint",
+				"precision": 5
+			}
+		],
+		"typeProperties": {
+			"tableName": "[dbo].[TaxonomyDimensionTerms]"
+		}
+	},
+	"type": "Microsoft.DataFactory/factories/datasets"
+}

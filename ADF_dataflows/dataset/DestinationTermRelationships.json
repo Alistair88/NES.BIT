@@ -1,0 +1,43 @@
+{
+	"name": "DestinationTermRelationships",
+	"properties": {
+		"linkedServiceName": {
+			"referenceName": "WarehouseAlphaTest",
+			"type": "LinkedServiceReference"
+		},
+		"folder": {
+			"name": "CreateRelationships"
+		},
+		"type": "AzureSqlTable",
+		"structure": [
+			{
+				"name": "RelationshipID",
+				"type": "Int32"
+			},
+			{
+				"name": "XTermID",
+				"type": "Int32"
+			},
+			{
+				"name": "XTermDimID",
+				"type": "Int32"
+			},
+			{
+				"name": "YTermID",
+				"type": "Int32"
+			},
+			{
+				"name": "YTermDimID",
+				"type": "Int32"
+			},
+			{
+				"name": "TermKindID",
+				"type": "Int32"
+			}
+		],
+		"typeProperties": {
+			"tableName": "[dbo].[TermRelationships]"
+		}
+	},
+	"type": "Microsoft.DataFactory/factories/datasets"
+}

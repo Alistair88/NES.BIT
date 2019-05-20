@@ -1,0 +1,36 @@
+{
+	"name": "TermDeletions",
+	"properties": {
+		"linkedServiceName": {
+			"referenceName": "WarehouseAlphaTest",
+			"type": "LinkedServiceReference"
+		},
+		"type": "AzureSqlTable",
+		"structure": [
+			{
+				"name": "TermTypeID",
+				"type": "Int32"
+			},
+			{
+				"name": "TypeName",
+				"type": "String"
+			},
+			{
+				"name": "Description",
+				"type": "String"
+			},
+			{
+				"name": "Available",
+				"type": "Boolean"
+			},
+			{
+				"name": "SourceID",
+				"type": "Int32"
+			}
+		],
+		"typeProperties": {
+			"tableName": "[dbo].[TermDeletions]"
+		}
+	},
+	"type": "Microsoft.DataFactory/factories/datasets"
+}

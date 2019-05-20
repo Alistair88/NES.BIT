@@ -1,0 +1,41 @@
+{
+	"name": "AzureSqlTermTypes",
+	"properties": {
+		"linkedServiceName": {
+			"referenceName": "WarehouseAlphaTest",
+			"type": "LinkedServiceReference"
+		},
+		"folder": {
+			"name": "PortThesaurus"
+		},
+		"type": "AzureSqlTable",
+		"schema": [
+			{
+				"name": "TermTypeID",
+				"type": "smallint",
+				"precision": 5
+			},
+			{
+				"name": "TypeName",
+				"type": "nvarchar"
+			},
+			{
+				"name": "TypeDescription",
+				"type": "nvarchar"
+			},
+			{
+				"name": "TypeAvailable",
+				"type": "bit"
+			},
+			{
+				"name": "TypeSourceID",
+				"type": "smallint",
+				"precision": 5
+			}
+		],
+		"typeProperties": {
+			"tableName": "[dbo].[TermTypeSOURCE]"
+		}
+	},
+	"type": "Microsoft.DataFactory/factories/datasets"
+}

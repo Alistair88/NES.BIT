@@ -1,0 +1,36 @@
+{
+	"name": "SourceTermTypeSink",
+	"properties": {
+		"linkedServiceName": {
+			"referenceName": "WarehouseAlphaTest",
+			"type": "LinkedServiceReference"
+		},
+		"type": "AzureSqlTable",
+		"structure": [
+			{
+				"name": "TermTypeId",
+				"type": "Int32"
+			},
+			{
+				"name": "TypeName",
+				"type": "String"
+			},
+			{
+				"name": "TypeDescription",
+				"type": "String"
+			},
+			{
+				"name": "TypeAvailable",
+				"type": "Boolean"
+			},
+			{
+				"name": "SourceId",
+				"type": "Int32"
+			}
+		],
+		"typeProperties": {
+			"tableName": "[dbo].[TermTypeSink]"
+		}
+	},
+	"type": "Microsoft.DataFactory/factories/datasets"
+}

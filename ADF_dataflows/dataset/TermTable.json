@@ -1,0 +1,32 @@
+{
+	"name": "TermTable",
+	"properties": {
+		"linkedServiceName": {
+			"referenceName": "WarehouseAlphaTest",
+			"type": "LinkedServiceReference"
+		},
+		"folder": {
+			"name": "PortThesaurus"
+		},
+		"type": "AzureSqlTable",
+		"schema": [
+			{
+				"name": "DimId",
+				"type": "int",
+				"precision": 10
+			},
+			{
+				"name": "DimName",
+				"type": "varchar"
+			},
+			{
+				"name": "DimDescription",
+				"type": "varchar"
+			}
+		],
+		"typeProperties": {
+			"tableName": "[dbo].[TermSOURCE]"
+		}
+	},
+	"type": "Microsoft.DataFactory/factories/datasets"
+}

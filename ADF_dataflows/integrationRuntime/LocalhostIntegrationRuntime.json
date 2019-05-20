@@ -1,0 +1,7 @@
+{
+	"name": "LocalhostIntegrationRuntime",
+	"properties": {
+		"type": "SelfHosted",
+		"description": "Localhost is wplp0777\\sqlexpress"
+	}
+}
