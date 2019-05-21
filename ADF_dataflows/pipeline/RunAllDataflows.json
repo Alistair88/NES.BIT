@@ -64,7 +64,7 @@
 				"type": "ExecuteDataFlow",
 				"dependsOn": [
 					{
-						"activity": "df_CreateTerms",
+						"activity": "Executepl_CreateTermRelationshipsSource",
 						"dependencyConditions": [
 							"Succeeded"
 						]
@@ -193,6 +193,25 @@
 				"typeProperties": {
 					"pipeline": {
 						"referenceName": "pl_LocalToAzureDB",
+						"type": "PipelineReference"
+					},
+					"waitOnCompletion": true
+				}
+			},
+			{
+				"name": "Executepl_CreateTermRelationshipsSource",
+				"type": "ExecutePipeline",
+				"dependsOn": [
+					{
+						"activity": "df_CreateTerms",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"typeProperties": {
+					"pipeline": {
+						"referenceName": "pl_CreateTermRelationshipsSource",
 						"type": "PipelineReference"
 					},
 					"waitOnCompletion": true
