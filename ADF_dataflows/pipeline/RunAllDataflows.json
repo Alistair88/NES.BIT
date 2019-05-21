@@ -74,6 +74,12 @@
 						"dependencyConditions": [
 							"Succeeded"
 						]
+					},
+					{
+						"activity": "ExecutePl_CopyFromLOcalToRelation",
+						"dependencyConditions": [
+							"Succeeded"
+						]
 					}
 				],
 				"policy": {
@@ -325,6 +331,25 @@
 				"typeProperties": {
 					"pipeline": {
 						"referenceName": "CreateThesaurusTerms_Dim_Source",
+						"type": "PipelineReference"
+					},
+					"waitOnCompletion": true
+				}
+			},
+			{
+				"name": "ExecutePl_CopyFromLOcalToRelation",
+				"type": "ExecutePipeline",
+				"dependsOn": [
+					{
+						"activity": "df_CreateTerms",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"typeProperties": {
+					"pipeline": {
+						"referenceName": "pl_CopyFromLocalToRelation",
 						"type": "PipelineReference"
 					},
 					"waitOnCompletion": true
