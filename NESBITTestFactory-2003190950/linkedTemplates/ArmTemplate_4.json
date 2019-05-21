@@ -659,6 +659,9 @@
 						]
 					}
 				],
+				"folder": {
+					"name": "CreateTerms"
+				},
 				"annotations": []
 			},
 			"dependsOn": []
@@ -1622,6 +1625,12 @@
 								"dependencyConditions": [
 									"Succeeded"
 								]
+							},
+							{
+								"activity": "ExecuteCreateThesaurus_Dim_Source",
+								"dependencyConditions": [
+									"Succeeded"
+								]
 							}
 						],
 						"policy": {
@@ -1946,6 +1955,27 @@
 							"waitOnCompletion": true,
 							"parameters": {}
 						}
+					},
+					{
+						"name": "ExecuteCreateThesaurus_Dim_Source",
+						"type": "ExecutePipeline",
+						"dependsOn": [
+							{
+								"activity": "df_PortThesaurusTerms",
+								"dependencyConditions": [
+									"Succeeded"
+								]
+							}
+						],
+						"userProperties": [],
+						"typeProperties": {
+							"pipeline": {
+								"referenceName": "CreateThesaurusTerms_Dim_Source",
+								"type": "PipelineReference"
+							},
+							"waitOnCompletion": true,
+							"parameters": {}
+						}
 					}
 				],
 				"folder": {
@@ -1961,7 +1991,8 @@
 				"[concat(variables('factoryId'), '/dataflows/df_MergePortfolioDimensions')]",
 				"[concat(variables('factoryId'), '/pipelines/pl_CopyLocalToTermTypeSource')]",
 				"[concat(variables('factoryId'), '/pipelines/pl_LocalToAzureDB')]",
-				"[concat(variables('factoryId'), '/pipelines/RunMergePortfolioDimensions')]"
+				"[concat(variables('factoryId'), '/pipelines/RunMergePortfolioDimensions')]",
+				"[concat(variables('factoryId'), '/pipelines/CreateThesaurusTerms_Dim_Source')]"
 			]
 		}
 	]
