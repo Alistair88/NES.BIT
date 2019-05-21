@@ -1,5 +1,5 @@
 {
-	"name": "pl_CopyTurasDimensionTables",
+	"name": "pl_CreateTurasDimensionTables",
 	"properties": {
 		"description": "Copy Turas Dimension Tables from Warehouse Alpha to MySampleDB using a query.",
 		"activities": [
