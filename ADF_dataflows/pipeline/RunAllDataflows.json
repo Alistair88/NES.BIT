@@ -43,6 +43,12 @@
 						"dependencyConditions": [
 							"Succeeded"
 						]
+					},
+					{
+						"activity": "ExecuteCreateThesaurus_Dim_Source",
+						"dependencyConditions": [
+							"Succeeded"
+						]
 					}
 				],
 				"policy": {
@@ -300,6 +306,25 @@
 				"typeProperties": {
 					"pipeline": {
 						"referenceName": "pl_CreateTaxonomyDimensionTerms",
+						"type": "PipelineReference"
+					},
+					"waitOnCompletion": true
+				}
+			},
+			{
+				"name": "ExecuteCreateThesaurus_Dim_Source",
+				"type": "ExecutePipeline",
+				"dependsOn": [
+					{
+						"activity": "df_PortThesaurusTerms",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"typeProperties": {
+					"pipeline": {
+						"referenceName": "CreateThesaurusTerms_Dim_Source",
 						"type": "PipelineReference"
 					},
 					"waitOnCompletion": true
