@@ -89,7 +89,13 @@
 				"type": "ExecuteDataFlow",
 				"dependsOn": [
 					{
-						"activity": "df_CreateRelationships",
+						"activity": "ExecutePl_CreateTurasDimensionTables",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					},
+					{
+						"activity": "ExecutePl_CreateTaxonomyDimensionTerms",
 						"dependencyConditions": [
 							"Succeeded"
 						]
@@ -218,9 +224,40 @@
 				}
 			},
 			{
-				"name": "Execute Pipeline1",
+				"name": "ExecutePl_CreateTurasDimensionTables",
 				"type": "ExecutePipeline",
+				"dependsOn": [
+					{
+						"activity": "df_CreateRelationships",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
 				"typeProperties": {
+					"pipeline": {
+						"referenceName": "pl_CreateTurasDimensionTables",
+						"type": "PipelineReference"
+					},
+					"waitOnCompletion": true
+				}
+			},
+			{
+				"name": "ExecutePl_CreateTaxonomyDimensionTerms",
+				"type": "ExecutePipeline",
+				"dependsOn": [
+					{
+						"activity": "df_CreateRelationships",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"typeProperties": {
+					"pipeline": {
+						"referenceName": "pl_CreateTaxonomyDimensionTerms",
+						"type": "PipelineReference"
+					},
 					"waitOnCompletion": true
 				}
 			}
