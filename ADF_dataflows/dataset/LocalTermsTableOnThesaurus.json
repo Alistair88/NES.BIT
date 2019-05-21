@@ -1,0 +1,11 @@
+{
+	"name": "LocalTermsTableOnThesaurus",
+	"properties": {
+		"linkedServiceName": {
+			"referenceName": "LocalhostSqlServer",
+			"type": "LinkedServiceReference"
+		},
+		"type": "SqlServerTable",
+		"schema": []
+	}
+}

@@ -1,0 +1,41 @@
+{
+	"name": "CreateThesaurusTerms_Dim_Source",
+	"properties": {
+		"description": "Pipeline to create the Thesaurus Terms (Dim) Source dataset for use in the CreateTerms dataflow",
+		"activities": [
+			{
+				"name": "CreateThesaurusTerms_Dim_SourceTable",
+				"type": "Copy",
+				"policy": {
+					"timeout": "7.00:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"typeProperties": {
+					"source": {
+						"type": "SqlServerSource",
+						"sqlReaderQuery": "SELECT DISTINCT CAST(Term.id AS BIGINT)  DimID, \n       CAST(Term.name AS NVARCHAR(200)) DimName, \n       dbo.GetRootParent(Term.id) RootID,\n       CAST(CASE ISNULL(Relation.relationship, 0)\n          WHEN 0 THEN 1\n          ELSE 0\n          END AS BIT) DimPreferred,\n       CAST(2 AS SMALLINT) DimSourceID,\n       CAST(RTRIM(Term.scope + ' ' + Term.additionalnotes) AS NVARCHAR(500)) DimDescription\n  from dbo.Term\n   LEFT JOIN dbo.Relation ON Relation.relatedtermid = Term.id AND Relation.relationship=2\n  ORDER BY DimID"
+					},
+					"sink": {
+						"type": "AzureSqlSink"
+					},
+					"enableStaging": false
+				},
+				"inputs": [
+					{
+						"referenceName": "LocalTermsTableOnThesaurus",
+						"type": "DatasetReference"
+					}
+				],
+				"outputs": [
+					{
+						"referenceName": "ThesaurusTerms_Dim_SourceOnAzure",
+						"type": "DatasetReference"
+					}
+				]
+			}
+		]
+	}
+}

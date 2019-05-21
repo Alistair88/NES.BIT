@@ -1,0 +1,42 @@
+{
+	"name": "ThesaurusTerms_Dim_SourceOnAzure",
+	"properties": {
+		"linkedServiceName": {
+			"referenceName": "WarehouseAlphaTest",
+			"type": "LinkedServiceReference"
+		},
+		"type": "AzureSqlTable",
+		"schema": [
+			{
+				"name": "DimID",
+				"type": "smallint",
+				"precision": 5
+			},
+			{
+				"name": "DimName",
+				"type": "nvarchar"
+			},
+			{
+				"name": "RootID",
+				"type": "int",
+				"precision": 10
+			},
+			{
+				"name": "DimPreferred",
+				"type": "bit"
+			},
+			{
+				"name": "DimSourceID",
+				"type": "smallint",
+				"precision": 5
+			},
+			{
+				"name": "DimDescription",
+				"type": "nvarchar"
+			}
+		],
+		"typeProperties": {
+			"tableName": "[dbo].[ThesaurusTerms_Dim_Source]"
+		}
+	}
+}
