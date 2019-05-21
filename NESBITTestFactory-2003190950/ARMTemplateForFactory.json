@@ -414,6 +414,12 @@
 								"dependencyConditions": [
 									"Succeeded"
 								]
+							},
+							{
+								"activity": "ExecutePl_CopyFromLOcalToRelation",
+								"dependencyConditions": [
+									"Succeeded"
+								]
 							}
 						],
 						"policy": {
@@ -723,6 +729,27 @@
 							"waitOnCompletion": true,
 							"parameters": {}
 						}
+					},
+					{
+						"name": "ExecutePl_CopyFromLOcalToRelation",
+						"type": "ExecutePipeline",
+						"dependsOn": [
+							{
+								"activity": "df_CreateTerms",
+								"dependencyConditions": [
+									"Succeeded"
+								]
+							}
+						],
+						"userProperties": [],
+						"typeProperties": {
+							"pipeline": {
+								"referenceName": "pl_CopyFromLocalToRelation",
+								"type": "PipelineReference"
+							},
+							"waitOnCompletion": true,
+							"parameters": {}
+						}
 					}
 				],
 				"folder": {
@@ -744,7 +771,8 @@
 				"[concat(variables('factoryId'), '/pipelines/pl_CreateTurasDimensionTables')]",
 				"[concat(variables('factoryId'), '/pipelines/pl_CreateTaxonomyDimensionTerms')]",
 				"[concat(variables('factoryId'), '/pipelines/RunMergePortfolioDimensions')]",
-				"[concat(variables('factoryId'), '/pipelines/CreateThesaurusTerms_Dim_Source')]"
+				"[concat(variables('factoryId'), '/pipelines/CreateThesaurusTerms_Dim_Source')]",
+				"[concat(variables('factoryId'), '/pipelines/pl_CopyFromLocalToRelation')]"
 			]
 		},
 		{
