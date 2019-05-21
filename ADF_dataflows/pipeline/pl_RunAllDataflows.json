@@ -1,5 +1,5 @@
 {
-	"name": "RunAllDataflows",
+	"name": "pl_RunAllDataflows",
 	"properties": {
 		"description": "Run all PortThesaurus dataflows",
 		"activities": [
