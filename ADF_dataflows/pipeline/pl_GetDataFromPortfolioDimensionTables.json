@@ -4,7 +4,7 @@
 		"description": "Connect to WarehouseAlpha and get data from Portfolio Dimension Tables using a query.",
 		"activities": [
 			{
-				"name": "CopyFromPortfolioDimensionTables",
+				"name": "CreatePortfolioDimensionTables",
 				"type": "Copy",
 				"policy": {
 					"timeout": "7.00:00:00",
