@@ -1,0 +1,937 @@
+{
+	"$schema": "http://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+	"contentVersion": "1.0.0.0",
+	"parameters": {
+		"factoryName": {
+			"type": "string",
+			"metadata": "Data Factory Name",
+			"defaultValue": "nesbittestfactory-2003190950"
+		}
+	},
+	"variables": {
+		"factoryId": "[concat('Microsoft.DataFactory/factories/', parameters('factoryName'))]"
+	},
+	"resources": [
+		{
+			"name": "[concat(parameters('factoryName'), '/DestinationTermTypeSOURCE')]",
+			"type": "Microsoft.DataFactory/factories/datasets",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"linkedServiceName": {
+					"referenceName": "WarehouseAlphaTest",
+					"type": "LinkedServiceReference"
+				},
+				"folder": {
+					"name": "PortThesaurus"
+				},
+				"annotations": [],
+				"type": "AzureSqlTable",
+				"schema": [
+					{
+						"name": "TermTypeID",
+						"type": "smallint",
+						"precision": 5,
+						"scale": 255
+					},
+					{
+						"name": "TypeName",
+						"type": "nvarchar",
+						"precision": 255,
+						"scale": 255
+					},
+					{
+						"name": "TypeDescription",
+						"type": "nvarchar",
+						"precision": 255,
+						"scale": 255
+					},
+					{
+						"name": "TypeAvailable",
+						"type": "bit",
+						"precision": 255,
+						"scale": 255
+					},
+					{
+						"name": "DimTable",
+						"type": "nvarchar",
+						"precision": 255,
+						"scale": 255
+					},
+					{
+						"name": "TypeSourceID",
+						"type": "smallint",
+						"precision": 5,
+						"scale": 255
+					}
+				],
+				"typeProperties": {
+					"tableName": "[[dbo].[TermTypeSOURCE]"
+				}
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/DestinationTermTypeUpdate')]",
+			"type": "Microsoft.DataFactory/factories/datasets",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"linkedServiceName": {
+					"referenceName": "WarehouseAlphaTest",
+					"type": "LinkedServiceReference"
+				},
+				"annotations": [],
+				"type": "AzureSqlTable",
+				"structure": [
+					{
+						"name": "TermTypeID",
+						"type": "Int32",
+						"precision": 10,
+						"scale": 255
+					},
+					{
+						"name": "TypeName",
+						"type": "String",
+						"precision": 255,
+						"scale": 255
+					},
+					{
+						"name": "Description",
+						"type": "String",
+						"precision": 255,
+						"scale": 255
+					},
+					{
+						"name": "Available",
+						"type": "Boolean",
+						"precision": 255,
+						"scale": 255
+					},
+					{
+						"name": "SourceID",
+						"type": "Int32",
+						"precision": 10,
+						"scale": 255
+					}
+				],
+				"typeProperties": {
+					"tableName": "TermType"
+				}
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/DestinationTurasDimensions')]",
+			"type": "Microsoft.DataFactory/factories/datasets",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"linkedServiceName": {
+					"referenceName": "WarehouseAlphaTest",
+					"type": "LinkedServiceReference"
+				},
+				"folder": {
+					"name": "MergeTurasDimensions"
+				},
+				"annotations": [],
+				"type": "AzureSqlTable",
+				"schema": [
+					{
+						"name": "DimTableName",
+						"type": "nvarchar",
+						"precision": 255,
+						"scale": 255
+					},
+					{
+						"name": "DimID",
+						"type": "bigint",
+						"precision": 19,
+						"scale": 255
+					},
+					{
+						"name": "DimCode",
+						"type": "nvarchar",
+						"precision": 255,
+						"scale": 255
+					},
+					{
+						"name": "DimName",
+						"type": "nvarchar",
+						"precision": 255,
+						"scale": 255
+					},
+					{
+						"name": "DimDescription",
+						"type": "nvarchar",
+						"precision": 255,
+						"scale": 255
+					},
+					{
+						"name": "DimActive",
+						"type": "bit",
+						"precision": 255,
+						"scale": 255
+					}
+				],
+				"typeProperties": {
+					"tableName": "[[dbo].[TurasDimensions]"
+				}
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/GetDimRelationship')]",
+			"type": "Microsoft.DataFactory/factories/datasets",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"description": "Created  from a query",
+				"linkedServiceName": {
+					"referenceName": "WarehouseAlphaTest",
+					"type": "LinkedServiceReference"
+				},
+				"folder": {
+					"name": "CreateRelationships"
+				},
+				"annotations": [],
+				"type": "AzureSqlTable",
+				"schema": [
+					{
+						"name": "XDimID",
+						"type": "int",
+						"precision": 10
+					},
+					{
+						"name": "YDimID",
+						"type": "int",
+						"precision": 10
+					},
+					{
+						"name": "DimKindID",
+						"type": "int",
+						"precision": 10
+					}
+				],
+				"typeProperties": {
+					"tableName": "[[dbo].[GetDimRelationship]"
+				}
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/InsertTermTypeSink')]",
+			"type": "Microsoft.DataFactory/factories/datasets",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"linkedServiceName": {
+					"referenceName": "WarehouseAlphaTest",
+					"type": "LinkedServiceReference"
+				},
+				"annotations": [],
+				"type": "AzureSqlTable",
+				"schema": [
+					{
+						"name": "DimId",
+						"type": "int",
+						"precision": 10
+					},
+					{
+						"name": "DimTypeName",
+						"type": "nvarchar"
+					},
+					{
+						"name": "DimTypeDescription",
+						"type": "nvarchar"
+					},
+					{
+						"name": "DimAvailable",
+						"type": "bit"
+					},
+					{
+						"name": "DimSourceId",
+						"type": "int",
+						"precision": 10
+					}
+				],
+				"typeProperties": {
+					"tableName": "[[dbo].[TermTypeSinkInsert]"
+				}
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/IntermediateTermTable')]",
+			"type": "Microsoft.DataFactory/factories/datasets",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"linkedServiceName": {
+					"referenceName": "PortThesaurusDB",
+					"type": "LinkedServiceReference"
+				},
+				"annotations": [],
+				"type": "AzureSqlTable",
+				"schema": [
+					{
+						"name": "TermID",
+						"type": "int",
+						"precision": 10
+					},
+					{
+						"name": "DimID",
+						"type": "int",
+						"precision": 10
+					},
+					{
+						"name": "TermCode",
+						"type": "nvarchar"
+					},
+					{
+						"name": "TermName",
+						"type": "nvarchar"
+					},
+					{
+						"name": "Description",
+						"type": "nvarchar"
+					},
+					{
+						"name": "Preferred",
+						"type": "bit"
+					},
+					{
+						"name": "Available",
+						"type": "bit"
+					},
+					{
+						"name": "TermTypeID",
+						"type": "smallint",
+						"precision": 5
+					}
+				],
+				"typeProperties": {
+					"tableName": "[[dbo].[IntermediateTerm]"
+				}
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/Lookup')]",
+			"type": "Microsoft.DataFactory/factories/datasets",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"linkedServiceName": {
+					"referenceName": "WarehouseAlphaTest",
+					"type": "LinkedServiceReference"
+				},
+				"annotations": [],
+				"type": "AzureSqlTable",
+				"schema": [
+					{
+						"name": "TermID",
+						"type": "int",
+						"precision": 10
+					},
+					{
+						"name": "DimID",
+						"type": "int",
+						"precision": 10
+					}
+				],
+				"typeProperties": {
+					"tableName": "[[dbo].[LookupTable]"
+				}
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/LookupTypesWithDimID')]",
+			"type": "Microsoft.DataFactory/factories/datasets",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"linkedServiceName": {
+					"referenceName": "WarehouseAlphaTest",
+					"type": "LinkedServiceReference"
+				},
+				"annotations": [],
+				"type": "AzureSqlTable",
+				"schema": [
+					{
+						"name": "TermTypeID",
+						"type": "smallint",
+						"precision": 5
+					},
+					{
+						"name": "TypeName",
+						"type": "nvarchar"
+					},
+					{
+						"name": "Description",
+						"type": "nvarchar"
+					},
+					{
+						"name": "Available",
+						"type": "bit"
+					},
+					{
+						"name": "SourceID",
+						"type": "smallint",
+						"precision": 5
+					},
+					{
+						"name": "DimTable",
+						"type": "nvarchar"
+					}
+				],
+				"typeProperties": {
+					"tableName": "[[dbo].[TermType]"
+				}
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/OriginalTermTypeTable')]",
+			"type": "Microsoft.DataFactory/factories/datasets",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"linkedServiceName": {
+					"referenceName": "WarehouseAlphaTest",
+					"type": "LinkedServiceReference"
+				},
+				"annotations": [],
+				"type": "AzureSqlTable",
+				"schema": [
+					{
+						"name": "TermTypeID",
+						"type": "smallint",
+						"precision": 5
+					},
+					{
+						"name": "TypeName",
+						"type": "nvarchar"
+					},
+					{
+						"name": "Description",
+						"type": "nvarchar"
+					},
+					{
+						"name": "Available",
+						"type": "bit"
+					},
+					{
+						"name": "SourceID",
+						"type": "smallint",
+						"precision": 5
+					},
+					{
+						"name": "DimTable",
+						"type": "nvarchar"
+					}
+				],
+				"typeProperties": {
+					"tableName": "[[dbo].[TermType]"
+				}
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/PortfolioDimensionTables')]",
+			"type": "Microsoft.DataFactory/factories/datasets",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"linkedServiceName": {
+					"referenceName": "WarehouseAlphaTest",
+					"type": "LinkedServiceReference"
+				},
+				"folder": {
+					"name": "MergePortfolioDimensions"
+				},
+				"annotations": [],
+				"type": "AzureSqlTable",
+				"schema": [
+					{
+						"name": "DimTableName",
+						"type": "nvarchar"
+					},
+					{
+						"name": "DimID",
+						"type": "int",
+						"precision": 10
+					},
+					{
+						"name": "DimCode",
+						"type": "nvarchar"
+					},
+					{
+						"name": "DimName",
+						"type": "nvarchar"
+					},
+					{
+						"name": "DimDescription",
+						"type": "nvarchar"
+					},
+					{
+						"name": "DimActive",
+						"type": "bit"
+					}
+				],
+				"typeProperties": {
+					"tableName": "[[dbo].[PortfolioDimension]"
+				}
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/PortfolioDimsLookup')]",
+			"type": "Microsoft.DataFactory/factories/datasets",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"linkedServiceName": {
+					"referenceName": "WarehouseAlphaTest",
+					"type": "LinkedServiceReference"
+				},
+				"annotations": [],
+				"type": "AzureSqlTable",
+				"schema": [
+					{
+						"name": "TermTypeID",
+						"type": "smallint",
+						"precision": 5
+					},
+					{
+						"name": "DimTable",
+						"type": "nvarchar"
+					}
+				],
+				"typeProperties": {
+					"tableName": "[[dbo].[PortfolioDimsLookup]"
+				}
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/SourceDataset_TaxTermType')]",
+			"type": "Microsoft.DataFactory/factories/datasets",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"linkedServiceName": {
+					"referenceName": "WarehouseAlphaTest",
+					"type": "LinkedServiceReference"
+				},
+				"annotations": [],
+				"type": "AzureSqlTable",
+				"schema": [
+					{
+						"name": "TermTypeID",
+						"type": "smallint",
+						"precision": 5,
+						"scale": 255
+					},
+					{
+						"name": "TypeName",
+						"type": "nvarchar",
+						"precision": 255,
+						"scale": 255
+					},
+					{
+						"name": "Description",
+						"type": "nvarchar",
+						"precision": 255,
+						"scale": 255
+					},
+					{
+						"name": "Available",
+						"type": "bit",
+						"precision": 255,
+						"scale": 255
+					},
+					{
+						"name": "DimTable",
+						"type": "nvarchar",
+						"precision": 255,
+						"scale": 255
+					},
+					{
+						"name": "SourceID",
+						"type": "smallint",
+						"precision": 5,
+						"scale": 255
+					}
+				],
+				"typeProperties": {
+					"tableName": "[[Taxonomy].[TermType]"
+				}
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/SourceDataset_mgm')]",
+			"type": "Microsoft.DataFactory/factories/datasets",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"linkedServiceName": {
+					"referenceName": "WarehouseAlphaTest",
+					"type": "LinkedServiceReference"
+				},
+				"annotations": [],
+				"type": "AzureSqlTable",
+				"structure": [
+					{
+						"name": "TermID",
+						"type": "Int32"
+					},
+					{
+						"name": "DimID",
+						"type": "Int32"
+					}
+				],
+				"typeProperties": {}
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/SourcePortfolioDimensionTables')]",
+			"type": "Microsoft.DataFactory/factories/datasets",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"linkedServiceName": {
+					"referenceName": "WarehouseAlphaTest2",
+					"type": "LinkedServiceReference"
+				},
+				"annotations": [],
+				"type": "AzureSqlTable",
+				"schema": [
+					{
+						"name": "DimTableName",
+						"type": "nvarchar",
+						"precision": 255,
+						"scale": 255
+					},
+					{
+						"name": "DimID",
+						"type": "int",
+						"precision": 10,
+						"scale": 255
+					},
+					{
+						"name": "DimCode",
+						"type": "nvarchar",
+						"precision": 255,
+						"scale": 255
+					},
+					{
+						"name": "DimName",
+						"type": "nvarchar",
+						"precision": 255,
+						"scale": 255
+					},
+					{
+						"name": "DimDescription",
+						"type": "nvarchar",
+						"precision": 255,
+						"scale": 255
+					},
+					{
+						"name": "DimActive",
+						"type": "bit",
+						"precision": 255,
+						"scale": 255
+					}
+				],
+				"typeProperties": {}
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/SourceTaxonomyTermType')]",
+			"type": "Microsoft.DataFactory/factories/datasets",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"linkedServiceName": {
+					"referenceName": "WarehouseAlphaTest",
+					"type": "LinkedServiceReference"
+				},
+				"folder": {
+					"name": "MergeTurasDimensions"
+				},
+				"annotations": [],
+				"type": "AzureSqlTable",
+				"schema": [
+					{
+						"name": "TermTypeID",
+						"type": "smallint",
+						"precision": 5,
+						"scale": 255
+					},
+					{
+						"name": "DimTable",
+						"type": "nvarchar",
+						"precision": 255,
+						"scale": 255
+					}
+				],
+				"typeProperties": {}
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/SourceTermTypeSink')]",
+			"type": "Microsoft.DataFactory/factories/datasets",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"linkedServiceName": {
+					"referenceName": "WarehouseAlphaTest",
+					"type": "LinkedServiceReference"
+				},
+				"annotations": [],
+				"type": "AzureSqlTable",
+				"structure": [
+					{
+						"name": "TermTypeId",
+						"type": "Int32"
+					},
+					{
+						"name": "TypeName",
+						"type": "String"
+					},
+					{
+						"name": "TypeDescription",
+						"type": "String"
+					},
+					{
+						"name": "TypeAvailable",
+						"type": "Boolean"
+					},
+					{
+						"name": "SourceId",
+						"type": "Int32"
+					}
+				],
+				"typeProperties": {
+					"tableName": "[[dbo].[TermTypeSink]"
+				}
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/SourceWATest')]",
+			"type": "Microsoft.DataFactory/factories/datasets",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"linkedServiceName": {
+					"referenceName": "WarehouseAlphaTest2",
+					"type": "LinkedServiceReference"
+				},
+				"annotations": [],
+				"type": "AzureSqlTable",
+				"schema": [
+					{
+						"name": "DimTableName",
+						"type": "nvarchar",
+						"precision": 255,
+						"scale": 255
+					},
+					{
+						"name": "DimID",
+						"type": "bigint",
+						"precision": 19,
+						"scale": 255
+					},
+					{
+						"name": "DimCode",
+						"type": "nvarchar",
+						"precision": 255,
+						"scale": 255
+					},
+					{
+						"name": "DimName",
+						"type": "nvarchar",
+						"precision": 255,
+						"scale": 255
+					},
+					{
+						"name": "DimDescription",
+						"type": "nvarchar",
+						"precision": 255,
+						"scale": 255
+					},
+					{
+						"name": "DimActive",
+						"type": "bit",
+						"precision": 255,
+						"scale": 255
+					}
+				],
+				"typeProperties": {}
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/TaxonomyDimensionTerms')]",
+			"type": "Microsoft.DataFactory/factories/datasets",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"linkedServiceName": {
+					"referenceName": "WarehouseAlphaTest",
+					"type": "LinkedServiceReference"
+				},
+				"folder": {
+					"name": "MergeTurasDimensions"
+				},
+				"annotations": [],
+				"type": "AzureSqlTable",
+				"schema": [
+					{
+						"name": "TermDimTable",
+						"type": "nvarchar"
+					},
+					{
+						"name": "TermID",
+						"type": "int",
+						"precision": 10
+					},
+					{
+						"name": "TermDimID",
+						"type": "bigint",
+						"precision": 19
+					},
+					{
+						"name": "TermCode",
+						"type": "nvarchar"
+					},
+					{
+						"name": "TermName",
+						"type": "nvarchar"
+					},
+					{
+						"name": "TermDescription",
+						"type": "nvarchar"
+					},
+					{
+						"name": "TermPreferred",
+						"type": "bit"
+					},
+					{
+						"name": "TermAvailable",
+						"type": "bit"
+					},
+					{
+						"name": "TermTypeID",
+						"type": "smallint",
+						"precision": 5
+					}
+				],
+				"typeProperties": {
+					"tableName": "[[dbo].[TaxonomyDimensionTerms]"
+				}
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/TaxonomyTermTable')]",
+			"type": "Microsoft.DataFactory/factories/datasets",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"linkedServiceName": {
+					"referenceName": "WarehouseAlphaTest",
+					"type": "LinkedServiceReference"
+				},
+				"folder": {
+					"name": "PortThesaurus"
+				},
+				"annotations": [],
+				"type": "AzureSqlTable",
+				"schema": [
+					{
+						"name": "TermID",
+						"type": "int",
+						"precision": 10
+					},
+					{
+						"name": "DimID",
+						"type": "int",
+						"precision": 10
+					},
+					{
+						"name": "TermCode",
+						"type": "nvarchar"
+					},
+					{
+						"name": "TermName",
+						"type": "nvarchar"
+					},
+					{
+						"name": "Description",
+						"type": "nvarchar"
+					},
+					{
+						"name": "Preferred",
+						"type": "bit"
+					},
+					{
+						"name": "Available",
+						"type": "bit"
+					},
+					{
+						"name": "TermTypeID",
+						"type": "smallint",
+						"precision": 5
+					}
+				],
+				"typeProperties": {
+					"tableName": "[[Taxonomy].[Term]"
+				}
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/TaxonomyTerms')]",
+			"type": "Microsoft.DataFactory/factories/datasets",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"linkedServiceName": {
+					"referenceName": "WarehouseAlphaTest",
+					"type": "LinkedServiceReference"
+				},
+				"annotations": [],
+				"type": "AzureSqlTable",
+				"schema": [
+					{
+						"name": "TermID",
+						"type": "int",
+						"precision": 10
+					},
+					{
+						"name": "TermDimID",
+						"type": "int",
+						"precision": 10
+					},
+					{
+						"name": "TermCode",
+						"type": "nvarchar"
+					},
+					{
+						"name": "TermName",
+						"type": "nvarchar"
+					},
+					{
+						"name": "TermDescription",
+						"type": "nvarchar"
+					},
+					{
+						"name": "TermPreferred",
+						"type": "bit"
+					},
+					{
+						"name": "Available",
+						"type": "bit"
+					},
+					{
+						"name": "TermTypeID",
+						"type": "smallint",
+						"precision": 5
+					}
+				],
+				"typeProperties": {
+					"tableName": "[[dbo].[TaxonomyTerms]"
+				}
+			},
+			"dependsOn": []
+		}
+	]
+}

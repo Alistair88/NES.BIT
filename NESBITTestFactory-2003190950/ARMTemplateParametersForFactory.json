@@ -1,0 +1,36 @@
+{
+	"$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentParameters.json#",
+	"contentVersion": "1.0.0.0",
+	"parameters": {
+		"factoryName": {
+			"value": "nesbittestfactory-2003190950"
+		},
+		"LocalhostSqlServer_connectionString": {
+			"value": ""
+		},
+		"LocalhostSqlServer_password": {
+			"value": ""
+		},
+		"LocalhostTermType_connectionString": {
+			"value": ""
+		},
+		"LocalhostTermType_password": {
+			"value": ""
+		},
+		"PortThesaurusDB_connectionString": {
+			"value": ""
+		},
+		"WarehouseAlphaTest_connectionString": {
+			"value": ""
+		},
+		"WarehouseAlphaTest2_connectionString": {
+			"value": ""
+		},
+		"LocalhostSqlServer_properties_typeProperties_userName": {
+			"value": "NES\\AlistairB"
+		},
+		"LocalhostTermType_properties_typeProperties_userName": {
+			"value": "NES\\AlistairB"
+		}
+	}
+}

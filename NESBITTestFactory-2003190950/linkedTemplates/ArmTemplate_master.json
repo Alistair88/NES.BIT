@@ -1,0 +1,185 @@
+{
+	"$schema": "http://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+	"contentVersion": "1.0.0.0",
+	"parameters": {
+		"factoryName": {
+			"type": "string",
+			"metadata": "Data Factory Name",
+			"defaultValue": "nesbittestfactory-2003190950"
+		},
+		"LocalhostSqlServer_connectionString": {
+			"type": "secureString",
+			"metadata": "Secure string for 'connectionString' of 'LocalhostSqlServer'"
+		},
+		"LocalhostSqlServer_password": {
+			"type": "secureString",
+			"metadata": "Secure string for 'password' of 'LocalhostSqlServer'"
+		},
+		"LocalhostTermType_connectionString": {
+			"type": "secureString",
+			"metadata": "Secure string for 'connectionString' of 'LocalhostTermType'"
+		},
+		"LocalhostTermType_password": {
+			"type": "secureString",
+			"metadata": "Secure string for 'password' of 'LocalhostTermType'"
+		},
+		"PortThesaurusDB_connectionString": {
+			"type": "secureString",
+			"metadata": "Secure string for 'connectionString' of 'PortThesaurusDB'"
+		},
+		"WarehouseAlphaTest_connectionString": {
+			"type": "secureString",
+			"metadata": "Secure string for 'connectionString' of 'WarehouseAlphaTest'"
+		},
+		"WarehouseAlphaTest2_connectionString": {
+			"type": "secureString",
+			"metadata": "Secure string for 'connectionString' of 'WarehouseAlphaTest2'"
+		},
+		"LocalhostSqlServer_properties_typeProperties_userName": {
+			"type": "string",
+			"defaultValue": "NES\\AlistairB"
+		},
+		"LocalhostTermType_properties_typeProperties_userName": {
+			"type": "string",
+			"defaultValue": "NES\\AlistairB"
+		},
+		"containerUri": {
+			"type": "string",
+			"metadata": "URI to storage account containing linked ARM templates"
+		},
+		"containerSasToken": {
+			"type": "string",
+			"metadata": "Sas Token to storage account containing linked ARM templates"
+		}
+	},
+	"variables": {
+		"factoryId": "[concat('Microsoft.DataFactory/factories/', parameters('factoryName'))]"
+	},
+	"resources": [
+		{
+			"name": "ArmTemplate_0",
+			"type": "Microsoft.Resources/deployments",
+			"apiVersion": "2018-02-01",
+			"properties": {
+				"mode": "incremental",
+				"templateLink": {
+					"uri": "[concat(parameters('containerUri'), '/ArmTemplate_0.json', parameters('containerSasToken'))]",
+					"contentVersion": "1.0.0.0"
+				},
+				"parameters": {
+					"factoryName": {
+						"value": "[parameters('factoryName')]"
+					},
+					"PortThesaurusDB_connectionString": {
+						"value": "[parameters('PortThesaurusDB_connectionString')]"
+					},
+					"WarehouseAlphaTest_connectionString": {
+						"value": "[parameters('WarehouseAlphaTest_connectionString')]"
+					},
+					"WarehouseAlphaTest2_connectionString": {
+						"value": "[parameters('WarehouseAlphaTest2_connectionString')]"
+					}
+				}
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "ArmTemplate_1",
+			"type": "Microsoft.Resources/deployments",
+			"apiVersion": "2018-02-01",
+			"properties": {
+				"mode": "incremental",
+				"templateLink": {
+					"uri": "[concat(parameters('containerUri'), '/ArmTemplate_1.json', parameters('containerSasToken'))]",
+					"contentVersion": "1.0.0.0"
+				},
+				"parameters": {
+					"factoryName": {
+						"value": "[parameters('factoryName')]"
+					}
+				}
+			},
+			"dependsOn": [
+				"[resourceId('Microsoft.Resources/deployments', 'ArmTemplate_0')]"
+			]
+		},
+		{
+			"name": "ArmTemplate_2",
+			"type": "Microsoft.Resources/deployments",
+			"apiVersion": "2018-02-01",
+			"properties": {
+				"mode": "incremental",
+				"templateLink": {
+					"uri": "[concat(parameters('containerUri'), '/ArmTemplate_2.json', parameters('containerSasToken'))]",
+					"contentVersion": "1.0.0.0"
+				},
+				"parameters": {
+					"factoryName": {
+						"value": "[parameters('factoryName')]"
+					},
+					"LocalhostSqlServer_connectionString": {
+						"value": "[parameters('LocalhostSqlServer_connectionString')]"
+					},
+					"LocalhostSqlServer_password": {
+						"value": "[parameters('LocalhostSqlServer_password')]"
+					},
+					"LocalhostTermType_connectionString": {
+						"value": "[parameters('LocalhostTermType_connectionString')]"
+					},
+					"LocalhostTermType_password": {
+						"value": "[parameters('LocalhostTermType_password')]"
+					},
+					"LocalhostSqlServer_properties_typeProperties_userName": {
+						"value": "[parameters('LocalhostSqlServer_properties_typeProperties_userName')]"
+					},
+					"LocalhostTermType_properties_typeProperties_userName": {
+						"value": "[parameters('LocalhostTermType_properties_typeProperties_userName')]"
+					}
+				}
+			},
+			"dependsOn": [
+				"[resourceId('Microsoft.Resources/deployments', 'ArmTemplate_1')]"
+			]
+		},
+		{
+			"name": "ArmTemplate_3",
+			"type": "Microsoft.Resources/deployments",
+			"apiVersion": "2018-02-01",
+			"properties": {
+				"mode": "incremental",
+				"templateLink": {
+					"uri": "[concat(parameters('containerUri'), '/ArmTemplate_3.json', parameters('containerSasToken'))]",
+					"contentVersion": "1.0.0.0"
+				},
+				"parameters": {
+					"factoryName": {
+						"value": "[parameters('factoryName')]"
+					}
+				}
+			},
+			"dependsOn": [
+				"[resourceId('Microsoft.Resources/deployments', 'ArmTemplate_2')]"
+			]
+		},
+		{
+			"name": "ArmTemplate_4",
+			"type": "Microsoft.Resources/deployments",
+			"apiVersion": "2018-02-01",
+			"properties": {
+				"mode": "incremental",
+				"templateLink": {
+					"uri": "[concat(parameters('containerUri'), '/ArmTemplate_4.json', parameters('containerSasToken'))]",
+					"contentVersion": "1.0.0.0"
+				},
+				"parameters": {
+					"factoryName": {
+						"value": "[parameters('factoryName')]"
+					}
+				}
+			},
+			"dependsOn": [
+				"[resourceId('Microsoft.Resources/deployments', 'ArmTemplate_3')]"
+			]
+		}
+	]
+}

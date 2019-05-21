@@ -1,0 +1,6396 @@
+{
+	"$schema": "http://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+	"contentVersion": "1.0.0.0",
+	"parameters": {
+		"factoryName": {
+			"type": "string",
+			"metadata": "Data Factory Name",
+			"defaultValue": "nesbittestfactory-2003190950"
+		},
+		"LocalhostSqlServer_connectionString": {
+			"type": "secureString",
+			"metadata": "Secure string for 'connectionString' of 'LocalhostSqlServer'"
+		},
+		"LocalhostSqlServer_password": {
+			"type": "secureString",
+			"metadata": "Secure string for 'password' of 'LocalhostSqlServer'"
+		},
+		"LocalhostTermType_connectionString": {
+			"type": "secureString",
+			"metadata": "Secure string for 'connectionString' of 'LocalhostTermType'"
+		},
+		"LocalhostTermType_password": {
+			"type": "secureString",
+			"metadata": "Secure string for 'password' of 'LocalhostTermType'"
+		},
+		"PortThesaurusDB_connectionString": {
+			"type": "secureString",
+			"metadata": "Secure string for 'connectionString' of 'PortThesaurusDB'"
+		},
+		"WarehouseAlphaTest_connectionString": {
+			"type": "secureString",
+			"metadata": "Secure string for 'connectionString' of 'WarehouseAlphaTest'"
+		},
+		"WarehouseAlphaTest2_connectionString": {
+			"type": "secureString",
+			"metadata": "Secure string for 'connectionString' of 'WarehouseAlphaTest2'"
+		},
+		"LocalhostSqlServer_properties_typeProperties_userName": {
+			"type": "string",
+			"defaultValue": "NES\\AlistairB"
+		},
+		"LocalhostTermType_properties_typeProperties_userName": {
+			"type": "string",
+			"defaultValue": "NES\\AlistairB"
+		}
+	},
+	"variables": {
+		"factoryId": "[concat('Microsoft.DataFactory/factories/', parameters('factoryName'))]"
+	},
+	"resources": [
+		{
+			"name": "[concat(parameters('factoryName'), '/CopyToPortThesaurusDB')]",
+			"type": "Microsoft.DataFactory/factories/pipelines",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"description": "Used to populate tables in the PortThesausus DB",
+				"activities": [
+					{
+						"name": "Copy_qoj",
+						"type": "Copy",
+						"dependsOn": [],
+						"policy": {
+							"timeout": "7.00:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [
+							{
+								"name": "Source",
+								"value": "[[Taxonomy].[TermType]"
+							},
+							{
+								"name": "Destination",
+								"value": "[[dbo].[TermType]"
+							}
+						],
+						"typeProperties": {
+							"source": {
+								"type": "AzureSqlSource"
+							},
+							"sink": {
+								"type": "AzureSqlSink"
+							},
+							"enableStaging": false,
+							"translator": {
+								"type": "TabularTranslator",
+								"mappings": [
+									{
+										"source": {
+											"name": "TermTypeID",
+											"type": "Int16"
+										},
+										"sink": {
+											"name": "TermTypeID",
+											"type": "Int16"
+										}
+									},
+									{
+										"source": {
+											"name": "TypeName",
+											"type": "String"
+										},
+										"sink": {
+											"name": "TypeName",
+											"type": "String"
+										}
+									},
+									{
+										"source": {
+											"name": "Description",
+											"type": "String"
+										},
+										"sink": {
+											"name": "Description",
+											"type": "String"
+										}
+									},
+									{
+										"source": {
+											"name": "Available",
+											"type": "Boolean"
+										},
+										"sink": {
+											"name": "Available",
+											"type": "Boolean"
+										}
+									},
+									{
+										"source": {
+											"name": "DimTable",
+											"type": "String"
+										},
+										"sink": {
+											"name": "DimTable",
+											"type": "String"
+										}
+									},
+									{
+										"source": {
+											"name": "SourceID",
+											"type": "Int16"
+										},
+										"sink": {
+											"name": "SourceID",
+											"type": "Int16"
+										}
+									}
+								]
+							}
+						},
+						"inputs": [
+							{
+								"referenceName": "SourceDataset_TaxTermType",
+								"type": "DatasetReference",
+								"parameters": {}
+							}
+						],
+						"outputs": [
+							{
+								"referenceName": "DestinationDataset_dboTermType",
+								"type": "DatasetReference",
+								"parameters": {}
+							}
+						]
+					}
+				],
+				"annotations": []
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/datasets/SourceDataset_TaxTermType')]",
+				"[concat(variables('factoryId'), '/datasets/DestinationDataset_dboTermType')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/CreateThesaurusTerms_Dim_Source')]",
+			"type": "Microsoft.DataFactory/factories/pipelines",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"description": "Pipeline to create the Thesaurus Terms (Dim) Source dataset for use in the CreateTerms dataflow",
+				"activities": [
+					{
+						"name": "CreateThesaurusTerms_Dim_SourceTable",
+						"type": "Copy",
+						"dependsOn": [],
+						"policy": {
+							"timeout": "7.00:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"source": {
+								"type": "SqlServerSource",
+								"sqlReaderQuery": "SELECT DISTINCT CAST(Term.id AS BIGINT)  DimID, \n       CAST(Term.name AS NVARCHAR(200)) DimName, \n       dbo.GetRootParent(Term.id) RootID,\n       CAST(CASE ISNULL(Relation.relationship, 0)\n          WHEN 0 THEN 1\n          ELSE 0\n          END AS BIT) DimPreferred,\n       CAST(2 AS SMALLINT) DimSourceID,\n       CAST(RTRIM(Term.scope + ' ' + Term.additionalnotes) AS NVARCHAR(500)) DimDescription\n  from dbo.Term\n   LEFT JOIN dbo.Relation ON Relation.relatedtermid = Term.id AND Relation.relationship=2\n  ORDER BY DimID"
+							},
+							"sink": {
+								"type": "AzureSqlSink"
+							},
+							"enableStaging": false
+						},
+						"inputs": [
+							{
+								"referenceName": "LocalTermsTableOnThesaurus",
+								"type": "DatasetReference",
+								"parameters": {}
+							}
+						],
+						"outputs": [
+							{
+								"referenceName": "ThesaurusTerms_Dim_SourceOnAzure",
+								"type": "DatasetReference",
+								"parameters": {}
+							}
+						]
+					}
+				],
+				"annotations": []
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/datasets/LocalTermsTableOnThesaurus')]",
+				"[concat(variables('factoryId'), '/datasets/ThesaurusTerms_Dim_SourceOnAzure')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/CreateTurasDimsLookupTable')]",
+			"type": "Microsoft.DataFactory/factories/pipelines",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"description": "Create a Lookup table for use in the Merge Turas Dimensions and Merge Portfolio dimensions data flows",
+				"activities": [
+					{
+						"name": "CopyToTurasDimsLookupTable",
+						"description": "Used to create the TurasDimsLookup table",
+						"type": "Copy",
+						"dependsOn": [],
+						"policy": {
+							"timeout": "7.00:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [
+							{
+								"name": "Destination",
+								"value": "[[dbo].[TurasDimsLookup]"
+							}
+						],
+						"typeProperties": {
+							"source": {
+								"type": "AzureSqlSource",
+								"sqlReaderQuery": "SELECT TermTypeID,\r\n       RTRIM(CAST(DimTable AS NVARCHAR(80))) DimTable\r\nFROM [Taxonomy].[TermType]\r\nWHERE DimTable IS NOT NULL\r\n      AND SourceID = 1;"
+							},
+							"sink": {
+								"type": "AzureSqlSink"
+							},
+							"enableStaging": false,
+							"translator": {
+								"type": "TabularTranslator",
+								"mappings": [
+									{
+										"source": {
+											"name": "TermTypeID",
+											"type": "Int16"
+										},
+										"sink": {
+											"name": "TermTypeID",
+											"type": "Int16"
+										}
+									},
+									{
+										"source": {
+											"name": "DimTable",
+											"type": "String"
+										},
+										"sink": {
+											"name": "DimTable",
+											"type": "String"
+										}
+									}
+								]
+							}
+						},
+						"inputs": [
+							{
+								"referenceName": "SourceTaxonomyTermType",
+								"type": "DatasetReference",
+								"parameters": {}
+							}
+						],
+						"outputs": [
+							{
+								"referenceName": "CreateTurasDimsLookup",
+								"type": "DatasetReference",
+								"parameters": {}
+							}
+						]
+					}
+				],
+				"folder": {
+					"name": "MergeTurasDimensions"
+				},
+				"annotations": []
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/datasets/SourceTaxonomyTermType')]",
+				"[concat(variables('factoryId'), '/datasets/CreateTurasDimsLookup')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/RunAllDataflows')]",
+			"type": "Microsoft.DataFactory/factories/pipelines",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"description": "Run all PortThesaurus dataflows",
+				"activities": [
+					{
+						"name": "df_PortThesaurusTerms",
+						"type": "ExecuteDataFlow",
+						"dependsOn": [
+							{
+								"activity": "LocalToDboTermType",
+								"dependencyConditions": [
+									"Succeeded"
+								]
+							},
+							{
+								"activity": "CreateTermTable",
+								"dependencyConditions": [
+									"Succeeded"
+								]
+							}
+						],
+						"policy": {
+							"timeout": "7.00:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"dataflow": {
+								"referenceName": "df_PortThesaurusTerms",
+								"type": "DataFlowReference",
+								"parameters": {},
+								"datasetParameters": {
+									"GetThesaurusTypes": {},
+									"GetTaxonomyTermTypes": {},
+									"InsertSink": {},
+									"UpdateSink": {},
+									"DeleteSink": {},
+									"DeleteAvailableFromTermSink": {}
+								}
+							},
+							"staging": {}
+						}
+					},
+					{
+						"name": "df_CreateTerms",
+						"type": "ExecuteDataFlow",
+						"dependsOn": [
+							{
+								"activity": "ExecuteCreateTaxonomyTermsSource",
+								"dependencyConditions": [
+									"Succeeded"
+								]
+							}
+						],
+						"policy": {
+							"timeout": "7.00:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"dataflow": {
+								"referenceName": "df_CreateTerms",
+								"type": "DataFlowReference",
+								"parameters": {},
+								"datasetParameters": {
+									"ThesaurusTerms": {},
+									"TaxonomyTerms": {},
+									"TermTypes": {},
+									"ThesaurusTermsInsert": {},
+									"UpdateTerm": {},
+									"DeleteSink": {}
+								}
+							},
+							"staging": {}
+						}
+					},
+					{
+						"name": "df_CreateRelationships",
+						"type": "ExecuteDataFlow",
+						"dependsOn": [
+							{
+								"activity": "Executepl_CreateTermRelationshipsSource",
+								"dependencyConditions": [
+									"Succeeded"
+								]
+							}
+						],
+						"policy": {
+							"timeout": "7.00:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"dataflow": {
+								"referenceName": "df_CreateRelationships",
+								"type": "DataFlowReference",
+								"parameters": {},
+								"datasetParameters": {
+									"GetDimRelationship": {},
+									"TermRelationships": {},
+									"LookupTable": {},
+									"InsertSink": {},
+									"DeleteSink": {}
+								}
+							},
+							"staging": {}
+						}
+					},
+					{
+						"name": "df_MergeTurasDimensions",
+						"type": "ExecuteDataFlow",
+						"dependsOn": [
+							{
+								"activity": "ExecutePl_CreateTurasDimensionTables",
+								"dependencyConditions": [
+									"Succeeded"
+								]
+							},
+							{
+								"activity": "ExecutePl_CreateTaxonomyDimensionTerms",
+								"dependencyConditions": [
+									"Succeeded"
+								]
+							}
+						],
+						"policy": {
+							"timeout": "7.00:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"dataflow": {
+								"referenceName": "df_MergeTurasDimensions",
+								"type": "DataFlowReference",
+								"parameters": {},
+								"datasetParameters": {
+									"TurasDimensionTables": {},
+									"TaxonomyDimensionTerms": {},
+									"LookupType": {},
+									"SinkIntoTermTaxonomy": {},
+									"DeleteTerm": {},
+									"UpdateSink": {}
+								}
+							},
+							"staging": {}
+						}
+					},
+					{
+						"name": "df_MergePortfolioDimensions",
+						"type": "ExecuteDataFlow",
+						"dependsOn": [
+							{
+								"activity": "UpdatePortfolioDimensions",
+								"dependencyConditions": [
+									"Succeeded"
+								]
+							},
+							{
+								"activity": "ExecuteCreateTaxonomyDimensionTerms",
+								"dependencyConditions": [
+									"Succeeded"
+								]
+							}
+						],
+						"policy": {
+							"timeout": "7.00:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"dataflow": {
+								"referenceName": "df_MergePortfolioDimensions",
+								"type": "DataFlowReference",
+								"parameters": {},
+								"datasetParameters": {
+									"PortfolioDimensionTables": {},
+									"TaxonomyDimensionTerms": {},
+									"LookupType": {},
+									"SinkIntoTermTaxonomy": {},
+									"DeleteTerm": {},
+									"UpdateSink": {}
+								}
+							},
+							"staging": {}
+						}
+					},
+					{
+						"name": "ExecuteCreateTaxonomyTermsSource",
+						"description": "Create the Taxonomy terms source tab using a query.",
+						"type": "ExecutePipeline",
+						"dependsOn": [
+							{
+								"activity": "df_PortThesaurusTerms",
+								"dependencyConditions": [
+									"Succeeded"
+								]
+							}
+						],
+						"userProperties": [],
+						"typeProperties": {
+							"pipeline": {
+								"referenceName": "pl_CreateTaxonomyTermsSource",
+								"type": "PipelineReference"
+							},
+							"waitOnCompletion": true,
+							"parameters": {}
+						}
+					},
+					{
+						"name": "UpdatePortfolioDimensions",
+						"description": "Update the Portfolio Dimensions table",
+						"type": "ExecutePipeline",
+						"dependsOn": [
+							{
+								"activity": "df_MergeTurasDimensions",
+								"dependencyConditions": [
+									"Succeeded"
+								]
+							}
+						],
+						"userProperties": [],
+						"typeProperties": {
+							"pipeline": {
+								"referenceName": "pl_GetDataFromPortfolioDimensionTables",
+								"type": "PipelineReference"
+							},
+							"waitOnCompletion": true,
+							"parameters": {}
+						}
+					},
+					{
+						"name": "LocalToDboTermType",
+						"description": "Create the TermType table on the Azure DB using a query.",
+						"type": "ExecutePipeline",
+						"dependsOn": [],
+						"userProperties": [],
+						"typeProperties": {
+							"pipeline": {
+								"referenceName": "pl_CopyLocalToTermTypeSource",
+								"type": "PipelineReference"
+							},
+							"waitOnCompletion": true,
+							"parameters": {}
+						}
+					},
+					{
+						"name": "CreateTermTable",
+						"description": "Create the term table using a query.",
+						"type": "ExecutePipeline",
+						"dependsOn": [],
+						"userProperties": [],
+						"typeProperties": {
+							"pipeline": {
+								"referenceName": "pl_LocalToAzureDB",
+								"type": "PipelineReference"
+							},
+							"waitOnCompletion": true,
+							"parameters": {}
+						}
+					},
+					{
+						"name": "Executepl_CreateTermRelationshipsSource",
+						"type": "ExecutePipeline",
+						"dependsOn": [
+							{
+								"activity": "df_CreateTerms",
+								"dependencyConditions": [
+									"Succeeded"
+								]
+							}
+						],
+						"userProperties": [],
+						"typeProperties": {
+							"pipeline": {
+								"referenceName": "pl_CreateTermRelationshipsSource",
+								"type": "PipelineReference"
+							},
+							"waitOnCompletion": true,
+							"parameters": {}
+						}
+					},
+					{
+						"name": "ExecutePl_CreateTurasDimensionTables",
+						"type": "ExecutePipeline",
+						"dependsOn": [
+							{
+								"activity": "df_CreateRelationships",
+								"dependencyConditions": [
+									"Succeeded"
+								]
+							}
+						],
+						"userProperties": [],
+						"typeProperties": {
+							"pipeline": {
+								"referenceName": "pl_CreateTurasDimensionTables",
+								"type": "PipelineReference"
+							},
+							"waitOnCompletion": true,
+							"parameters": {}
+						}
+					},
+					{
+						"name": "ExecutePl_CreateTaxonomyDimensionTerms",
+						"type": "ExecutePipeline",
+						"dependsOn": [
+							{
+								"activity": "df_CreateRelationships",
+								"dependencyConditions": [
+									"Succeeded"
+								]
+							}
+						],
+						"userProperties": [],
+						"typeProperties": {
+							"pipeline": {
+								"referenceName": "pl_CreateTaxonomyDimensionTerms",
+								"type": "PipelineReference"
+							},
+							"waitOnCompletion": true,
+							"parameters": {}
+						}
+					},
+					{
+						"name": "ExecuteRunMergePortfolioDimensions",
+						"type": "ExecutePipeline",
+						"dependsOn": [
+							{
+								"activity": "df_MergePortfolioDimensions",
+								"dependencyConditions": [
+									"Succeeded"
+								]
+							}
+						],
+						"userProperties": [],
+						"typeProperties": {
+							"pipeline": {
+								"referenceName": "RunMergePortfolioDimensions",
+								"type": "PipelineReference"
+							},
+							"waitOnCompletion": true,
+							"parameters": {}
+						}
+					},
+					{
+						"name": "ExecuteCreateTaxonomyDimensionTerms",
+						"type": "ExecutePipeline",
+						"dependsOn": [
+							{
+								"activity": "df_MergeTurasDimensions",
+								"dependencyConditions": [
+									"Succeeded"
+								]
+							}
+						],
+						"userProperties": [],
+						"typeProperties": {
+							"pipeline": {
+								"referenceName": "pl_CreateTaxonomyDimensionTerms",
+								"type": "PipelineReference"
+							},
+							"waitOnCompletion": true,
+							"parameters": {}
+						}
+					}
+				],
+				"folder": {
+					"name": "RunAllDataflows"
+				},
+				"annotations": []
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/dataflows/df_PortThesaurusTerms')]",
+				"[concat(variables('factoryId'), '/dataflows/df_CreateTerms')]",
+				"[concat(variables('factoryId'), '/dataflows/df_CreateRelationships')]",
+				"[concat(variables('factoryId'), '/dataflows/df_MergeTurasDimensions')]",
+				"[concat(variables('factoryId'), '/dataflows/df_MergePortfolioDimensions')]",
+				"[concat(variables('factoryId'), '/pipelines/pl_CreateTaxonomyTermsSource')]",
+				"[concat(variables('factoryId'), '/pipelines/pl_GetDataFromPortfolioDimensionTables')]",
+				"[concat(variables('factoryId'), '/pipelines/pl_CopyLocalToTermTypeSource')]",
+				"[concat(variables('factoryId'), '/pipelines/pl_LocalToAzureDB')]",
+				"[concat(variables('factoryId'), '/pipelines/pl_CreateTermRelationshipsSource')]",
+				"[concat(variables('factoryId'), '/pipelines/pl_CreateTurasDimensionTables')]",
+				"[concat(variables('factoryId'), '/pipelines/pl_CreateTaxonomyDimensionTerms')]",
+				"[concat(variables('factoryId'), '/pipelines/RunMergePortfolioDimensions')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/RunMergePortfolioDimensions')]",
+			"type": "Microsoft.DataFactory/factories/pipelines",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"activities": [
+					{
+						"name": "df_MergePortfolioDimensions",
+						"type": "ExecuteDataFlow",
+						"dependsOn": [],
+						"policy": {
+							"timeout": "7.00:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"dataflow": {
+								"referenceName": "df_MergePortfolioDimensions",
+								"type": "DataFlowReference",
+								"parameters": {},
+								"datasetParameters": {
+									"PortfolioDimensionTables": {},
+									"TaxonomyDimensionTerms": {},
+									"LookupType": {},
+									"SinkIntoTermTaxonomy": {},
+									"DeleteTerm": {},
+									"UpdateSink": {}
+								}
+							},
+							"staging": {}
+						}
+					},
+					{
+						"name": "UpsertToTermTable",
+						"description": "Pipeline to upsert to the term table in the PortThesaurus DB",
+						"type": "Copy",
+						"dependsOn": [
+							{
+								"activity": "df_MergePortfolioDimensions",
+								"dependencyConditions": [
+									"Succeeded"
+								]
+							}
+						],
+						"policy": {
+							"timeout": "7.00:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"source": {
+								"type": "AzureSqlSource"
+							},
+							"sink": {
+								"type": "AzureSqlSink",
+								"sqlWriterStoredProcedureName": "[[dbo].[spUpsertTerm]",
+								"sqlWriterTableType": "Term"
+							},
+							"enableStaging": false,
+							"translator": {
+								"type": "TabularTranslator",
+								"mappings": [
+									{
+										"source": {
+											"name": "TermID",
+											"type": "Int32"
+										},
+										"sink": {
+											"name": "TermID",
+											"type": "Int32"
+										}
+									},
+									{
+										"source": {
+											"name": "DimID",
+											"type": "Int32"
+										},
+										"sink": {
+											"name": "DimID",
+											"type": "Int32"
+										}
+									},
+									{
+										"source": {
+											"name": "TermCode",
+											"type": "String"
+										},
+										"sink": {
+											"name": "TermCode",
+											"type": "String"
+										}
+									},
+									{
+										"source": {
+											"name": "TermName",
+											"type": "String"
+										},
+										"sink": {
+											"name": "TermName",
+											"type": "String"
+										}
+									},
+									{
+										"source": {
+											"name": "Description",
+											"type": "String"
+										},
+										"sink": {
+											"name": "Description",
+											"type": "String"
+										}
+									},
+									{
+										"source": {
+											"name": "Preferred",
+											"type": "Boolean"
+										},
+										"sink": {
+											"name": "Preferred",
+											"type": "Boolean"
+										}
+									},
+									{
+										"source": {
+											"name": "Available",
+											"type": "Boolean"
+										},
+										"sink": {
+											"name": "Available",
+											"type": "Boolean"
+										}
+									},
+									{
+										"source": {
+											"name": "TermTypeID",
+											"type": "Int16"
+										},
+										"sink": {
+											"name": "TermTypeID",
+											"type": "Int16"
+										}
+									}
+								]
+							}
+						},
+						"inputs": [
+							{
+								"referenceName": "datasetIntermediateTermTable",
+								"type": "DatasetReference",
+								"parameters": {}
+							}
+						],
+						"outputs": [
+							{
+								"referenceName": "DestinationTermTable",
+								"type": "DatasetReference",
+								"parameters": {}
+							}
+						]
+					}
+				],
+				"folder": {
+					"name": "MergePortfolioDimensions"
+				},
+				"annotations": []
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/dataflows/df_MergePortfolioDimensions')]",
+				"[concat(variables('factoryId'), '/datasets/datasetIntermediateTermTable')]",
+				"[concat(variables('factoryId'), '/datasets/DestinationTermTable')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/UpsertToTermTable')]",
+			"type": "Microsoft.DataFactory/factories/pipelines",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"description": "Use a stored procedure to upsert to the Term table",
+				"activities": [
+					{
+						"name": "UpsertToTermTable",
+						"description": "Pipeline to upsert to the term table in the PortThesaurus DB",
+						"type": "Copy",
+						"dependsOn": [],
+						"policy": {
+							"timeout": "7.00:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [
+							{
+								"name": "Source",
+								"value": "[[dbo].[IntermediateTerm]"
+							},
+							{
+								"name": "Destination",
+								"value": "Term"
+							}
+						],
+						"typeProperties": {
+							"source": {
+								"type": "AzureSqlSource"
+							},
+							"sink": {
+								"type": "AzureSqlSink",
+								"sqlWriterStoredProcedureName": "[[dbo].[spUpsertTerm]",
+								"sqlWriterTableType": "Term"
+							},
+							"enableStaging": false,
+							"translator": {
+								"type": "TabularTranslator",
+								"mappings": [
+									{
+										"source": {
+											"name": "TermID",
+											"type": "Int32"
+										},
+										"sink": {
+											"name": "TermID",
+											"type": "Int32"
+										}
+									},
+									{
+										"source": {
+											"name": "DimID",
+											"type": "Int32"
+										},
+										"sink": {
+											"name": "DimID",
+											"type": "Int32"
+										}
+									},
+									{
+										"source": {
+											"name": "TermCode",
+											"type": "String"
+										},
+										"sink": {
+											"name": "TermCode",
+											"type": "String"
+										}
+									},
+									{
+										"source": {
+											"name": "TermName",
+											"type": "String"
+										},
+										"sink": {
+											"name": "TermName",
+											"type": "String"
+										}
+									},
+									{
+										"source": {
+											"name": "Description",
+											"type": "String"
+										},
+										"sink": {
+											"name": "Description",
+											"type": "String"
+										}
+									},
+									{
+										"source": {
+											"name": "Preferred",
+											"type": "Boolean"
+										},
+										"sink": {
+											"name": "Preferred",
+											"type": "Boolean"
+										}
+									},
+									{
+										"source": {
+											"name": "Available",
+											"type": "Boolean"
+										},
+										"sink": {
+											"name": "Available",
+											"type": "Boolean"
+										}
+									},
+									{
+										"source": {
+											"name": "TermTypeID",
+											"type": "Int16"
+										},
+										"sink": {
+											"name": "TermTypeID",
+											"type": "Int16"
+										}
+									}
+								]
+							}
+						},
+						"inputs": [
+							{
+								"referenceName": "datasetIntermediateTermTable",
+								"type": "DatasetReference",
+								"parameters": {}
+							}
+						],
+						"outputs": [
+							{
+								"referenceName": "DestinationTermTable",
+								"type": "DatasetReference",
+								"parameters": {}
+							}
+						]
+					}
+				],
+				"folder": {
+					"name": "MergePortfolioDimensions"
+				},
+				"annotations": []
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/datasets/datasetIntermediateTermTable')]",
+				"[concat(variables('factoryId'), '/datasets/DestinationTermTable')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/pl_CopyFromLocalToRelation')]",
+			"type": "Microsoft.DataFactory/factories/pipelines",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"description": "Uses a query to create a table for use in the Create Relationships dataflow source table entitled 'Get Dim relationship'",
+				"activities": [
+					{
+						"name": "CreateDimRelationship",
+						"type": "Copy",
+						"dependsOn": [],
+						"policy": {
+							"timeout": "7.00:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [
+							{
+								"name": "Destination",
+								"value": "[[dbo].[GetDimRelationship]"
+							}
+						],
+						"typeProperties": {
+							"source": {
+								"type": "SqlSource",
+								"sqlReaderQuery": "SELECT maintermid XDimID, relatedtermid YDimID,\r\nCAST(CASE relationship\r\n  WHEN 1 THEN 2 -- synonym\r\n  WHEN 4 THEN 1 -- parent/child\r\n  WHEN 5 THEN 4 --association\r\n  END AS SMALLINT) DimKindID\r\nFROM dbo.Relation WHERE relationship IN (1, 4, 5) \r\nAND relatedtermid <> maintermid\r\nORDER BY XDimID, YDimID, DimKindID;"
+							},
+							"sink": {
+								"type": "SqlSink",
+								"writeBatchSize": 10000
+							},
+							"enableStaging": false,
+							"translator": {
+								"type": "TabularTranslator",
+								"columnMappings": {
+									"XDimID": "XDimID",
+									"YDimID": "YDimID",
+									"DimKindID": "DimKindID"
+								}
+							}
+						},
+						"inputs": [
+							{
+								"referenceName": "SourceRelationFromLocal",
+								"type": "DatasetReference",
+								"parameters": {}
+							}
+						],
+						"outputs": [
+							{
+								"referenceName": "DestinationGetDimRelationship",
+								"type": "DatasetReference",
+								"parameters": {}
+							}
+						]
+					}
+				],
+				"folder": {
+					"name": "CreateRelationships"
+				},
+				"annotations": []
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/datasets/SourceRelationFromLocal')]",
+				"[concat(variables('factoryId'), '/datasets/DestinationGetDimRelationship')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/pl_CopyLocalToTermRelationships-old')]",
+			"type": "Microsoft.DataFactory/factories/pipelines",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"description": "Uses a query to copy from the TermRelationship and Term table on the Taxonomy db.  Used in the Term relationships sink in the Create relationships dataflow.",
+				"activities": [
+					{
+						"name": "CopyLocalToTermRelationships",
+						"description": "Uses a query to create the TermRelationships table on the AzureDB",
+						"type": "Copy",
+						"dependsOn": [],
+						"policy": {
+							"timeout": "7.00:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [
+							{
+								"name": "Destination",
+								"value": "[[dbo].[TermRelationships]"
+							}
+						],
+						"typeProperties": {
+							"source": {
+								"type": "SqlSource",
+								"sqlReaderQuery": "SELECT TermRelationship.RelationshipID, TermX.TermID XTermID, TermX.DimID XTermDimID,\r\n  TermY.TermID YTermID, TermY.DimID YTermDimID,\r\n  TermRelationship.KindID TermKindID\r\nFROM dbo.TermRelationship\r\n  LEFT JOIN dbo.Term TermX on TermX.TermID = TermRelationship.TermXID\r\n  LEFT JOIN dbo.Term TermY on TermY.TermID = TermRelationship.TermYID\r\n  LEFT JOIN dbo.TermType on TermType.TermTypeID = TermX.TermTypeID\r\nWHERE TermType.SourceID = 2\r\nORDER BY TermX.DimID, TermY.DimID, TermKindID;"
+							},
+							"sink": {
+								"type": "SqlSink",
+								"writeBatchSize": 10000
+							},
+							"enableStaging": false,
+							"translator": {
+								"type": "TabularTranslator",
+								"columnMappings": {
+									"RelationshipID": "RelationshipID",
+									"XTermID": "XTermID",
+									"XTermDimID": "XTermDimID",
+									"YTermID": "YTermID",
+									"YTermDimID": "YTermDimID",
+									"TermKindID": "TermKindID"
+								}
+							}
+						},
+						"inputs": [
+							{
+								"referenceName": "SourceLocalToTermRelationships",
+								"type": "DatasetReference",
+								"parameters": {}
+							}
+						],
+						"outputs": [
+							{
+								"referenceName": "DestinationTermRelationships",
+								"type": "DatasetReference",
+								"parameters": {}
+							}
+						]
+					}
+				],
+				"folder": {
+					"name": "CreateRelationships"
+				},
+				"annotations": []
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/datasets/SourceLocalToTermRelationships')]",
+				"[concat(variables('factoryId'), '/datasets/DestinationTermRelationships')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/pl_CopyLocalToTermTypeSource')]",
+			"type": "Microsoft.DataFactory/factories/pipelines",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"description": "Copy the contents of the TermType table on the local db to the TermTypeSource table on Azure. ",
+				"activities": [
+					{
+						"name": "CopyLocalToTermTypeSource",
+						"type": "Copy",
+						"dependsOn": [],
+						"policy": {
+							"timeout": "7.00:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [
+							{
+								"name": "Destination",
+								"value": "[[dbo].[TermTypeSOURCE]"
+							}
+						],
+						"typeProperties": {
+							"source": {
+								"type": "SqlServerSource",
+								"sqlReaderQuery": "SELECT TermTypeID, TypeName, Description TypeDescription, Available TypeAvailable, SourceID TypeSourceID FROM dbo.TermType WHERE SourceID = 2"
+							},
+							"sink": {
+								"type": "AzureSqlSink",
+								"writeBatchSize": 10000
+							},
+							"enableStaging": false,
+							"translator": {
+								"type": "TabularTranslator",
+								"mappings": [
+									{
+										"source": {
+											"name": "TermTypeID",
+											"type": "Int16"
+										},
+										"sink": {
+											"name": "TermTypeID",
+											"type": "Int16"
+										}
+									},
+									{
+										"source": {
+											"name": "TypeName",
+											"type": "String"
+										},
+										"sink": {
+											"name": "TypeName",
+											"type": "String"
+										}
+									},
+									{
+										"source": {
+											"name": "TypeDescription",
+											"type": "String"
+										},
+										"sink": {
+											"name": "TypeDescription",
+											"type": "String"
+										}
+									},
+									{
+										"source": {
+											"name": "TypeAvailable",
+											"type": "Boolean"
+										},
+										"sink": {
+											"name": "TypeAvailable",
+											"type": "Boolean"
+										}
+									},
+									{
+										"source": {
+											"name": "TypeSourceID",
+											"type": "Int16"
+										},
+										"sink": {
+											"name": "TypeSourceID",
+											"type": "Int16"
+										}
+									}
+								]
+							}
+						},
+						"inputs": [
+							{
+								"referenceName": "SourceTermType",
+								"type": "DatasetReference",
+								"parameters": {}
+							}
+						],
+						"outputs": [
+							{
+								"referenceName": "DestinationTermTypeSOURCE",
+								"type": "DatasetReference",
+								"parameters": {}
+							}
+						]
+					}
+				],
+				"folder": {
+					"name": "PortThesaurus"
+				},
+				"annotations": []
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/datasets/SourceTermType')]",
+				"[concat(variables('factoryId'), '/datasets/DestinationTermTypeSOURCE')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/pl_CopyPipeline_mgm')]",
+			"type": "Microsoft.DataFactory/factories/pipelines",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"activities": [
+					{
+						"name": "Copy_mgm",
+						"type": "Copy",
+						"dependsOn": [],
+						"policy": {
+							"timeout": "7.00:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [
+							{
+								"name": "Destination",
+								"value": "[[dbo].[LookupTable]"
+							}
+						],
+						"typeProperties": {
+							"source": {
+								"type": "SqlSource",
+								"sqlReaderQuery": "SELECT Term.TermID,\r\n       Term.DimID\r\nFROM dbo.term_taxonomy AS Term\r\n    JOIN dbo.TermTypeOriginal AS TermType\r\n        ON Term.TermTypeID = TermType.TermTypeID\r\nWHERE TermType.SourceID = 2 AND Term.DimID in (SELECT XDimID FROM [dbo].[GetDimRelationship])"
+							},
+							"sink": {
+								"type": "SqlSink",
+								"writeBatchSize": 10000
+							},
+							"enableStaging": false,
+							"translator": {
+								"type": "TabularTranslator",
+								"columnMappings": {
+									"TermID": "TermID",
+									"DimID": "DimID"
+								}
+							}
+						},
+						"inputs": [
+							{
+								"referenceName": "SourceDataset_mgm",
+								"type": "DatasetReference",
+								"parameters": {}
+							}
+						],
+						"outputs": [
+							{
+								"referenceName": "DestinationDataset_mgm",
+								"type": "DatasetReference",
+								"parameters": {}
+							}
+						]
+					}
+				],
+				"annotations": []
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/datasets/SourceDataset_mgm')]",
+				"[concat(variables('factoryId'), '/datasets/DestinationDataset_mgm')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/pl_CreateLookupTable')]",
+			"type": "Microsoft.DataFactory/factories/pipelines",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"description": "Create a dataset to lookup data from Taxonomy.term",
+				"activities": [
+					{
+						"name": "CreateLookupTable",
+						"type": "Copy",
+						"dependsOn": [],
+						"policy": {
+							"timeout": "7.00:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [
+							{
+								"name": "Destination",
+								"value": "[[Taxonomy].[CreateRelsLookup]"
+							}
+						],
+						"typeProperties": {
+							"source": {
+								"type": "AzureSqlSource",
+								"sqlReaderQuery": "SELECT Term.TermID,\r\n       Term.DimID\r\nFROM [Taxonomy].[Term];"
+							},
+							"sink": {
+								"type": "AzureSqlSink",
+								"writeBatchSize": 10000
+							},
+							"enableStaging": false,
+							"translator": {
+								"type": "TabularTranslator",
+								"mappings": [
+									{
+										"source": {
+											"name": "TermID",
+											"type": "Int32"
+										},
+										"sink": {
+											"name": "TermID",
+											"type": "Int32"
+										}
+									},
+									{
+										"source": {
+											"name": "DimID",
+											"type": "Int32"
+										},
+										"sink": {
+											"name": "DimID",
+											"type": "Int32"
+										}
+									}
+								]
+							}
+						},
+						"inputs": [
+							{
+								"referenceName": "ds_SourceTaxonomyTerm",
+								"type": "DatasetReference",
+								"parameters": {}
+							}
+						],
+						"outputs": [
+							{
+								"referenceName": "ds_CreateLookupTable",
+								"type": "DatasetReference",
+								"parameters": {}
+							}
+						]
+					}
+				],
+				"folder": {
+					"name": "CreateRelationships"
+				},
+				"annotations": []
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/datasets/ds_SourceTaxonomyTerm')]",
+				"[concat(variables('factoryId'), '/datasets/ds_CreateLookupTable')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/pl_CreateRelationshipsDriver')]",
+			"type": "Microsoft.DataFactory/factories/pipelines",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"activities": [
+					{
+						"name": "CreateRelationships",
+						"type": "ExecuteDataFlow",
+						"dependsOn": [],
+						"policy": {
+							"timeout": "7.00:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"dataflow": {
+								"referenceName": "df_CreateRelationships",
+								"type": "DataFlowReference",
+								"parameters": {},
+								"datasetParameters": {
+									"GetDimRelationship": {},
+									"TermRelationships": {},
+									"LookupTable": {},
+									"InsertSink": {},
+									"DeleteSink": {}
+								}
+							},
+							"staging": {}
+						}
+					}
+				],
+				"folder": {
+					"name": "CreateRelationships"
+				},
+				"annotations": []
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/dataflows/df_CreateRelationships')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/pl_CreateTaxonomyDimensionTerms')]",
+			"type": "Microsoft.DataFactory/factories/pipelines",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"activities": [
+					{
+						"name": "CreateTaxonomyDimensionTerms",
+						"type": "Copy",
+						"dependsOn": [],
+						"policy": {
+							"timeout": "7.00:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"source": {
+								"type": "AzureSqlSource",
+								"sqlReaderQuery": "SELECT RTRIM(CAST(TermType.DimTable AS NVARCHAR(80))) TermDimTable,\n       Term.TermID,\n       CAST(Term.DimID AS BIGINT) TermDimID,\n       Term.TermCode,\n       Term.TermName,\n       Term.Description AS TermDescription,\n       Term.Preferred AS TermPreferred,\n       Term.Available AS TermAvailable,\n       Term.TermTypeID\nFROM [Taxonomy].[Term] Term\n    LEFT OUTER JOIN [Taxonomy].[TermType] TermType\n        ON TermType.TermTypeID = Term.TermTypeID\nWHERE TermType.SourceID = 1\nORDER BY TermType.DimTable,\n         Term.DimID;"
+							},
+							"sink": {
+								"type": "AzureSqlSink",
+								"writeBatchSize": 10000
+							},
+							"enableStaging": false,
+							"translator": {
+								"type": "TabularTranslator",
+								"mappings": [
+									{
+										"source": {
+											"name": "TermDimTable",
+											"type": "String"
+										},
+										"sink": {
+											"name": "TermDimTable",
+											"type": "String"
+										}
+									},
+									{
+										"source": {
+											"name": "TermID",
+											"type": "Int32"
+										},
+										"sink": {
+											"name": "TermID",
+											"type": "Int32"
+										}
+									},
+									{
+										"source": {
+											"name": "TermDimID",
+											"type": "Int64"
+										},
+										"sink": {
+											"name": "TermDimID",
+											"type": "Int64"
+										}
+									},
+									{
+										"source": {
+											"name": "TermCode",
+											"type": "String"
+										},
+										"sink": {
+											"name": "TermCode",
+											"type": "String"
+										}
+									},
+									{
+										"source": {
+											"name": "TermName",
+											"type": "String"
+										},
+										"sink": {
+											"name": "TermName",
+											"type": "String"
+										}
+									},
+									{
+										"source": {
+											"name": "TermDescription",
+											"type": "String"
+										},
+										"sink": {
+											"name": "TermDescription",
+											"type": "String"
+										}
+									},
+									{
+										"source": {
+											"name": "TermPreferred",
+											"type": "Boolean"
+										},
+										"sink": {
+											"name": "TermPreferred",
+											"type": "Boolean"
+										}
+									},
+									{
+										"source": {
+											"name": "TermAvailable",
+											"type": "Boolean"
+										},
+										"sink": {
+											"name": "TermAvailable",
+											"type": "Boolean"
+										}
+									},
+									{
+										"source": {
+											"name": "TermTypeID",
+											"type": "Int16"
+										},
+										"sink": {
+											"name": "TermTypeID",
+											"type": "Int16"
+										}
+									}
+								]
+							}
+						},
+						"inputs": [
+							{
+								"referenceName": "TaxonomyTermTable",
+								"type": "DatasetReference",
+								"parameters": {}
+							}
+						],
+						"outputs": [
+							{
+								"referenceName": "TaxonomyDimensionTerms",
+								"type": "DatasetReference",
+								"parameters": {}
+							}
+						]
+					}
+				],
+				"folder": {
+					"name": "MergeTurasDimensions"
+				},
+				"annotations": []
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/datasets/TaxonomyTermTable')]",
+				"[concat(variables('factoryId'), '/datasets/TaxonomyDimensionTerms')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/pl_CreateTaxonomyTermsSource')]",
+			"type": "Microsoft.DataFactory/factories/pipelines",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"description": "Create the TaxonomyTermsSource activity for the Create Terms dataflow",
+				"activities": [
+					{
+						"name": "CreateTaxonomyTermsSource",
+						"description": "This pipeline is used when creating the Term Relationships activity in the Create Relationships dataflow. Source is Taxonomy schema, destiation is [dbo].[TermRelationshipSOURCE]",
+						"type": "Copy",
+						"dependsOn": [],
+						"policy": {
+							"timeout": "7.00:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [
+							{
+								"name": "Destination",
+								"value": "[[Taxonomy].[TaxonomyTermsSOURCE]"
+							}
+						],
+						"typeProperties": {
+							"source": {
+								"type": "AzureSqlSource",
+								"sqlReaderQuery": "SELECT Term.TermID,\n       Term.DimID TermDimID,\n       Term.TermCode,\n       Term.TermName,\n       Term.Description TermDescription,\n       Term.Preferred AS TermPreferred,\n       Term.TermTypeID\nFROM [Taxonomy].[Term] Term\n    LEFT OUTER JOIN Taxonomy.TermTypeSINK TermType\n        ON TermType.TermTypeID = Term.TermTypeID\nWHERE (TermType.SourceID = 2)\nORDER BY Term.DimID;"
+							},
+							"sink": {
+								"type": "AzureSqlSink",
+								"writeBatchSize": 10000
+							},
+							"enableStaging": false,
+							"translator": {
+								"type": "TabularTranslator",
+								"mappings": [
+									{
+										"source": {
+											"name": "TermID",
+											"type": "Int32"
+										},
+										"sink": {
+											"name": "TermID",
+											"type": "Int32"
+										}
+									},
+									{
+										"source": {
+											"name": "TermDimID",
+											"type": "Int32"
+										},
+										"sink": {
+											"name": "TermDimID",
+											"type": "Int32"
+										}
+									},
+									{
+										"source": {
+											"name": "TermCode",
+											"type": "String"
+										},
+										"sink": {
+											"name": "TermCode",
+											"type": "String"
+										}
+									},
+									{
+										"source": {
+											"name": "TermName",
+											"type": "String"
+										},
+										"sink": {
+											"name": "TermName",
+											"type": "String"
+										}
+									},
+									{
+										"source": {
+											"name": "TermDescription",
+											"type": "String"
+										},
+										"sink": {
+											"name": "TermDescription",
+											"type": "String"
+										}
+									},
+									{
+										"source": {
+											"name": "TermPreferred",
+											"type": "Boolean"
+										},
+										"sink": {
+											"name": "TermPreferred",
+											"type": "Boolean"
+										}
+									},
+									{
+										"source": {
+											"name": "TermTypeID",
+											"type": "Int16"
+										},
+										"sink": {
+											"name": "TermTypeID",
+											"type": "Int16"
+										}
+									}
+								]
+							}
+						},
+						"inputs": [
+							{
+								"referenceName": "TaxonomyTermsFromTaxonomy",
+								"type": "DatasetReference",
+								"parameters": {}
+							}
+						],
+						"outputs": [
+							{
+								"referenceName": "DestTaxonomyTermsSOURCE",
+								"type": "DatasetReference",
+								"parameters": {}
+							}
+						]
+					}
+				],
+				"folder": {
+					"name": "CreateTerms"
+				},
+				"annotations": []
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/datasets/TaxonomyTermsFromTaxonomy')]",
+				"[concat(variables('factoryId'), '/datasets/DestTaxonomyTermsSOURCE')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/pl_CreateTermRelationshipsSource')]",
+			"type": "Microsoft.DataFactory/factories/pipelines",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"description": "Create the Term Relationships source activity in the Create Relationships dataflow.  This uses a query to get data from the Term, TermType, and Relationship tables in the Taxonomy schema.  The destination is [dbo].[TermRelationshipSOURCE]",
+				"activities": [
+					{
+						"name": "CreateTermRelationshipsSource",
+						"type": "Copy",
+						"dependsOn": [],
+						"policy": {
+							"timeout": "7.00:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [
+							{
+								"name": "Destination",
+								"value": "[[dbo].[TermRelationshipSOURCE]"
+							}
+						],
+						"typeProperties": {
+							"source": {
+								"type": "AzureSqlSource",
+								"sqlReaderQuery": "SELECT TermRelationship.RelationshipID,\n       TermX.TermID XTermID,\n       TermX.DimID XTermDimID,\n       TermY.TermID YTermID,\n       TermY.DimID YTermDimID,\n       TermRelationship.KindID TermKindID\nFROM [Taxonomy].[TermRelationship] TermRelationship\n    LEFT JOIN dbo.TermInsert TermX\n        ON TermX.TermID = TermRelationship.TermXID\n    LEFT JOIN dbo.TermInsert TermY\n        ON TermY.TermID = TermRelationship.TermYID\n    LEFT JOIN [Taxonomy].[TermTypeSINK] TermType\n        ON TermType.TermTypeID = TermX.TermTypeID\nWHERE TermType.SourceID = 2\nORDER BY TermX.DimID,\n         TermY.DimID,\n         TermKindID;"
+							},
+							"sink": {
+								"type": "AzureSqlSink",
+								"writeBatchSize": 10000
+							},
+							"enableStaging": false,
+							"translator": {
+								"type": "TabularTranslator",
+								"mappings": [
+									{
+										"source": {
+											"name": "RelationshipID",
+											"type": "Int32"
+										},
+										"sink": {
+											"name": "RelationshipID",
+											"type": "Int32"
+										}
+									},
+									{
+										"source": {
+											"name": "XTermID",
+											"type": "Int32"
+										},
+										"sink": {
+											"name": "XTermID",
+											"type": "Int32"
+										}
+									},
+									{
+										"source": {
+											"name": "XTermDimID",
+											"type": "Int32"
+										},
+										"sink": {
+											"name": "XTermDimID",
+											"type": "Int32"
+										}
+									},
+									{
+										"source": {
+											"name": "YTermID",
+											"type": "Int32"
+										},
+										"sink": {
+											"name": "YTermID",
+											"type": "Int32"
+										}
+									},
+									{
+										"source": {
+											"name": "YTermDimID",
+											"type": "Int32"
+										},
+										"sink": {
+											"name": "YTermDimID",
+											"type": "Int32"
+										}
+									},
+									{
+										"source": {
+											"name": "TermKindID",
+											"type": "Int16"
+										},
+										"sink": {
+											"name": "TermKindID",
+											"type": "Int16"
+										}
+									}
+								]
+							}
+						},
+						"inputs": [
+							{
+								"referenceName": "CreateRel_Taxonomy",
+								"type": "DatasetReference",
+								"parameters": {}
+							}
+						],
+						"outputs": [
+							{
+								"referenceName": "CreateRel_TermRelationships",
+								"type": "DatasetReference",
+								"parameters": {}
+							}
+						]
+					}
+				],
+				"folder": {
+					"name": "CreateRelationships"
+				},
+				"annotations": []
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/datasets/CreateRel_Taxonomy')]",
+				"[concat(variables('factoryId'), '/datasets/CreateRel_TermRelationships')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/pl_CreateTermsDriver')]",
+			"type": "Microsoft.DataFactory/factories/pipelines",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"activities": [
+					{
+						"name": "CreateTerms",
+						"type": "ExecuteDataFlow",
+						"dependsOn": [],
+						"policy": {
+							"timeout": "7.00:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"dataflow": {
+								"referenceName": "df_CreateTerms",
+								"type": "DataFlowReference",
+								"parameters": {},
+								"datasetParameters": {
+									"ThesaurusTerms": {},
+									"TaxonomyTerms": {},
+									"TermTypes": {},
+									"ThesaurusTermsInsert": {},
+									"UpdateTerm": {},
+									"DeleteSink": {}
+								}
+							},
+							"staging": {}
+						}
+					}
+				],
+				"folder": {
+					"name": "CreateTerms"
+				},
+				"annotations": []
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/dataflows/df_CreateTerms')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/pl_CreateTurasDimensionTables')]",
+			"type": "Microsoft.DataFactory/factories/pipelines",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"description": "Copy Turas Dimension Tables from Warehouse Alpha to MySampleDB using a query.",
+				"activities": [
+					{
+						"name": "CreateTurasDimensionTables",
+						"type": "Copy",
+						"dependsOn": [],
+						"policy": {
+							"timeout": "7.00:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [
+							{
+								"name": "Destination",
+								"value": "[[dbo].[TurasDimensions]"
+							}
+						],
+						"typeProperties": {
+							"source": {
+								"type": "AzureSqlSource",
+								"sqlReaderQuery": "SELECT CAST(TableName AS NVARCHAR(80)) DimTableName, \r\n   CAST(DimID AS BIGINT) DimID,\r\n   CAST(DimCode AS NVARCHAR(20)) DimCode, CAST(SUBSTRING(DimName, 1, 250) AS NVARCHAR(250)) DimName,\r\n   CAST(SUBSTRING(ISNULL(DimDescription, ''), 1, 500) AS NVARCHAR(500)) DimDescription,  CAST(ISNULL(DimActive, 0) AS BIT) DimActive\r\nFROM\r\n(\r\nSELECT N'ODSTuras.RefCCTDateModifiedReason' TableName, Id DimID, NULL DimCode, Name DimName, Description DimDescription, Active DimActive FROM ODSTuras.RefCCTDateModifiedReason\r\nUNION\r\nSELECT N'ODSTuras.Programme' TableName, Id DimID, SUBSTRING(ProgrammeCode, 1, 20) DimCode, ProgrammeName DimName, \r\n   convert(varchar,StartDate, 105) + ' - ' + convert(varchar,EndDate, 105) DimDescription, Active DimActive FROM ODSTuras.Programme\r\nUNION\r\nSELECT N'ODSTuras.RefEducationalOrganiser' TableName, Id DimID, NULL DimCode, Name DimName, Description DimDescription, Active DimActive FROM ODSTuras.RefEducationalOrganiser\r\nUNION\r\nSELECT N'ODSTuras.RefEducationProviderApprovalType' TableName, Id DimID, NULL DimCode, Name DimName, Description DimDescription, Active DimActive FROM ODSTuras.RefEducationProviderApprovalType\r\nUNION\r\nSELECT N'ODSTuras.RefEducationProviderVisitRequiredReason' TableName, Id DimID, NULL DimCode, Name DimName, Description DimDescription, Active DimActive FROM ODSTuras.RefEducationProviderVisitRequiredReason\r\nUNION\r\nSELECT N'ODSTuras.RefEducationProviderVisitType' TableName, Id DimID, NULL DimCode, Name DimName, Description DimDescription, Active DimActive FROM ODSTuras.RefEducationProviderVisitType\r\nUNION\r\nSELECT N'ODSTuras.RefExitRecordDestination' TableName, Id DimID, NULL DimCode, Name DimName, Description DimDescription, Active DimActive FROM ODSTuras.RefExitRecordDestination\r\nUNION\r\nSELECT N'ODSTuras.RefFeedbackArea' TableName, Id DimID, NULL DimCode, Name DimName, Description DimDescription, Active DimActive FROM ODSTuras.RefFeedbackArea\r\nUNION\r\nSELECT N'ODSTuras.RefFinancialYear' TableName, Id DimID, NULL DimCode, CAST(Year AS NVARCHAR) DimName, \r\n    convert(varchar, [From], 105) + ' - ' + convert(varchar, [To], 105) DimDescription, \r\n    Active DimActive FROM ODSTuras.RefFinancialYear\r\nUNION\r\nSELECT N'ODSTuras.RefImmigrationStatus' TableName, Id DimID, NULL DimCode, Name DimName, Description DimDescription, Active DimActive FROM ODSTuras.RefImmigrationStatus\r\nUNION\r\nSELECT N'ODSTuras.RefJobTitle' TableName, Id DimID, NULL DimCode, Name DimName, Description DimDescription, Active DimActive FROM ODSTuras.RefJobTitle\r\nUNION\r\nSELECT N'ODSTuras.RefLevel' TableName, Id DimID, NULL DimCode, Name DimName, Description DimDescription, Active DimActive FROM ODSTuras.RefLevel\r\nUNION\r\nSELECT N'ODSTuras.RefLtftApprovedReason' TableName, Id DimID, NULL DimCode, Name DimName, Description DimDescription, Active DimActive FROM ODSTuras.RefLtftApprovedReason\r\nUNION\r\nSELECT N'ODSTuras.RefParentEducationProvider' TableName, Id DimID, NULL DimCode, Name DimName, Description DimDescription, Active DimActive FROM ODSTuras.RefParentEducationProvider\r\nUNION\r\nSELECT N'ODSTuras.RefRegion' TableName, Id DimID, NULL DimCode, Name DimName, Description DimDescription, Active DimActive FROM ODSTuras.RefRegion\r\nUNION\r\nSELECT N'ODSTuras.RefRegistrationStatus' TableName, Id DimID, NULL DimCode, Name DimName, Description DimDescription, Active DimActive FROM ODSTuras.RefRegistrationStatus\r\nUNION\r\nSELECT N'ODSTuras.RefRoyalCollege' TableName, Id DimID, NULL DimCode, Name DimName, Description DimDescription, Active DimActive FROM ODSTuras.RefRoyalCollege\r\nUNION\r\nSELECT N'ODSTuras.RefSpecialityTrainingBoard' TableName, Id DimID, NULL DimCode, Name DimName, Description DimDescription, Active DimActive FROM ODSTuras.RefSpecialityTrainingBoard\r\nUNION\r\nSELECT N'ODSTuras.RefStudyLeaveActivityProvider' TableName, Id DimID, NULL DimCode, Name DimName, Description DimDescription, Active DimActive FROM ODSTuras.RefStudyLeaveActivityProvider\r\nUNION\r\nSELECT N'ODSTuras.RefStudyLeaveActivityType' TableName, Id DimID, NULL DimCode, Name DimName, Description DimDescription, Active DimActive FROM ODSTuras.RefStudyLeaveActivityType\r\nUNION\r\nSELECT N'ODSTuras.RefStudyLeaveWithdrawalReason' TableName, Id DimID, NULL DimCode, Name DimName, Description DimDescription, Active DimActive FROM ODSTuras.RefStudyLeaveWithdrawalReason\r\nUNION\r\nSELECT N'ODSTuras.RefTitle' TableName, Id DimID, NULL DimCode, Name DimName, Description DimDescription, Active DimActive FROM ODSTuras.RefTitle\r\nUNION\r\nSELECT N'ODSTuras.RefTraineeTimeLinePeriod' TableName, Id DimID, NULL DimCode, \r\n   CAST(Year AS NVARCHAR) + ' ' + convert(NVARCHAR, [From], 105) + ' - ' + convert(NVARCHAR, [To], 105) DimName,\r\n   NULL DimDescription, \r\n    Active DimActive FROM ODSTuras.RefTraineeTimeLinePeriod\r\nUNION\r\nSELECT N'ODSTuras.RefTrainingType' TableName, Id DimID, NULL DimCode, Name DimName, Description DimDescription, Active DimActive FROM ODSTuras.RefTrainingType\r\nUNION\r\nSELECT N'ODSTuras.SysRefAnalysisTypes' TableName, Id DimID, NULL DimCode, Name DimName, Description DimDescription, Active DimActive FROM ODSTuras.SysRefAnalysisTypes\r\nUNION\r\nSELECT N'ODSTuras.SysRefApprovedStatus' TableName, Id DimID, NULL DimCode, Name DimName, Description DimDescription, Active DimActive FROM ODSTuras.SysRefApprovedStatus\r\nUNION\r\nSELECT N'ODSTuras.SysRefARCPOutcome' TableName, Id DimID, NULL DimCode, Name DimName, Description DimDescription, Active DimActive FROM ODSTuras.SysRefARCPOutcome\r\nUNION\r\nSELECT N'ODSTuras.SysRefARCPOutcomeReasonType' TableName, Id DimID, NULL DimCode, Name DimName, Description DimDescription, Active DimActive FROM ODSTuras.SysRefARCPOutcomeReasonType\r\nUNION\r\nSELECT N'ODSTuras.SysRefClaimScope' TableName, Id DimID, NULL DimCode, Name DimName, Description DimDescription, Active DimActive FROM ODSTuras.SysRefClaimScope\r\nUNION\r\nSELECT N'ODSTuras.SysRefClaimType' TableName, Id DimID, NULL DimCode, Name DimName, Description DimDescription, Active DimActive FROM ODSTuras.SysRefClaimType\r\nUNION\r\nSELECT N'ODSTuras.SysRefDentalApprovalCondition' TableName, Id DimID, NULL DimCode, Name DimName, Description DimDescription, Active DimActive FROM ODSTuras.SysRefDentalApprovalCondition\r\nUNION\r\nSELECT N'ODSTuras.SysRefDentalAssessmentOutcome' TableName, Id DimID, NULL DimCode, Name DimName, Description DimDescription, Active DimActive FROM ODSTuras.SysRefDentalAssessmentOutcome\r\nUNION\r\nSELECT N'ODSTuras.SysRefDentalAssessmentOutcomeReason' TableName, Id DimID, NULL DimCode, Name DimName, Description DimDescription, Active DimActive FROM ODSTuras.SysRefDentalAssessmentOutcomeReason\r\nUNION\r\nSELECT N'ODSTuras.SysRefEducationProviderAppealOutcome' TableName, Id DimID, NULL DimCode, Name DimName, Description DimDescription, Active DimActive FROM ODSTuras.SysRefEducationProviderAppealOutcome\r\nUNION\r\nSELECT N'ODSTuras.SysRefEducationProviderEndReason' TableName, Id DimID, NULL DimCode, Name DimName, Description DimDescription, Active DimActive FROM ODSTuras.SysRefEducationProviderEndReason\r\nUNION\r\nSELECT N'ODSTuras.SysRefEducationProviderType' TableName, Id DimID, NULL DimCode, Name DimName, Description DimDescription, Active DimActive FROM ODSTuras.SysRefEducationProviderType\r\nUNION\r\nSELECT N'ODSTuras.SysRefEntityType' TableName, Id DimID, NULL DimCode, Name DimName, Description DimDescription, Active DimActive FROM ODSTuras.SysRefEntityType\r\nUNION\r\nSELECT N'ODSTuras.SysRefEstablishmentSourceEndReason' TableName, Id DimID, NULL DimCode, Name DimName, Description DimDescription, Active DimActive FROM ODSTuras.SysRefEstablishmentSourceEndReason\r\nUNION\r\nSELECT N'ODSTuras.SysRefEstablishmentSourceStartReason' TableName, Id DimID, NULL DimCode, Name DimName, Description DimDescription, Active DimActive FROM ODSTuras.SysRefEstablishmentSourceStartReason\r\nUNION\r\nSELECT N'ODSTuras.SysRefEstablishmentSourceType' TableName, Id DimID, NULL DimCode, Name DimName, Description DimDescription, Active DimActive FROM ODSTuras.SysRefEstablishmentSourceType\r\nUNION\r\nSELECT N'ODSTuras.SysRefExitRecordCategory' TableName, Id DimID, NULL DimCode, Name DimName, Description DimDescription, Active DimActive FROM ODSTuras.SysRefExitRecordCategory\r\nUNION\r\nSELECT N'ODSTuras.SysRefExitRecordReason' TableName, Id DimID, NULL DimCode, Name DimName, Description DimDescription, Active DimActive FROM ODSTuras.SysRefExitRecordReason\r\nUNION\r\nSELECT N'ODSTuras.SysRefOOPApprovalStatus' TableName, Id DimID, NULL DimCode, Name DimName, Description DimDescription, Active DimActive FROM ODSTuras.SysRefOOPApprovalStatus\r\nUNION\r\nSELECT N'ODSTuras.SysRefOOPType' TableName, Id DimID, NULL DimCode, Name DimName, Description DimDescription, Active DimActive FROM ODSTuras.SysRefOOPType\r\nUNION\r\nSELECT N'ODSTuras.SysRefPermission' TableName, Id DimID, NULL DimCode, Name DimName, Description DimDescription, Active DimActive FROM ODSTuras.SysRefPermission\r\nUNION\r\nSELECT N'ODSTuras.SysRefProgrammeClass' TableName, Id DimID, NULL DimCode, Name DimName, Description DimDescription, Active DimActive FROM ODSTuras.SysRefProgrammeClass\r\nUNION\r\nSELECT N'ODSTuras.SysRefProgrammeEndReason' TableName, Id DimID, NULL DimCode, Name DimName, Description DimDescription, Active DimActive FROM ODSTuras.SysRefProgrammeEndReason\r\nUNION\r\nSELECT N'ODSTuras.SysRefProgrammeType' TableName, Id DimID, NULL DimCode, Name DimName, Description DimDescription, Active DimActive FROM ODSTuras.SysRefProgrammeType\r\nUNION\r\nSELECT N'ODSTuras.SysRefRegistrationNumberType' TableName, Id DimID, NULL DimCode, Name DimName, Description DimDescription, Active DimActive FROM ODSTuras.SysRefRegistrationNumberType\r\nUNION\r\nSELECT N'ODSTuras.SysRefReportTypes' TableName, Id DimID, NULL DimCode, Name DimName, Description DimDescription, Active DimActive FROM ODSTuras.SysRefReportTypes\r\nUNION\r\nSELECT N'ODSTuras.SysRefSpeciality' TableName, Id DimID, NULL DimCode, Name DimName, Description DimDescription, Active DimActive FROM ODSTuras.SysRefSpeciality\r\nUNION\r\nSELECT N'ODSTuras.SysRefStudyLeaveApplicationStatus' TableName, Id DimID, NULL DimCode, Name DimName, Description DimDescription, Active DimActive FROM ODSTuras.SysRefStudyLeaveApplicationStatus\r\nUNION\r\nSELECT N'ODSTuras.SysRefStudyLeaveApprovalOutcome' TableName, Id DimID, NULL DimCode, Name DimName, Description DimDescription, Active DimActive FROM ODSTuras.SysRefStudyLeaveApprovalOutcome\r\nUNION\r\nSELECT N'ODSTuras.SysRefStudyLeaveClaimStatus' TableName, Id DimID, NULL DimCode, Name DimName, Description DimDescription, Active DimActive FROM ODSTuras.SysRefStudyLeaveClaimStatus\r\nUNION\r\nSELECT N'ODSTuras.SysRefStudyLeaveNotApprovedReason' TableName, Id DimID, NULL DimCode, Name DimName, Description DimDescription, Active DimActive FROM ODSTuras.SysRefStudyLeaveNotApprovedReason\r\nUNION\r\nSELECT N'ODSTuras.SysRefStudyLeaveTransactionsReason' TableName, Id DimID, NULL DimCode, Name DimName, Description DimDescription, Active DimActive FROM ODSTuras.SysRefStudyLeaveTransactionsReason\r\nUNION\r\nSELECT N'ODSTuras.SysRefSubSpeciality' TableName, Id DimID, NULL DimCode, Name DimName, Description DimDescription, Active DimActive FROM ODSTuras.SysRefSubSpeciality\r\nUNION\r\nSELECT N'ODSTuras.SysRefTraineeLtftRequestCategory' TableName, Id DimID, NULL DimCode, Name DimName, Description DimDescription, Active DimActive FROM ODSTuras.SysRefTraineeLtftRequestCategory\r\nUNION\r\nSELECT N'ODSTuras.SysRefTraineePostType' TableName, Id DimID, NULL DimCode, Name DimName, Description DimDescription, Active DimActive FROM ODSTuras.SysRefTraineePostType\r\nUNION\r\nSELECT N'ODSTuras.SysRefTraineeType' TableName, Id DimID, NULL DimCode, Name DimName, Description DimDescription, Active DimActive FROM ODSTuras.SysRefTraineeType\r\nUNION\r\nSELECT N'ODSTuras.SysRefTrainerRole' TableName, Id DimID, NULL DimCode, Name DimName, Description DimDescription, Active DimActive FROM ODSTuras.SysRefTrainerRole\r\nUNION\r\nSELECT N'ODSTuras.SysRefTrainerRoleType' TableName, Id DimID, NULL DimCode, Name DimName, Description DimDescription, Active DimActive FROM ODSTuras.SysRefTrainerRoleType\r\nUNION\r\nSELECT N'ODSTuras.SysRefTypeofUser' TableName, Id DimID, NULL DimCode, Name DimName, Description DimDescription, Active DimActive FROM ODSTuras.SysRefTypeofUser\r\nUNION\r\nSELECT N'ODSTuras.SysRefARCPOutcomeReasonType' TableName, Id DimID, NULL DimCode, Name DimName, Description DimDescription, Active DimActive FROM ODSTuras.SysRefARCPOutcomeReasonType\r\nUNION\r\nSELECT N'ODSTuras.SysRefExitRecordReason' TableName, Id DimID, NULL DimCode, Name DimName, Description DimDescription, Active DimActive FROM ODSTuras.SysRefExitRecordReason\r\nUNION\r\nSELECT N'ODSTuras.RefDisabled' TableName, Id DimID, NULL DimCode, Name DimName, Description DimDescription, Active DimActive FROM ODSTuras.RefDisabled\r\nUNION\r\nSELECT N'ODSTuras.RefEthnicOrigin' TableName, Id DimID, NULL DimCode, Name DimName, Description DimDescription, Active DimActive FROM ODSTuras.RefEthnicOrigin\r\nUNION\r\nSELECT N'ODSTuras.RefGender' TableName, Id DimID, NULL DimCode, Name DimName, Description DimDescription, Active DimActive FROM ODSTuras.RefGender\r\nUNION\r\nSELECT N'ODSTuras.RefMaritalStatus' TableName, Id DimID, NULL DimCode, Name DimName, Description DimDescription, Active DimActive FROM ODSTuras.RefMaritalStatus\r\nUNION\r\nSELECT N'ODSTuras.RefReligion' TableName, Id DimID, NULL DimCode, Name DimName, Description DimDescription, Active DimActive FROM ODSTuras.RefReligion\r\nUNION\r\nSELECT N'ODSTuras.RefSexualOrientation' TableName, Id DimID, NULL DimCode, Name DimName, Description DimDescription, Active DimActive FROM ODSTuras.RefSexualOrientation\r\nUNION\r\nSELECT N'ODSTuras.RefTransgender' TableName, Id DimID, NULL DimCode, Name DimName, Description DimDescription, Active DimActive FROM ODSTuras.RefTransgender\r\nUNION\r\nSELECT N'ODSTuras.SysRefPerformanceSupportEndReason' TableName, Id DimID, NULL DimCode, Name DimName, Description DimDescription, Active DimActive FROM ODSTuras.SysRefPerformanceSupportEndReason\r\nUNION\r\nSELECT N'ODSTuras.SysRefPerformanceSupportLevel' TableName, Id DimID, NULL DimCode, Name DimName, Description DimDescription, Active DimActive FROM ODSTuras.SysRefPerformanceSupportLevel\r\nUNION\r\nSELECT N'ODSTuras.SysRefTrainerEndReason' TableName, Id DimID, NULL DimCode, Name DimName, Description DimDescription, Active DimActive FROM ODSTuras.SysRefTrainerEndReason\r\n) AllDims  \r\nORDER BY DimTableName, DimID;"
+							},
+							"sink": {
+								"type": "AzureSqlSink",
+								"writeBatchSize": 10000
+							},
+							"enableStaging": false,
+							"translator": {
+								"type": "TabularTranslator",
+								"mappings": [
+									{
+										"source": {
+											"name": "DimTableName",
+											"type": "String"
+										},
+										"sink": {
+											"name": "DimTableName",
+											"type": "String"
+										}
+									},
+									{
+										"source": {
+											"name": "DimID",
+											"type": "Int64"
+										},
+										"sink": {
+											"name": "DimID",
+											"type": "Int64"
+										}
+									},
+									{
+										"source": {
+											"name": "DimCode",
+											"type": "String"
+										},
+										"sink": {
+											"name": "DimCode",
+											"type": "String"
+										}
+									},
+									{
+										"source": {
+											"name": "DimName",
+											"type": "String"
+										},
+										"sink": {
+											"name": "DimName",
+											"type": "String"
+										}
+									},
+									{
+										"source": {
+											"name": "DimDescription",
+											"type": "String"
+										},
+										"sink": {
+											"name": "DimDescription",
+											"type": "String"
+										}
+									},
+									{
+										"source": {
+											"name": "DimActive",
+											"type": "Boolean"
+										},
+										"sink": {
+											"name": "DimActive",
+											"type": "Boolean"
+										}
+									}
+								]
+							}
+						},
+						"inputs": [
+							{
+								"referenceName": "SourceWATest",
+								"type": "DatasetReference",
+								"parameters": {}
+							}
+						],
+						"outputs": [
+							{
+								"referenceName": "DestinationTurasDimensions",
+								"type": "DatasetReference",
+								"parameters": {}
+							}
+						]
+					}
+				],
+				"folder": {
+					"name": "MergeTurasDimensions"
+				},
+				"annotations": []
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/datasets/SourceWATest')]",
+				"[concat(variables('factoryId'), '/datasets/DestinationTurasDimensions')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/pl_DataFlowDriver')]",
+			"type": "Microsoft.DataFactory/factories/pipelines",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"activities": [
+					{
+						"name": "PortThesaurusTerms",
+						"type": "ExecuteDataFlow",
+						"dependsOn": [],
+						"policy": {
+							"timeout": "7.00:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"dataflow": {
+								"referenceName": "df_PortThesaurusTerms",
+								"type": "DataFlowReference",
+								"parameters": {},
+								"datasetParameters": {
+									"GetThesaurusTypes": {},
+									"GetTaxonomyTermTypes": {},
+									"InsertSink": {},
+									"UpdateSink": {},
+									"DeleteSink": {},
+									"DeleteAvailableFromTermSink": {}
+								}
+							},
+							"staging": {}
+						}
+					}
+				],
+				"folder": {
+					"name": "PortThesaurus"
+				},
+				"annotations": []
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/dataflows/df_PortThesaurusTerms')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/pl_GetDataFromPortfolioDimensionTables')]",
+			"type": "Microsoft.DataFactory/factories/pipelines",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"description": "Connect to WarehouseAlpha and get data from Portfolio Dimension Tables using a query.",
+				"activities": [
+					{
+						"name": "CreatePortfolioDimensionTables",
+						"type": "Copy",
+						"dependsOn": [],
+						"policy": {
+							"timeout": "7.00:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [
+							{
+								"name": "Destination",
+								"value": "[[dbo].[PortfolioDimension]"
+							}
+						],
+						"typeProperties": {
+							"source": {
+								"type": "AzureSqlSource",
+								"sqlReaderQuery": "SELECT CAST('ODSPortfolio.SysRefData(' + parent.[Name] + ')' AS NVARCHAR(80)) DimTableName,\r\n       child.Id DimID,\r\n       CAST(NULL AS NVARCHAR(20)) DimCode,\r\n       CAST(child.[Name] AS NVARCHAR(250)) DimName,\r\n       CAST(ISNULL(child.[Description], '') AS NVARCHAR(250)) DimDescription,\r\n       CAST(ISNULL(child.IsActive, 0) AS BIT) DimActive\r\nFROM ODSPortfolio.SysRefData child\r\n    LEFT JOIN ODSPortfolio.SysRefData parent\r\n        ON parent.Id = child.ParentId\r\nWHERE child.ParentId IS NOT NULL\r\nORDER BY DimTableName,\r\n         DimID;"
+							},
+							"sink": {
+								"type": "AzureSqlSink",
+								"writeBatchSize": 10000
+							},
+							"enableStaging": false,
+							"translator": {
+								"type": "TabularTranslator",
+								"mappings": [
+									{
+										"source": {
+											"name": "DimTableName",
+											"type": "String"
+										},
+										"sink": {
+											"name": "DimTableName",
+											"type": "String"
+										}
+									},
+									{
+										"source": {
+											"name": "DimID",
+											"type": "Int32"
+										},
+										"sink": {
+											"name": "DimID",
+											"type": "Int32"
+										}
+									},
+									{
+										"source": {
+											"name": "DimCode",
+											"type": "String"
+										},
+										"sink": {
+											"name": "DimCode",
+											"type": "String"
+										}
+									},
+									{
+										"source": {
+											"name": "DimName",
+											"type": "String"
+										},
+										"sink": {
+											"name": "DimName",
+											"type": "String"
+										}
+									},
+									{
+										"source": {
+											"name": "DimDescription",
+											"type": "String"
+										},
+										"sink": {
+											"name": "DimDescription",
+											"type": "String"
+										}
+									},
+									{
+										"source": {
+											"name": "DimActive",
+											"type": "Boolean"
+										},
+										"sink": {
+											"name": "DimActive",
+											"type": "Boolean"
+										}
+									}
+								]
+							}
+						},
+						"inputs": [
+							{
+								"referenceName": "SourcePortfolioDimensionTables",
+								"type": "DatasetReference",
+								"parameters": {}
+							}
+						],
+						"outputs": [
+							{
+								"referenceName": "DestinationPortfolioDimension",
+								"type": "DatasetReference",
+								"parameters": {}
+							}
+						]
+					}
+				],
+				"folder": {
+					"name": "MergePortfolioDimensions"
+				},
+				"annotations": []
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/datasets/SourcePortfolioDimensionTables')]",
+				"[concat(variables('factoryId'), '/datasets/DestinationPortfolioDimension')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/pl_LocalToAzureDB')]",
+			"type": "Microsoft.DataFactory/factories/pipelines",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"description": "Copy the term table from local host to an Azure DB",
+				"activities": [
+					{
+						"name": "LoadFromTermTable",
+						"description": "Load from local machine to Azure db",
+						"type": "Copy",
+						"dependsOn": [],
+						"policy": {
+							"timeout": "7.00:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"source": {
+								"type": "SqlSource",
+								"sqlReaderQuery": "Select \n\t\tDISTINCT CAST(T.ID AS SMALLINT) DimID, \n\t\tCAST(T.name AS NVARCHAR(200)) DimName, \n\t\tCAST(T.scope + ' ' + T.additionalnotes AS NVARCHAR(2000)) DimDescription \nFROM \n\t\tdbo.Term T\n  LEFT OUTER JOIN \n\t\tdbo.Relation RB on RB.maintermid = T.id AND RB.Relationship =3\n  LEFT OUTER JOIN \n\t\tdbo.Relation RN on RN.maintermid = T.id AND RN.Relationship =4\n  WHERE \n\t\tRB.id IS NULL AND RN.id IS NOT NULL\n  ORDER BY \n\t\tDimID"
+							},
+							"sink": {
+								"type": "SqlSink",
+								"writeBatchSize": 10000
+							},
+							"enableStaging": false,
+							"translator": {
+								"type": "TabularTranslator",
+								"columnMappings": {
+									"DimID": "DimId",
+									"DimName": "DimName",
+									"DimDescription": "DimDescription"
+								}
+							}
+						},
+						"inputs": [
+							{
+								"referenceName": "Localhost",
+								"type": "DatasetReference",
+								"parameters": {}
+							}
+						],
+						"outputs": [
+							{
+								"referenceName": "AzureSqlTermTable",
+								"type": "DatasetReference",
+								"parameters": {}
+							}
+						]
+					}
+				],
+				"folder": {
+					"name": "PortThesaurus"
+				},
+				"annotations": []
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/datasets/Localhost')]",
+				"[concat(variables('factoryId'), '/datasets/AzureSqlTermTable')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/pl_LocalToAzureTermType')]",
+			"type": "Microsoft.DataFactory/factories/pipelines",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"activities": [
+					{
+						"name": "LoadFromTermTypeTable",
+						"description": "Copy from local term type table to Azure db",
+						"type": "Copy",
+						"dependsOn": [],
+						"policy": {
+							"timeout": "7.00:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"source": {
+								"type": "SqlSource",
+								"sqlReaderQuery": "SELECT \n\t\tTermTypeID, TypeName, Description TypeDescription, Available TypeAvailable, SourceID TypeSourceID \nFROM \n\t\tdbo.TermType WHERE SourceID = 2"
+							},
+							"sink": {
+								"type": "SqlSink",
+								"writeBatchSize": 10000
+							},
+							"enableStaging": false,
+							"translator": {
+								"type": "TabularTranslator",
+								"columnMappings": {
+									"TermTypeID": "TermTypeID",
+									"TypeName": "TypeName",
+									"Description": "TypeDescription",
+									"Available": "TypeAvailable",
+									"SourceID": "TypeSourceID"
+								}
+							}
+						},
+						"inputs": [
+							{
+								"referenceName": "Taxonomy_tst",
+								"type": "DatasetReference",
+								"parameters": {}
+							}
+						],
+						"outputs": [
+							{
+								"referenceName": "AzureSqlTermTypes2",
+								"type": "DatasetReference",
+								"parameters": {}
+							}
+						]
+					}
+				],
+				"folder": {
+					"name": "PortThesaurus"
+				},
+				"annotations": []
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/datasets/Taxonomy_tst')]",
+				"[concat(variables('factoryId'), '/datasets/AzureSqlTermTypes2')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/pl_LocalToTaxonomySchema')]",
+			"type": "Microsoft.DataFactory/factories/pipelines",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"description": "Copy tables from the local db to the Taxonomy schema in MySampleDatabase on Azure",
+				"activities": [
+					{
+						"name": "LocalToTaxonomySchema",
+						"type": "Copy",
+						"dependsOn": [],
+						"policy": {
+							"timeout": "7.00:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [
+							{
+								"name": "Source",
+								"value": "[[dbo].[Term]"
+							},
+							{
+								"name": "Destination",
+								"value": "[[Taxonomy].[Term]"
+							}
+						],
+						"typeProperties": {
+							"source": {
+								"type": "SqlServerSource"
+							},
+							"sink": {
+								"type": "AzureSqlSink",
+								"writeBatchSize": 10000
+							},
+							"enableStaging": false,
+							"translator": {
+								"type": "TabularTranslator",
+								"mappings": [
+									{
+										"source": {
+											"name": "RelationshipID",
+											"type": "Int32"
+										},
+										"sink": {
+											"name": "RelationshipID",
+											"type": "Int32"
+										}
+									},
+									{
+										"source": {
+											"name": "TermXID",
+											"type": "Int32"
+										},
+										"sink": {
+											"name": "TermXID",
+											"type": "Int32"
+										}
+									},
+									{
+										"source": {
+											"name": "TermYID",
+											"type": "Int32"
+										},
+										"sink": {
+											"name": "TermYID",
+											"type": "Int32"
+										}
+									},
+									{
+										"source": {
+											"name": "KindID",
+											"type": "Int16"
+										},
+										"sink": {
+											"name": "KindID",
+											"type": "Int16"
+										}
+									},
+									{
+										"source": {
+											"name": "Description",
+											"type": "String"
+										},
+										"sink": {
+											"name": "Description",
+											"type": "String"
+										}
+									}
+								]
+							}
+						},
+						"inputs": [
+							{
+								"referenceName": "LocalTaxonomySchema",
+								"type": "DatasetReference",
+								"parameters": {}
+							}
+						],
+						"outputs": [
+							{
+								"referenceName": "AzureTaxonomySchema",
+								"type": "DatasetReference",
+								"parameters": {}
+							}
+						]
+					}
+				],
+				"annotations": []
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/datasets/LocalTaxonomySchema')]",
+				"[concat(variables('factoryId'), '/datasets/AzureTaxonomySchema')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/pl_LocalToThesaurusNESSchema')]",
+			"type": "Microsoft.DataFactory/factories/pipelines",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"description": "Copy from local copy of ThesaurusNES to ThesaurusNES schema in MySampleDatabase on Azure",
+				"activities": [
+					{
+						"name": "LocalToThesaurusNESSchema",
+						"description": "Create the Relation table in the ThesaurusNES schema.",
+						"type": "Copy",
+						"dependsOn": [],
+						"policy": {
+							"timeout": "7.00:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [
+							{
+								"name": "Source",
+								"value": "[[dbo].[Term]"
+							},
+							{
+								"name": "Destination",
+								"value": "[[ThesaurusNES].[Term]"
+							}
+						],
+						"typeProperties": {
+							"source": {
+								"type": "SqlServerSource"
+							},
+							"sink": {
+								"type": "AzureSqlSink",
+								"writeBatchSize": 10000
+							},
+							"enableStaging": false,
+							"translator": {
+								"type": "TabularTranslator",
+								"mappings": [
+									{
+										"source": {
+											"name": "id",
+											"type": "Int32"
+										},
+										"sink": {
+											"name": "id",
+											"type": "Int32"
+										}
+									},
+									{
+										"source": {
+											"name": "maintermid",
+											"type": "Int32"
+										},
+										"sink": {
+											"name": "maintermid",
+											"type": "Int32"
+										}
+									},
+									{
+										"source": {
+											"name": "relatedtermid",
+											"type": "Int32"
+										},
+										"sink": {
+											"name": "relatedtermid",
+											"type": "Int32"
+										}
+									},
+									{
+										"source": {
+											"name": "relationship",
+											"type": "Int32"
+										},
+										"sink": {
+											"name": "relationship",
+											"type": "Int32"
+										}
+									}
+								]
+							}
+						},
+						"inputs": [
+							{
+								"referenceName": "LocalThesaurusNESTerm",
+								"type": "DatasetReference",
+								"parameters": {}
+							}
+						],
+						"outputs": [
+							{
+								"referenceName": "ThesaurusNESOnAzure",
+								"type": "DatasetReference",
+								"parameters": {}
+							}
+						]
+					}
+				],
+				"annotations": []
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/datasets/LocalThesaurusNESTerm')]",
+				"[concat(variables('factoryId'), '/datasets/ThesaurusNESOnAzure')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/pl_TermInsertToTermRelationship')]",
+			"type": "Microsoft.DataFactory/factories/pipelines",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"description": "Uses a query to copy from the TermInsert table to TermRelationship table. Used in the Term relationships sink in the Create relationships dataflow.",
+				"activities": [
+					{
+						"name": "CopyToTermRel",
+						"description": "Copy from the 'Create terms' dataflow sink table to the termInsert table.  This is one of the sink table used in the 'Create Relationships' dataflow.",
+						"type": "Copy",
+						"dependsOn": [],
+						"policy": {
+							"timeout": "7.00:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [
+							{
+								"name": "Destination",
+								"value": "[[dbo].[TermRelationships]"
+							}
+						],
+						"typeProperties": {
+							"source": {
+								"type": "SqlSource",
+								"sqlReaderQuery": "SELECT TermRelationship.RelationshipID,\n       TermX.TermID XTermID,\n       TermX.DimID XTermDimID,\n       TermY.TermID YTermID,\n       TermY.DimID YTermDimID,\n       TermRelationship.KindID TermKindID\nFROM [Taxonomy].[TermRelationship] TermRelationship\n    LEFT JOIN [Taxonomy].[Term] TermX\n        ON TermX.TermID = TermRelationship.TermXID\n    LEFT JOIN [Taxonomy].[Term] TermY\n        ON TermY.TermID = TermRelationship.TermYID\n    LEFT JOIN [Taxonomy].[TermTypeSINK] TermType\n        ON TermType.TermTypeID = TermX.TermTypeID\nWHERE TermType.SourceID = 2\nORDER BY TermX.DimID,\n         TermY.DimID,\n         TermKindID;"
+							},
+							"sink": {
+								"type": "SqlSink",
+								"writeBatchSize": 10000
+							},
+							"enableStaging": false,
+							"translator": {
+								"type": "TabularTranslator",
+								"columnMappings": {
+									"RelationshipID": "RelationshipID",
+									"XTermID": "XTermID",
+									"XTermDimID": "XTermDimID",
+									"YTermID": "YTermID",
+									"YTermDimID": "YTermDimID",
+									"TermKindID": "TermKindID"
+								}
+							}
+						},
+						"inputs": [
+							{
+								"referenceName": "AzureSqlTable3",
+								"type": "DatasetReference",
+								"parameters": {}
+							}
+						],
+						"outputs": [
+							{
+								"referenceName": "DestinationTermRelationships",
+								"type": "DatasetReference",
+								"parameters": {}
+							}
+						]
+					}
+				],
+				"annotations": []
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/datasets/AzureSqlTable3')]",
+				"[concat(variables('factoryId'), '/datasets/DestinationTermRelationships')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/AzureSqlTable1')]",
+			"type": "Microsoft.DataFactory/factories/datasets",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"linkedServiceName": {
+					"referenceName": "WarehouseAlphaTest",
+					"type": "LinkedServiceReference"
+				},
+				"annotations": [],
+				"type": "AzureSqlTable",
+				"schema": [
+					{
+						"name": "TermTypeId",
+						"type": "int",
+						"precision": 10
+					},
+					{
+						"name": "TypeName",
+						"type": "nvarchar"
+					},
+					{
+						"name": "TypeDescription",
+						"type": "nvarchar"
+					},
+					{
+						"name": "TypeAvailable",
+						"type": "bit"
+					},
+					{
+						"name": "SourceId",
+						"type": "int",
+						"precision": 10
+					},
+					{
+						"name": "DimId",
+						"type": "int",
+						"precision": 10
+					}
+				],
+				"typeProperties": {
+					"tableName": "[[dbo].[TermTypeSinkIncDimId]"
+				}
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/linkedServices/WarehouseAlphaTest')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/AzureSqlTable3')]",
+			"type": "Microsoft.DataFactory/factories/datasets",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"linkedServiceName": {
+					"referenceName": "WarehouseAlphaTest",
+					"type": "LinkedServiceReference"
+				},
+				"annotations": [],
+				"type": "AzureSqlTable",
+				"structure": [
+					{
+						"name": "RelationshipID",
+						"type": "Int32"
+					},
+					{
+						"name": "XTermID",
+						"type": "Int32"
+					},
+					{
+						"name": "XTermDimID",
+						"type": "Int32"
+					},
+					{
+						"name": "YTermID",
+						"type": "Int32"
+					},
+					{
+						"name": "YTermDimID",
+						"type": "Int32"
+					},
+					{
+						"name": "TermKindID",
+						"type": "Int16"
+					}
+				],
+				"typeProperties": {
+					"tableName": "[[dbo].[TermInsert]"
+				}
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/linkedServices/WarehouseAlphaTest')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/AzureSqlTermTable')]",
+			"type": "Microsoft.DataFactory/factories/datasets",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"description": "Term table used as a sink for Thesaurus data",
+				"linkedServiceName": {
+					"referenceName": "WarehouseAlphaTest",
+					"type": "LinkedServiceReference"
+				},
+				"annotations": [],
+				"type": "AzureSqlTable",
+				"structure": [
+					{
+						"name": "DimId",
+						"type": "Int32"
+					},
+					{
+						"name": "DimName",
+						"type": "String"
+					},
+					{
+						"name": "DimDescription",
+						"type": "String"
+					}
+				],
+				"typeProperties": {
+					"tableName": "[[dbo].[Term]"
+				}
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/linkedServices/WarehouseAlphaTest')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/AzureSqlTermTypes')]",
+			"type": "Microsoft.DataFactory/factories/datasets",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"linkedServiceName": {
+					"referenceName": "WarehouseAlphaTest",
+					"type": "LinkedServiceReference"
+				},
+				"folder": {
+					"name": "PortThesaurus"
+				},
+				"annotations": [],
+				"type": "AzureSqlTable",
+				"schema": [
+					{
+						"name": "TermTypeID",
+						"type": "smallint",
+						"precision": 5
+					},
+					{
+						"name": "TypeName",
+						"type": "nvarchar"
+					},
+					{
+						"name": "TypeDescription",
+						"type": "nvarchar"
+					},
+					{
+						"name": "TypeAvailable",
+						"type": "bit"
+					},
+					{
+						"name": "TypeSourceID",
+						"type": "smallint",
+						"precision": 5
+					}
+				],
+				"typeProperties": {
+					"tableName": "[[dbo].[TermTypeSOURCE]"
+				}
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/linkedServices/WarehouseAlphaTest')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/AzureSqlTermTypes2')]",
+			"type": "Microsoft.DataFactory/factories/datasets",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"description": "table to be used as a sink for term types",
+				"linkedServiceName": {
+					"referenceName": "WarehouseAlphaTest",
+					"type": "LinkedServiceReference"
+				},
+				"annotations": [],
+				"type": "AzureSqlTable",
+				"structure": [
+					{
+						"name": "TermTypeID",
+						"type": "Int16"
+					},
+					{
+						"name": "TypeName",
+						"type": "String"
+					},
+					{
+						"name": "TypeDescription",
+						"type": "String"
+					},
+					{
+						"name": "TypeAvailable",
+						"type": "Boolean"
+					},
+					{
+						"name": "TypeSourceID",
+						"type": "Int16"
+					}
+				],
+				"typeProperties": {
+					"tableName": "[[dbo].[TermType]"
+				}
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/linkedServices/WarehouseAlphaTest')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/AzureTaxonomySchema')]",
+			"type": "Microsoft.DataFactory/factories/datasets",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"linkedServiceName": {
+					"referenceName": "WarehouseAlphaTest",
+					"type": "LinkedServiceReference"
+				},
+				"annotations": [],
+				"type": "AzureSqlTable",
+				"schema": [
+					{
+						"name": "RelationshipID",
+						"type": "int",
+						"precision": 10
+					},
+					{
+						"name": "TermXID",
+						"type": "int",
+						"precision": 10
+					},
+					{
+						"name": "TermYID",
+						"type": "int",
+						"precision": 10
+					},
+					{
+						"name": "KindID",
+						"type": "smallint",
+						"precision": 5
+					},
+					{
+						"name": "Description",
+						"type": "nvarchar"
+					}
+				],
+				"typeProperties": {
+					"tableName": "[[Taxonomy].[TermRelationship]"
+				}
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/linkedServices/WarehouseAlphaTest')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/CreateRel_Taxonomy')]",
+			"type": "Microsoft.DataFactory/factories/datasets",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"linkedServiceName": {
+					"referenceName": "PortThesaurusDB",
+					"type": "LinkedServiceReference"
+				},
+				"annotations": [],
+				"type": "AzureSqlTable",
+				"schema": [
+					{
+						"name": "RelationshipID",
+						"type": "int",
+						"precision": 10,
+						"scale": 255
+					},
+					{
+						"name": "XTermID",
+						"type": "int",
+						"precision": 10,
+						"scale": 255
+					},
+					{
+						"name": "XTermDimID",
+						"type": "int",
+						"precision": 10,
+						"scale": 255
+					},
+					{
+						"name": "YTermID",
+						"type": "int",
+						"precision": 10,
+						"scale": 255
+					},
+					{
+						"name": "YTermDimID",
+						"type": "int",
+						"precision": 10,
+						"scale": 255
+					},
+					{
+						"name": "TermKindID",
+						"type": "smallint",
+						"precision": 5,
+						"scale": 255
+					}
+				],
+				"typeProperties": {
+					"tableName": "[[dbo].[TermRelationship]"
+				}
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/linkedServices/PortThesaurusDB')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/CreateRel_TermRelationships')]",
+			"type": "Microsoft.DataFactory/factories/datasets",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"linkedServiceName": {
+					"referenceName": "WarehouseAlphaTest",
+					"type": "LinkedServiceReference"
+				},
+				"annotations": [],
+				"type": "AzureSqlTable",
+				"schema": [
+					{
+						"name": "RelationshipID",
+						"type": "int",
+						"precision": 10,
+						"scale": 255
+					},
+					{
+						"name": "XTermID",
+						"type": "int",
+						"precision": 10,
+						"scale": 255
+					},
+					{
+						"name": "XTermDimID",
+						"type": "int",
+						"precision": 10,
+						"scale": 255
+					},
+					{
+						"name": "YTermID",
+						"type": "int",
+						"precision": 10,
+						"scale": 255
+					},
+					{
+						"name": "YTermDimID",
+						"type": "int",
+						"precision": 10,
+						"scale": 255
+					},
+					{
+						"name": "TermKindID",
+						"type": "smallint",
+						"precision": 5,
+						"scale": 255
+					}
+				],
+				"typeProperties": {
+					"tableName": "[[dbo].[TermRelationshipSOURCE]"
+				}
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/linkedServices/WarehouseAlphaTest')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/CreateTurasDimsLookup')]",
+			"type": "Microsoft.DataFactory/factories/datasets",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"description": "Create the TurasTimsLookup table",
+				"linkedServiceName": {
+					"referenceName": "WarehouseAlphaTest",
+					"type": "LinkedServiceReference"
+				},
+				"folder": {
+					"name": "MergeTurasDimensions"
+				},
+				"annotations": [],
+				"type": "AzureSqlTable",
+				"schema": [
+					{
+						"name": "TermTypeID",
+						"type": "smallint",
+						"precision": 5,
+						"scale": 255
+					},
+					{
+						"name": "DimTable",
+						"type": "nvarchar",
+						"precision": 255,
+						"scale": 255
+					}
+				],
+				"typeProperties": {
+					"tableName": "[[dbo].[TurasDimsLookup]"
+				}
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/linkedServices/WarehouseAlphaTest')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/DestTaxonomyTermsSOURCE')]",
+			"type": "Microsoft.DataFactory/factories/datasets",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"linkedServiceName": {
+					"referenceName": "WarehouseAlphaTest",
+					"type": "LinkedServiceReference"
+				},
+				"folder": {
+					"name": "CreateTerms"
+				},
+				"annotations": [],
+				"type": "AzureSqlTable",
+				"schema": [
+					{
+						"name": "TermID",
+						"type": "int",
+						"precision": 10
+					},
+					{
+						"name": "TermDimID",
+						"type": "int",
+						"precision": 10
+					},
+					{
+						"name": "TermCode",
+						"type": "nvarchar"
+					},
+					{
+						"name": "TermName",
+						"type": "nvarchar"
+					},
+					{
+						"name": "TermDescription",
+						"type": "nvarchar"
+					},
+					{
+						"name": "TermPreferred",
+						"type": "bit"
+					},
+					{
+						"name": "TermTypeID",
+						"type": "smallint",
+						"precision": 5
+					}
+				],
+				"typeProperties": {
+					"tableName": "[[Taxonomy].[TermSOURCE]"
+				}
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/linkedServices/WarehouseAlphaTest')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/DestinationDataset_dboTermType')]",
+			"type": "Microsoft.DataFactory/factories/datasets",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"linkedServiceName": {
+					"referenceName": "PortThesaurusDB",
+					"type": "LinkedServiceReference"
+				},
+				"annotations": [],
+				"type": "AzureSqlTable",
+				"schema": [
+					{
+						"name": "TermTypeID",
+						"type": "smallint",
+						"precision": 5,
+						"scale": 255
+					},
+					{
+						"name": "TypeName",
+						"type": "nvarchar",
+						"precision": 255,
+						"scale": 255
+					},
+					{
+						"name": "Description",
+						"type": "nvarchar",
+						"precision": 255,
+						"scale": 255
+					},
+					{
+						"name": "Available",
+						"type": "bit",
+						"precision": 255,
+						"scale": 255
+					},
+					{
+						"name": "DimTable",
+						"type": "nvarchar",
+						"precision": 255,
+						"scale": 255
+					},
+					{
+						"name": "SourceID",
+						"type": "smallint",
+						"precision": 5,
+						"scale": 255
+					}
+				],
+				"typeProperties": {
+					"tableName": "[[dbo].[TermType]"
+				}
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/linkedServices/PortThesaurusDB')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/DestinationDataset_mgm')]",
+			"type": "Microsoft.DataFactory/factories/datasets",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"linkedServiceName": {
+					"referenceName": "WarehouseAlphaTest",
+					"type": "LinkedServiceReference"
+				},
+				"annotations": [],
+				"type": "AzureSqlTable",
+				"structure": [
+					{
+						"name": "TermID",
+						"type": "Int32",
+						"precision": 10,
+						"scale": 0
+					},
+					{
+						"name": "DimID",
+						"type": "Int32",
+						"precision": 10,
+						"scale": 0
+					}
+				],
+				"typeProperties": {
+					"tableName": "[[dbo].[LookupTable]"
+				}
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/linkedServices/WarehouseAlphaTest')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/DestinationGetDimRelationship')]",
+			"type": "Microsoft.DataFactory/factories/datasets",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"linkedServiceName": {
+					"referenceName": "WarehouseAlphaTest",
+					"type": "LinkedServiceReference"
+				},
+				"folder": {
+					"name": "CreateRelationships"
+				},
+				"annotations": [],
+				"type": "AzureSqlTable",
+				"structure": [
+					{
+						"name": "XDimID",
+						"type": "Int32",
+						"precision": 10,
+						"scale": 0
+					},
+					{
+						"name": "YDimID",
+						"type": "Int32",
+						"precision": 10,
+						"scale": 0
+					},
+					{
+						"name": "DimKindID",
+						"type": "Int32",
+						"precision": 10,
+						"scale": 0
+					}
+				],
+				"typeProperties": {
+					"tableName": "[[dbo].[GetDimRelationship]"
+				}
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/linkedServices/WarehouseAlphaTest')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/DestinationPortfolioDimension')]",
+			"type": "Microsoft.DataFactory/factories/datasets",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"linkedServiceName": {
+					"referenceName": "WarehouseAlphaTest",
+					"type": "LinkedServiceReference"
+				},
+				"annotations": [],
+				"type": "AzureSqlTable",
+				"schema": [
+					{
+						"name": "DimTableName",
+						"type": "nvarchar",
+						"precision": 255,
+						"scale": 255
+					},
+					{
+						"name": "DimCode",
+						"type": "nvarchar",
+						"precision": 255,
+						"scale": 255
+					},
+					{
+						"name": "DimName",
+						"type": "nvarchar",
+						"precision": 255,
+						"scale": 255
+					},
+					{
+						"name": "DimDescription",
+						"type": "nvarchar",
+						"precision": 255,
+						"scale": 255
+					},
+					{
+						"name": "DimActive",
+						"type": "bit",
+						"precision": 255,
+						"scale": 255
+					}
+				],
+				"typeProperties": {
+					"tableName": "[[dbo].[PortfolioDimension]"
+				}
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/linkedServices/WarehouseAlphaTest')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/DestinationTermRelationships')]",
+			"type": "Microsoft.DataFactory/factories/datasets",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"linkedServiceName": {
+					"referenceName": "WarehouseAlphaTest",
+					"type": "LinkedServiceReference"
+				},
+				"folder": {
+					"name": "CreateRelationships"
+				},
+				"annotations": [],
+				"type": "AzureSqlTable",
+				"structure": [
+					{
+						"name": "RelationshipID",
+						"type": "Int32"
+					},
+					{
+						"name": "XTermID",
+						"type": "Int32"
+					},
+					{
+						"name": "XTermDimID",
+						"type": "Int32"
+					},
+					{
+						"name": "YTermID",
+						"type": "Int32"
+					},
+					{
+						"name": "YTermDimID",
+						"type": "Int32"
+					},
+					{
+						"name": "TermKindID",
+						"type": "Int32"
+					}
+				],
+				"typeProperties": {
+					"tableName": "[[dbo].[TermRelationships]"
+				}
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/linkedServices/WarehouseAlphaTest')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/DestinationTermTable')]",
+			"type": "Microsoft.DataFactory/factories/datasets",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"linkedServiceName": {
+					"referenceName": "PortThesaurusDB",
+					"type": "LinkedServiceReference"
+				},
+				"annotations": [],
+				"type": "AzureSqlTable",
+				"schema": [
+					{
+						"name": "TermID",
+						"type": "int",
+						"precision": 10,
+						"scale": 255
+					},
+					{
+						"name": "DimID",
+						"type": "int",
+						"precision": 10,
+						"scale": 255
+					},
+					{
+						"name": "TermCode",
+						"type": "nvarchar",
+						"precision": 255,
+						"scale": 255
+					},
+					{
+						"name": "TermName",
+						"type": "nvarchar",
+						"precision": 255,
+						"scale": 255
+					},
+					{
+						"name": "Description",
+						"type": "nvarchar",
+						"precision": 255,
+						"scale": 255
+					},
+					{
+						"name": "Preferred",
+						"type": "bit",
+						"precision": 255,
+						"scale": 255
+					},
+					{
+						"name": "Available",
+						"type": "bit",
+						"precision": 255,
+						"scale": 255
+					},
+					{
+						"name": "TermTypeID",
+						"type": "smallint",
+						"precision": 5,
+						"scale": 255
+					}
+				],
+				"typeProperties": {
+					"tableName": "Term"
+				}
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/linkedServices/PortThesaurusDB')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/DestinationTermTypeSOURCE')]",
+			"type": "Microsoft.DataFactory/factories/datasets",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"linkedServiceName": {
+					"referenceName": "WarehouseAlphaTest",
+					"type": "LinkedServiceReference"
+				},
+				"folder": {
+					"name": "PortThesaurus"
+				},
+				"annotations": [],
+				"type": "AzureSqlTable",
+				"schema": [
+					{
+						"name": "TermTypeID",
+						"type": "smallint",
+						"precision": 5,
+						"scale": 255
+					},
+					{
+						"name": "TypeName",
+						"type": "nvarchar",
+						"precision": 255,
+						"scale": 255
+					},
+					{
+						"name": "TypeDescription",
+						"type": "nvarchar",
+						"precision": 255,
+						"scale": 255
+					},
+					{
+						"name": "TypeAvailable",
+						"type": "bit",
+						"precision": 255,
+						"scale": 255
+					},
+					{
+						"name": "DimTable",
+						"type": "nvarchar",
+						"precision": 255,
+						"scale": 255
+					},
+					{
+						"name": "TypeSourceID",
+						"type": "smallint",
+						"precision": 5,
+						"scale": 255
+					}
+				],
+				"typeProperties": {
+					"tableName": "[[dbo].[TermTypeSOURCE]"
+				}
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/linkedServices/WarehouseAlphaTest')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/DestinationTermTypeUpdate')]",
+			"type": "Microsoft.DataFactory/factories/datasets",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"linkedServiceName": {
+					"referenceName": "WarehouseAlphaTest",
+					"type": "LinkedServiceReference"
+				},
+				"annotations": [],
+				"type": "AzureSqlTable",
+				"structure": [
+					{
+						"name": "TermTypeID",
+						"type": "Int32",
+						"precision": 10,
+						"scale": 255
+					},
+					{
+						"name": "TypeName",
+						"type": "String",
+						"precision": 255,
+						"scale": 255
+					},
+					{
+						"name": "Description",
+						"type": "String",
+						"precision": 255,
+						"scale": 255
+					},
+					{
+						"name": "Available",
+						"type": "Boolean",
+						"precision": 255,
+						"scale": 255
+					},
+					{
+						"name": "SourceID",
+						"type": "Int32",
+						"precision": 10,
+						"scale": 255
+					}
+				],
+				"typeProperties": {
+					"tableName": "TermType"
+				}
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/linkedServices/WarehouseAlphaTest')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/DestinationTurasDimensions')]",
+			"type": "Microsoft.DataFactory/factories/datasets",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"linkedServiceName": {
+					"referenceName": "WarehouseAlphaTest",
+					"type": "LinkedServiceReference"
+				},
+				"folder": {
+					"name": "MergeTurasDimensions"
+				},
+				"annotations": [],
+				"type": "AzureSqlTable",
+				"schema": [
+					{
+						"name": "DimTableName",
+						"type": "nvarchar",
+						"precision": 255,
+						"scale": 255
+					},
+					{
+						"name": "DimID",
+						"type": "bigint",
+						"precision": 19,
+						"scale": 255
+					},
+					{
+						"name": "DimCode",
+						"type": "nvarchar",
+						"precision": 255,
+						"scale": 255
+					},
+					{
+						"name": "DimName",
+						"type": "nvarchar",
+						"precision": 255,
+						"scale": 255
+					},
+					{
+						"name": "DimDescription",
+						"type": "nvarchar",
+						"precision": 255,
+						"scale": 255
+					},
+					{
+						"name": "DimActive",
+						"type": "bit",
+						"precision": 255,
+						"scale": 255
+					}
+				],
+				"typeProperties": {
+					"tableName": "[[dbo].[TurasDimensions]"
+				}
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/linkedServices/WarehouseAlphaTest')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/GetDimRelationship')]",
+			"type": "Microsoft.DataFactory/factories/datasets",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"description": "Created  from a query",
+				"linkedServiceName": {
+					"referenceName": "WarehouseAlphaTest",
+					"type": "LinkedServiceReference"
+				},
+				"folder": {
+					"name": "CreateRelationships"
+				},
+				"annotations": [],
+				"type": "AzureSqlTable",
+				"schema": [
+					{
+						"name": "XDimID",
+						"type": "int",
+						"precision": 10
+					},
+					{
+						"name": "YDimID",
+						"type": "int",
+						"precision": 10
+					},
+					{
+						"name": "DimKindID",
+						"type": "int",
+						"precision": 10
+					}
+				],
+				"typeProperties": {
+					"tableName": "[[dbo].[GetDimRelationship]"
+				}
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/linkedServices/WarehouseAlphaTest')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/InsertTermTypeSink')]",
+			"type": "Microsoft.DataFactory/factories/datasets",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"linkedServiceName": {
+					"referenceName": "WarehouseAlphaTest",
+					"type": "LinkedServiceReference"
+				},
+				"annotations": [],
+				"type": "AzureSqlTable",
+				"schema": [
+					{
+						"name": "DimId",
+						"type": "int",
+						"precision": 10
+					},
+					{
+						"name": "DimTypeName",
+						"type": "nvarchar"
+					},
+					{
+						"name": "DimTypeDescription",
+						"type": "nvarchar"
+					},
+					{
+						"name": "DimAvailable",
+						"type": "bit"
+					},
+					{
+						"name": "DimSourceId",
+						"type": "int",
+						"precision": 10
+					}
+				],
+				"typeProperties": {
+					"tableName": "[[dbo].[TermTypeSinkInsert]"
+				}
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/linkedServices/WarehouseAlphaTest')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/IntermediateTermTable')]",
+			"type": "Microsoft.DataFactory/factories/datasets",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"linkedServiceName": {
+					"referenceName": "PortThesaurusDB",
+					"type": "LinkedServiceReference"
+				},
+				"annotations": [],
+				"type": "AzureSqlTable",
+				"schema": [
+					{
+						"name": "TermID",
+						"type": "int",
+						"precision": 10
+					},
+					{
+						"name": "DimID",
+						"type": "int",
+						"precision": 10
+					},
+					{
+						"name": "TermCode",
+						"type": "nvarchar"
+					},
+					{
+						"name": "TermName",
+						"type": "nvarchar"
+					},
+					{
+						"name": "Description",
+						"type": "nvarchar"
+					},
+					{
+						"name": "Preferred",
+						"type": "bit"
+					},
+					{
+						"name": "Available",
+						"type": "bit"
+					},
+					{
+						"name": "TermTypeID",
+						"type": "smallint",
+						"precision": 5
+					}
+				],
+				"typeProperties": {
+					"tableName": "[[dbo].[IntermediateTerm]"
+				}
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/linkedServices/PortThesaurusDB')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/LocalTaxonomySchema')]",
+			"type": "Microsoft.DataFactory/factories/datasets",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"linkedServiceName": {
+					"referenceName": "LocalhostTermType",
+					"type": "LinkedServiceReference"
+				},
+				"annotations": [],
+				"type": "SqlServerTable",
+				"structure": [
+					{
+						"name": "RelationshipID",
+						"type": "Int32"
+					},
+					{
+						"name": "TermXID",
+						"type": "Int32"
+					},
+					{
+						"name": "TermYID",
+						"type": "Int32"
+					},
+					{
+						"name": "KindID",
+						"type": "Int16"
+					},
+					{
+						"name": "Description",
+						"type": "String"
+					}
+				],
+				"typeProperties": {
+					"tableName": "[[dbo].[TermRelationship]"
+				}
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/linkedServices/LocalhostTermType')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/LocalTermsTableOnThesaurus')]",
+			"type": "Microsoft.DataFactory/factories/datasets",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"linkedServiceName": {
+					"referenceName": "LocalhostSqlServer",
+					"type": "LinkedServiceReference"
+				},
+				"annotations": [],
+				"type": "SqlServerTable",
+				"schema": [],
+				"typeProperties": {}
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/linkedServices/LocalhostSqlServer')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/LocalThesaurusNESTerm')]",
+			"type": "Microsoft.DataFactory/factories/datasets",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"linkedServiceName": {
+					"referenceName": "LocalhostSqlServer",
+					"type": "LinkedServiceReference"
+				},
+				"annotations": [],
+				"type": "SqlServerTable",
+				"structure": [
+					{
+						"name": "id",
+						"type": "Int32"
+					},
+					{
+						"name": "maintermid",
+						"type": "Int32"
+					},
+					{
+						"name": "relatedtermid",
+						"type": "Int32"
+					},
+					{
+						"name": "relationship",
+						"type": "Int32"
+					}
+				],
+				"typeProperties": {
+					"tableName": "[[dbo].[Relation]"
+				}
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/linkedServices/LocalhostSqlServer')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/Localhost')]",
+			"type": "Microsoft.DataFactory/factories/datasets",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"linkedServiceName": {
+					"referenceName": "LocalhostSqlServer",
+					"type": "LinkedServiceReference"
+				},
+				"annotations": [],
+				"type": "SqlServerTable",
+				"structure": [
+					{
+						"name": "DimID",
+						"type": "Int16"
+					},
+					{
+						"name": "DimName",
+						"type": "String"
+					},
+					{
+						"name": "DimDescription",
+						"type": "String"
+					}
+				],
+				"typeProperties": {
+					"tableName": "[[dbo].[Term]"
+				}
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/linkedServices/LocalhostSqlServer')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/Lookup')]",
+			"type": "Microsoft.DataFactory/factories/datasets",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"linkedServiceName": {
+					"referenceName": "WarehouseAlphaTest",
+					"type": "LinkedServiceReference"
+				},
+				"annotations": [],
+				"type": "AzureSqlTable",
+				"schema": [
+					{
+						"name": "TermID",
+						"type": "int",
+						"precision": 10
+					},
+					{
+						"name": "DimID",
+						"type": "int",
+						"precision": 10
+					}
+				],
+				"typeProperties": {
+					"tableName": "[[dbo].[LookupTable]"
+				}
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/linkedServices/WarehouseAlphaTest')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/LookupTypesWithDimID')]",
+			"type": "Microsoft.DataFactory/factories/datasets",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"linkedServiceName": {
+					"referenceName": "WarehouseAlphaTest",
+					"type": "LinkedServiceReference"
+				},
+				"annotations": [],
+				"type": "AzureSqlTable",
+				"schema": [
+					{
+						"name": "TermTypeID",
+						"type": "smallint",
+						"precision": 5
+					},
+					{
+						"name": "TypeName",
+						"type": "nvarchar"
+					},
+					{
+						"name": "Description",
+						"type": "nvarchar"
+					},
+					{
+						"name": "Available",
+						"type": "bit"
+					},
+					{
+						"name": "SourceID",
+						"type": "smallint",
+						"precision": 5
+					},
+					{
+						"name": "DimTable",
+						"type": "nvarchar"
+					}
+				],
+				"typeProperties": {
+					"tableName": "[[dbo].[TermType]"
+				}
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/linkedServices/WarehouseAlphaTest')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/OriginalTermTypeTable')]",
+			"type": "Microsoft.DataFactory/factories/datasets",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"linkedServiceName": {
+					"referenceName": "WarehouseAlphaTest",
+					"type": "LinkedServiceReference"
+				},
+				"annotations": [],
+				"type": "AzureSqlTable",
+				"schema": [
+					{
+						"name": "TermTypeID",
+						"type": "smallint",
+						"precision": 5
+					},
+					{
+						"name": "TypeName",
+						"type": "nvarchar"
+					},
+					{
+						"name": "Description",
+						"type": "nvarchar"
+					},
+					{
+						"name": "Available",
+						"type": "bit"
+					},
+					{
+						"name": "SourceID",
+						"type": "smallint",
+						"precision": 5
+					},
+					{
+						"name": "DimTable",
+						"type": "nvarchar"
+					}
+				],
+				"typeProperties": {
+					"tableName": "[[dbo].[TermType]"
+				}
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/linkedServices/WarehouseAlphaTest')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/PortfolioDimensionTables')]",
+			"type": "Microsoft.DataFactory/factories/datasets",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"linkedServiceName": {
+					"referenceName": "WarehouseAlphaTest",
+					"type": "LinkedServiceReference"
+				},
+				"folder": {
+					"name": "MergePortfolioDimensions"
+				},
+				"annotations": [],
+				"type": "AzureSqlTable",
+				"schema": [
+					{
+						"name": "DimTableName",
+						"type": "nvarchar"
+					},
+					{
+						"name": "DimID",
+						"type": "int",
+						"precision": 10
+					},
+					{
+						"name": "DimCode",
+						"type": "nvarchar"
+					},
+					{
+						"name": "DimName",
+						"type": "nvarchar"
+					},
+					{
+						"name": "DimDescription",
+						"type": "nvarchar"
+					},
+					{
+						"name": "DimActive",
+						"type": "bit"
+					}
+				],
+				"typeProperties": {
+					"tableName": "[[dbo].[PortfolioDimension]"
+				}
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/linkedServices/WarehouseAlphaTest')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/PortfolioDimsLookup')]",
+			"type": "Microsoft.DataFactory/factories/datasets",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"linkedServiceName": {
+					"referenceName": "WarehouseAlphaTest",
+					"type": "LinkedServiceReference"
+				},
+				"annotations": [],
+				"type": "AzureSqlTable",
+				"schema": [
+					{
+						"name": "TermTypeID",
+						"type": "smallint",
+						"precision": 5
+					},
+					{
+						"name": "DimTable",
+						"type": "nvarchar"
+					}
+				],
+				"typeProperties": {
+					"tableName": "[[dbo].[PortfolioDimsLookup]"
+				}
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/linkedServices/WarehouseAlphaTest')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/SourceDataset_TaxTermType')]",
+			"type": "Microsoft.DataFactory/factories/datasets",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"linkedServiceName": {
+					"referenceName": "WarehouseAlphaTest",
+					"type": "LinkedServiceReference"
+				},
+				"annotations": [],
+				"type": "AzureSqlTable",
+				"schema": [
+					{
+						"name": "TermTypeID",
+						"type": "smallint",
+						"precision": 5,
+						"scale": 255
+					},
+					{
+						"name": "TypeName",
+						"type": "nvarchar",
+						"precision": 255,
+						"scale": 255
+					},
+					{
+						"name": "Description",
+						"type": "nvarchar",
+						"precision": 255,
+						"scale": 255
+					},
+					{
+						"name": "Available",
+						"type": "bit",
+						"precision": 255,
+						"scale": 255
+					},
+					{
+						"name": "DimTable",
+						"type": "nvarchar",
+						"precision": 255,
+						"scale": 255
+					},
+					{
+						"name": "SourceID",
+						"type": "smallint",
+						"precision": 5,
+						"scale": 255
+					}
+				],
+				"typeProperties": {
+					"tableName": "[[Taxonomy].[TermType]"
+				}
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/linkedServices/WarehouseAlphaTest')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/SourceDataset_mgm')]",
+			"type": "Microsoft.DataFactory/factories/datasets",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"linkedServiceName": {
+					"referenceName": "WarehouseAlphaTest",
+					"type": "LinkedServiceReference"
+				},
+				"annotations": [],
+				"type": "AzureSqlTable",
+				"structure": [
+					{
+						"name": "TermID",
+						"type": "Int32"
+					},
+					{
+						"name": "DimID",
+						"type": "Int32"
+					}
+				],
+				"typeProperties": {}
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/linkedServices/WarehouseAlphaTest')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/SourceLocalToTermRelationships')]",
+			"type": "Microsoft.DataFactory/factories/datasets",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"linkedServiceName": {
+					"referenceName": "LocalhostTermType",
+					"type": "LinkedServiceReference"
+				},
+				"annotations": [],
+				"type": "SqlServerTable",
+				"structure": [
+					{
+						"name": "RelationshipID",
+						"type": "Int32"
+					},
+					{
+						"name": "XTermID",
+						"type": "Int32"
+					},
+					{
+						"name": "XTermDimID",
+						"type": "Int32"
+					},
+					{
+						"name": "YTermID",
+						"type": "Int32"
+					},
+					{
+						"name": "YTermDimID",
+						"type": "Int32"
+					},
+					{
+						"name": "TermKindID",
+						"type": "Int16"
+					}
+				],
+				"typeProperties": {}
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/linkedServices/LocalhostTermType')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/SourcePortfolioDimensionTables')]",
+			"type": "Microsoft.DataFactory/factories/datasets",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"linkedServiceName": {
+					"referenceName": "WarehouseAlphaTest2",
+					"type": "LinkedServiceReference"
+				},
+				"annotations": [],
+				"type": "AzureSqlTable",
+				"schema": [
+					{
+						"name": "DimTableName",
+						"type": "nvarchar",
+						"precision": 255,
+						"scale": 255
+					},
+					{
+						"name": "DimID",
+						"type": "int",
+						"precision": 10,
+						"scale": 255
+					},
+					{
+						"name": "DimCode",
+						"type": "nvarchar",
+						"precision": 255,
+						"scale": 255
+					},
+					{
+						"name": "DimName",
+						"type": "nvarchar",
+						"precision": 255,
+						"scale": 255
+					},
+					{
+						"name": "DimDescription",
+						"type": "nvarchar",
+						"precision": 255,
+						"scale": 255
+					},
+					{
+						"name": "DimActive",
+						"type": "bit",
+						"precision": 255,
+						"scale": 255
+					}
+				],
+				"typeProperties": {}
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/linkedServices/WarehouseAlphaTest2')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/SourceRelationFromLocal')]",
+			"type": "Microsoft.DataFactory/factories/datasets",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"linkedServiceName": {
+					"referenceName": "LocalhostSqlServer",
+					"type": "LinkedServiceReference"
+				},
+				"annotations": [],
+				"type": "SqlServerTable",
+				"structure": [
+					{
+						"name": "XDimID",
+						"type": "Int32"
+					},
+					{
+						"name": "YDimID",
+						"type": "Int32"
+					},
+					{
+						"name": "DimKindID",
+						"type": "Int16"
+					}
+				],
+				"typeProperties": {}
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/linkedServices/LocalhostSqlServer')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/SourceTaxonomyTermType')]",
+			"type": "Microsoft.DataFactory/factories/datasets",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"linkedServiceName": {
+					"referenceName": "WarehouseAlphaTest",
+					"type": "LinkedServiceReference"
+				},
+				"folder": {
+					"name": "MergeTurasDimensions"
+				},
+				"annotations": [],
+				"type": "AzureSqlTable",
+				"schema": [
+					{
+						"name": "TermTypeID",
+						"type": "smallint",
+						"precision": 5,
+						"scale": 255
+					},
+					{
+						"name": "DimTable",
+						"type": "nvarchar",
+						"precision": 255,
+						"scale": 255
+					}
+				],
+				"typeProperties": {}
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/linkedServices/WarehouseAlphaTest')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/SourceTermType')]",
+			"type": "Microsoft.DataFactory/factories/datasets",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"linkedServiceName": {
+					"referenceName": "LocalhostTermType",
+					"type": "LinkedServiceReference"
+				},
+				"annotations": [],
+				"type": "SqlServerTable",
+				"structure": [
+					{
+						"name": "TermTypeID",
+						"type": "Int16"
+					},
+					{
+						"name": "TypeName",
+						"type": "String"
+					},
+					{
+						"name": "TypeDescription",
+						"type": "String"
+					},
+					{
+						"name": "TypeAvailable",
+						"type": "Boolean"
+					},
+					{
+						"name": "TypeSourceID",
+						"type": "Int16"
+					}
+				],
+				"typeProperties": {}
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/linkedServices/LocalhostTermType')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/SourceTermTypeSink')]",
+			"type": "Microsoft.DataFactory/factories/datasets",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"linkedServiceName": {
+					"referenceName": "WarehouseAlphaTest",
+					"type": "LinkedServiceReference"
+				},
+				"annotations": [],
+				"type": "AzureSqlTable",
+				"structure": [
+					{
+						"name": "TermTypeId",
+						"type": "Int32"
+					},
+					{
+						"name": "TypeName",
+						"type": "String"
+					},
+					{
+						"name": "TypeDescription",
+						"type": "String"
+					},
+					{
+						"name": "TypeAvailable",
+						"type": "Boolean"
+					},
+					{
+						"name": "SourceId",
+						"type": "Int32"
+					}
+				],
+				"typeProperties": {
+					"tableName": "[[dbo].[TermTypeSink]"
+				}
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/linkedServices/WarehouseAlphaTest')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/SourceWATest')]",
+			"type": "Microsoft.DataFactory/factories/datasets",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"linkedServiceName": {
+					"referenceName": "WarehouseAlphaTest2",
+					"type": "LinkedServiceReference"
+				},
+				"annotations": [],
+				"type": "AzureSqlTable",
+				"schema": [
+					{
+						"name": "DimTableName",
+						"type": "nvarchar",
+						"precision": 255,
+						"scale": 255
+					},
+					{
+						"name": "DimID",
+						"type": "bigint",
+						"precision": 19,
+						"scale": 255
+					},
+					{
+						"name": "DimCode",
+						"type": "nvarchar",
+						"precision": 255,
+						"scale": 255
+					},
+					{
+						"name": "DimName",
+						"type": "nvarchar",
+						"precision": 255,
+						"scale": 255
+					},
+					{
+						"name": "DimDescription",
+						"type": "nvarchar",
+						"precision": 255,
+						"scale": 255
+					},
+					{
+						"name": "DimActive",
+						"type": "bit",
+						"precision": 255,
+						"scale": 255
+					}
+				],
+				"typeProperties": {}
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/linkedServices/WarehouseAlphaTest2')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/TaxonomyDimensionTerms')]",
+			"type": "Microsoft.DataFactory/factories/datasets",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"linkedServiceName": {
+					"referenceName": "WarehouseAlphaTest",
+					"type": "LinkedServiceReference"
+				},
+				"folder": {
+					"name": "MergeTurasDimensions"
+				},
+				"annotations": [],
+				"type": "AzureSqlTable",
+				"schema": [
+					{
+						"name": "TermDimTable",
+						"type": "nvarchar"
+					},
+					{
+						"name": "TermID",
+						"type": "int",
+						"precision": 10
+					},
+					{
+						"name": "TermDimID",
+						"type": "bigint",
+						"precision": 19
+					},
+					{
+						"name": "TermCode",
+						"type": "nvarchar"
+					},
+					{
+						"name": "TermName",
+						"type": "nvarchar"
+					},
+					{
+						"name": "TermDescription",
+						"type": "nvarchar"
+					},
+					{
+						"name": "TermPreferred",
+						"type": "bit"
+					},
+					{
+						"name": "TermAvailable",
+						"type": "bit"
+					},
+					{
+						"name": "TermTypeID",
+						"type": "smallint",
+						"precision": 5
+					}
+				],
+				"typeProperties": {
+					"tableName": "[[dbo].[TaxonomyDimensionTerms]"
+				}
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/linkedServices/WarehouseAlphaTest')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/TaxonomyTermTable')]",
+			"type": "Microsoft.DataFactory/factories/datasets",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"linkedServiceName": {
+					"referenceName": "WarehouseAlphaTest",
+					"type": "LinkedServiceReference"
+				},
+				"folder": {
+					"name": "PortThesaurus"
+				},
+				"annotations": [],
+				"type": "AzureSqlTable",
+				"schema": [
+					{
+						"name": "TermID",
+						"type": "int",
+						"precision": 10
+					},
+					{
+						"name": "DimID",
+						"type": "int",
+						"precision": 10
+					},
+					{
+						"name": "TermCode",
+						"type": "nvarchar"
+					},
+					{
+						"name": "TermName",
+						"type": "nvarchar"
+					},
+					{
+						"name": "Description",
+						"type": "nvarchar"
+					},
+					{
+						"name": "Preferred",
+						"type": "bit"
+					},
+					{
+						"name": "Available",
+						"type": "bit"
+					},
+					{
+						"name": "TermTypeID",
+						"type": "smallint",
+						"precision": 5
+					}
+				],
+				"typeProperties": {
+					"tableName": "[[Taxonomy].[Term]"
+				}
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/linkedServices/WarehouseAlphaTest')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/TaxonomyTerms')]",
+			"type": "Microsoft.DataFactory/factories/datasets",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"linkedServiceName": {
+					"referenceName": "WarehouseAlphaTest",
+					"type": "LinkedServiceReference"
+				},
+				"annotations": [],
+				"type": "AzureSqlTable",
+				"schema": [
+					{
+						"name": "TermID",
+						"type": "int",
+						"precision": 10
+					},
+					{
+						"name": "TermDimID",
+						"type": "int",
+						"precision": 10
+					},
+					{
+						"name": "TermCode",
+						"type": "nvarchar"
+					},
+					{
+						"name": "TermName",
+						"type": "nvarchar"
+					},
+					{
+						"name": "TermDescription",
+						"type": "nvarchar"
+					},
+					{
+						"name": "TermPreferred",
+						"type": "bit"
+					},
+					{
+						"name": "Available",
+						"type": "bit"
+					},
+					{
+						"name": "TermTypeID",
+						"type": "smallint",
+						"precision": 5
+					}
+				],
+				"typeProperties": {
+					"tableName": "[[dbo].[TaxonomyTerms]"
+				}
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/linkedServices/WarehouseAlphaTest')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/TaxonomyTermsFromTaxonomy')]",
+			"type": "Microsoft.DataFactory/factories/datasets",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"linkedServiceName": {
+					"referenceName": "WarehouseAlphaTest",
+					"type": "LinkedServiceReference"
+				},
+				"folder": {
+					"name": "CreateTerms"
+				},
+				"annotations": [],
+				"type": "AzureSqlTable",
+				"schema": [
+					{
+						"name": "TermID",
+						"type": "int",
+						"precision": 10
+					},
+					{
+						"name": "DimID",
+						"type": "int",
+						"precision": 10
+					},
+					{
+						"name": "TermCode",
+						"type": "nvarchar"
+					},
+					{
+						"name": "TermName",
+						"type": "nvarchar"
+					},
+					{
+						"name": "Description",
+						"type": "nvarchar"
+					},
+					{
+						"name": "Preferred",
+						"type": "bit"
+					},
+					{
+						"name": "Available",
+						"type": "bit"
+					},
+					{
+						"name": "TermTypeID",
+						"type": "smallint",
+						"precision": 5
+					}
+				],
+				"typeProperties": {
+					"tableName": "[[Taxonomy].[Term]"
+				}
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/linkedServices/WarehouseAlphaTest')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/Taxonomy_tst')]",
+			"type": "Microsoft.DataFactory/factories/datasets",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"linkedServiceName": {
+					"referenceName": "LocalhostTermType",
+					"type": "LinkedServiceReference"
+				},
+				"annotations": [],
+				"type": "SqlServerTable",
+				"structure": [
+					{
+						"name": "TermTypeID",
+						"type": "Int16"
+					},
+					{
+						"name": "TypeName",
+						"type": "String"
+					},
+					{
+						"name": "Description",
+						"type": "String"
+					},
+					{
+						"name": "Available",
+						"type": "Boolean"
+					},
+					{
+						"name": "SourceID",
+						"type": "Int16"
+					}
+				],
+				"typeProperties": {
+					"tableName": "[[dbo].[TermType]"
+				}
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/linkedServices/LocalhostTermType')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/TermDeletions')]",
+			"type": "Microsoft.DataFactory/factories/datasets",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"linkedServiceName": {
+					"referenceName": "WarehouseAlphaTest",
+					"type": "LinkedServiceReference"
+				},
+				"annotations": [],
+				"type": "AzureSqlTable",
+				"structure": [
+					{
+						"name": "TermTypeID",
+						"type": "Int32"
+					},
+					{
+						"name": "TypeName",
+						"type": "String"
+					},
+					{
+						"name": "Description",
+						"type": "String"
+					},
+					{
+						"name": "Available",
+						"type": "Boolean"
+					},
+					{
+						"name": "SourceID",
+						"type": "Int32"
+					}
+				],
+				"typeProperties": {
+					"tableName": "[[dbo].[TermDeletions]"
+				}
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/linkedServices/WarehouseAlphaTest')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/TermDeletionsSink')]",
+			"type": "Microsoft.DataFactory/factories/datasets",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"linkedServiceName": {
+					"referenceName": "WarehouseAlphaTest",
+					"type": "LinkedServiceReference"
+				},
+				"annotations": [],
+				"type": "AzureSqlTable",
+				"structure": [
+					{
+						"name": "TermTypeId",
+						"type": "Int32"
+					},
+					{
+						"name": "TypeName",
+						"type": "String"
+					},
+					{
+						"name": "TypeDescription",
+						"type": "String"
+					},
+					{
+						"name": "TypeAvailable",
+						"type": "Boolean"
+					},
+					{
+						"name": "SourceId",
+						"type": "Int32"
+					},
+					{
+						"name": "DimId",
+						"type": "Int32"
+					}
+				],
+				"typeProperties": {
+					"tableName": "[[dbo].[TermTypeSinkIncDimId]"
+				}
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/linkedServices/WarehouseAlphaTest')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/TermRelationship')]",
+			"type": "Microsoft.DataFactory/factories/datasets",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"linkedServiceName": {
+					"referenceName": "WarehouseAlphaTest",
+					"type": "LinkedServiceReference"
+				},
+				"folder": {
+					"name": "CreateRelationships"
+				},
+				"annotations": [],
+				"type": "AzureSqlTable",
+				"schema": [
+					{
+						"name": "RelationshipID",
+						"type": "int",
+						"precision": 10
+					},
+					{
+						"name": "XTermID",
+						"type": "int",
+						"precision": 10
+					},
+					{
+						"name": "XTermDimID",
+						"type": "int",
+						"precision": 10
+					},
+					{
+						"name": "YTermID",
+						"type": "int",
+						"precision": 10
+					},
+					{
+						"name": "YTermDimID",
+						"type": "int",
+						"precision": 10
+					},
+					{
+						"name": "TermKindID",
+						"type": "smallint",
+						"precision": 5
+					}
+				],
+				"typeProperties": {
+					"tableName": "[[dbo].[TermRelationshipSOURCE]"
+				}
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/linkedServices/WarehouseAlphaTest')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/TermRelationshipSink')]",
+			"type": "Microsoft.DataFactory/factories/datasets",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"linkedServiceName": {
+					"referenceName": "WarehouseAlphaTest",
+					"type": "LinkedServiceReference"
+				},
+				"folder": {
+					"name": "CreateRelationships"
+				},
+				"annotations": [],
+				"type": "AzureSqlTable",
+				"schema": [
+					{
+						"name": "RelationshipID",
+						"type": "int",
+						"precision": 10
+					},
+					{
+						"name": "TermXID",
+						"type": "int",
+						"precision": 10
+					},
+					{
+						"name": "TermYID",
+						"type": "int",
+						"precision": 10
+					},
+					{
+						"name": "KindID",
+						"type": "smallint",
+						"precision": 5
+					},
+					{
+						"name": "Description",
+						"type": "nvarchar"
+					}
+				],
+				"typeProperties": {
+					"tableName": "[[Taxonomy].[TermRelationship]"
+				}
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/linkedServices/WarehouseAlphaTest')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/TermSINK')]",
+			"type": "Microsoft.DataFactory/factories/datasets",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"linkedServiceName": {
+					"referenceName": "PortThesaurusDB",
+					"type": "LinkedServiceReference"
+				},
+				"folder": {
+					"name": "PortThesaurus"
+				},
+				"annotations": [],
+				"type": "AzureSqlTable",
+				"schema": [
+					{
+						"name": "TermID",
+						"type": "int",
+						"precision": 10
+					},
+					{
+						"name": "DimID",
+						"type": "int",
+						"precision": 10
+					},
+					{
+						"name": "TermCode",
+						"type": "nvarchar"
+					},
+					{
+						"name": "TermName",
+						"type": "nvarchar"
+					},
+					{
+						"name": "Description",
+						"type": "nvarchar"
+					},
+					{
+						"name": "Preferred",
+						"type": "bit"
+					},
+					{
+						"name": "Available",
+						"type": "bit"
+					},
+					{
+						"name": "TermTypeID",
+						"type": "smallint",
+						"precision": 5
+					}
+				],
+				"typeProperties": {
+					"tableName": "[[dbo].[IntermediateTerm]"
+				}
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/linkedServices/PortThesaurusDB')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/TermTable')]",
+			"type": "Microsoft.DataFactory/factories/datasets",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"linkedServiceName": {
+					"referenceName": "WarehouseAlphaTest",
+					"type": "LinkedServiceReference"
+				},
+				"folder": {
+					"name": "PortThesaurus"
+				},
+				"annotations": [],
+				"type": "AzureSqlTable",
+				"schema": [
+					{
+						"name": "DimId",
+						"type": "int",
+						"precision": 10
+					},
+					{
+						"name": "DimName",
+						"type": "varchar"
+					},
+					{
+						"name": "DimDescription",
+						"type": "varchar"
+					}
+				],
+				"typeProperties": {
+					"tableName": "[[dbo].[TermSOURCE]"
+				}
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/linkedServices/WarehouseAlphaTest')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/TermTypeOriginal')]",
+			"type": "Microsoft.DataFactory/factories/datasets",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"linkedServiceName": {
+					"referenceName": "WarehouseAlphaTest",
+					"type": "LinkedServiceReference"
+				},
+				"annotations": [],
+				"type": "AzureSqlTable",
+				"schema": [
+					{
+						"name": "TermTypeID",
+						"type": "smallint",
+						"precision": 5
+					},
+					{
+						"name": "TypeName",
+						"type": "nvarchar"
+					},
+					{
+						"name": "Description",
+						"type": "nvarchar"
+					},
+					{
+						"name": "Available",
+						"type": "bit"
+					},
+					{
+						"name": "SourceID",
+						"type": "smallint",
+						"precision": 5
+					},
+					{
+						"name": "DimTable",
+						"type": "nvarchar"
+					}
+				],
+				"typeProperties": {
+					"tableName": "[[dbo].[TermType]"
+				}
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/linkedServices/WarehouseAlphaTest')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/TermTypeSink')]",
+			"type": "Microsoft.DataFactory/factories/datasets",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"linkedServiceName": {
+					"referenceName": "PortThesaurusDB",
+					"type": "LinkedServiceReference"
+				},
+				"folder": {
+					"name": "PortThesaurus"
+				},
+				"annotations": [],
+				"type": "AzureSqlTable",
+				"schema": [
+					{
+						"name": "TermTypeID",
+						"type": "smallint",
+						"precision": 5
+					},
+					{
+						"name": "TypeName",
+						"type": "nvarchar"
+					},
+					{
+						"name": "Description",
+						"type": "nvarchar"
+					},
+					{
+						"name": "Available",
+						"type": "bit"
+					},
+					{
+						"name": "DimTable",
+						"type": "nvarchar"
+					},
+					{
+						"name": "SourceID",
+						"type": "smallint",
+						"precision": 5
+					}
+				],
+				"typeProperties": {
+					"tableName": "[[dbo].[IntermediateTerm]"
+				}
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/linkedServices/PortThesaurusDB')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/ThesaurusNESOnAzure')]",
+			"type": "Microsoft.DataFactory/factories/datasets",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"linkedServiceName": {
+					"referenceName": "WarehouseAlphaTest",
+					"type": "LinkedServiceReference"
+				},
+				"annotations": [],
+				"type": "AzureSqlTable",
+				"schema": [
+					{
+						"name": "id",
+						"type": "int",
+						"precision": 10
+					},
+					{
+						"name": "maintermid",
+						"type": "int",
+						"precision": 10
+					},
+					{
+						"name": "relatedtermid",
+						"type": "int",
+						"precision": 10
+					},
+					{
+						"name": "relationship",
+						"type": "int",
+						"precision": 10
+					}
+				],
+				"typeProperties": {
+					"tableName": "[[ThesaurusNES].[Relation]"
+				}
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/linkedServices/WarehouseAlphaTest')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/ThesaurusTerms')]",
+			"type": "Microsoft.DataFactory/factories/datasets",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"description": "Source table for the dataflow",
+				"linkedServiceName": {
+					"referenceName": "WarehouseAlphaTest",
+					"type": "LinkedServiceReference"
+				},
+				"folder": {
+					"name": "CreateTerms"
+				},
+				"annotations": [],
+				"type": "AzureSqlTable",
+				"schema": [
+					{
+						"name": "DimID",
+						"type": "smallint",
+						"precision": 5
+					},
+					{
+						"name": "DimName",
+						"type": "nvarchar"
+					},
+					{
+						"name": "RootID",
+						"type": "int",
+						"precision": 10
+					},
+					{
+						"name": "DimPreferred",
+						"type": "bit"
+					},
+					{
+						"name": "DimSourceID",
+						"type": "smallint",
+						"precision": 5
+					},
+					{
+						"name": "DimDescription",
+						"type": "nvarchar"
+					}
+				],
+				"typeProperties": {
+					"tableName": "[[dbo].[ThesaurusTerms]"
+				}
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/linkedServices/WarehouseAlphaTest')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/ThesaurusTermsInsert')]",
+			"type": "Microsoft.DataFactory/factories/datasets",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"description": "Sink table for the insert branch of  the dataflow",
+				"linkedServiceName": {
+					"referenceName": "WarehouseAlphaTest",
+					"type": "LinkedServiceReference"
+				},
+				"folder": {
+					"name": "CreateTerms"
+				},
+				"annotations": [],
+				"type": "AzureSqlTable",
+				"schema": [
+					{
+						"name": "TermID",
+						"type": "int",
+						"precision": 10
+					},
+					{
+						"name": "DimID",
+						"type": "int",
+						"precision": 10
+					},
+					{
+						"name": "TermCode",
+						"type": "nvarchar"
+					},
+					{
+						"name": "TermName",
+						"type": "nvarchar"
+					},
+					{
+						"name": "Description",
+						"type": "nvarchar"
+					},
+					{
+						"name": "Preferred",
+						"type": "bit"
+					},
+					{
+						"name": "Available",
+						"type": "bit"
+					},
+					{
+						"name": "TermTypeID",
+						"type": "smallint",
+						"precision": 5
+					}
+				],
+				"typeProperties": {
+					"tableName": "[[dbo].[TermInsert]"
+				}
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/linkedServices/WarehouseAlphaTest')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/ThesaurusTerms_Dim_SourceOnAzure')]",
+			"type": "Microsoft.DataFactory/factories/datasets",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"linkedServiceName": {
+					"referenceName": "WarehouseAlphaTest",
+					"type": "LinkedServiceReference"
+				},
+				"annotations": [],
+				"type": "AzureSqlTable",
+				"schema": [
+					{
+						"name": "DimID",
+						"type": "smallint",
+						"precision": 5
+					},
+					{
+						"name": "DimName",
+						"type": "nvarchar"
+					},
+					{
+						"name": "RootID",
+						"type": "int",
+						"precision": 10
+					},
+					{
+						"name": "DimPreferred",
+						"type": "bit"
+					},
+					{
+						"name": "DimSourceID",
+						"type": "smallint",
+						"precision": 5
+					},
+					{
+						"name": "DimDescription",
+						"type": "nvarchar"
+					}
+				],
+				"typeProperties": {
+					"tableName": "[[dbo].[ThesaurusTerms_Dim_Source]"
+				}
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/linkedServices/WarehouseAlphaTest')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/UpdateIncDimId')]",
+			"type": "Microsoft.DataFactory/factories/datasets",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"linkedServiceName": {
+					"referenceName": "WarehouseAlphaTest",
+					"type": "LinkedServiceReference"
+				},
+				"annotations": [],
+				"type": "AzureSqlTable",
+				"schema": [
+					{
+						"name": "TermTypeId",
+						"type": "int",
+						"precision": 10
+					},
+					{
+						"name": "TypeName",
+						"type": "nvarchar"
+					},
+					{
+						"name": "TypeDescription",
+						"type": "nvarchar"
+					},
+					{
+						"name": "TypeAvailable",
+						"type": "bit"
+					},
+					{
+						"name": "SourceId",
+						"type": "int",
+						"precision": 10
+					},
+					{
+						"name": "DimId",
+						"type": "int",
+						"precision": 10
+					}
+				],
+				"typeProperties": {
+					"tableName": "[[dbo].[TermTypeSinkIncDimId]"
+				}
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/linkedServices/WarehouseAlphaTest')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/UpdateTermTypeSink')]",
+			"type": "Microsoft.DataFactory/factories/datasets",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"linkedServiceName": {
+					"referenceName": "WarehouseAlphaTest",
+					"type": "LinkedServiceReference"
+				},
+				"annotations": [],
+				"type": "AzureSqlTable",
+				"schema": [
+					{
+						"name": "TermTypeID",
+						"type": "int",
+						"precision": 10
+					},
+					{
+						"name": "TypeName",
+						"type": "nvarchar"
+					},
+					{
+						"name": "Description",
+						"type": "nvarchar"
+					},
+					{
+						"name": "Available",
+						"type": "bit"
+					},
+					{
+						"name": "SourceId",
+						"type": "int",
+						"precision": 10
+					}
+				],
+				"typeProperties": {
+					"tableName": "[[dbo].[TermTypeSINK]"
+				}
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/linkedServices/WarehouseAlphaTest')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/datasetIntermediateTermTable')]",
+			"type": "Microsoft.DataFactory/factories/datasets",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"linkedServiceName": {
+					"referenceName": "PortThesaurusDB",
+					"type": "LinkedServiceReference"
+				},
+				"annotations": [],
+				"type": "AzureSqlTable",
+				"schema": [
+					{
+						"name": "TermID",
+						"type": "int",
+						"precision": 10,
+						"scale": 255
+					},
+					{
+						"name": "DimID",
+						"type": "int",
+						"precision": 10,
+						"scale": 255
+					},
+					{
+						"name": "TermCode",
+						"type": "nvarchar",
+						"precision": 255,
+						"scale": 255
+					},
+					{
+						"name": "TermName",
+						"type": "nvarchar",
+						"precision": 255,
+						"scale": 255
+					},
+					{
+						"name": "Description",
+						"type": "nvarchar",
+						"precision": 255,
+						"scale": 255
+					},
+					{
+						"name": "Preferred",
+						"type": "bit",
+						"precision": 255,
+						"scale": 255
+					},
+					{
+						"name": "Available",
+						"type": "bit",
+						"precision": 255,
+						"scale": 255
+					},
+					{
+						"name": "TermTypeID",
+						"type": "smallint",
+						"precision": 5,
+						"scale": 255
+					}
+				],
+				"typeProperties": {
+					"tableName": "[[dbo].[IntermediateTerm]"
+				}
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/linkedServices/PortThesaurusDB')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/ds_CreateLookupTable')]",
+			"type": "Microsoft.DataFactory/factories/datasets",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"description": "Created: 09-05-19",
+				"linkedServiceName": {
+					"referenceName": "WarehouseAlphaTest",
+					"type": "LinkedServiceReference"
+				},
+				"folder": {
+					"name": "CreateRelationships"
+				},
+				"annotations": [],
+				"type": "AzureSqlTable",
+				"schema": [
+					{
+						"name": "TermID",
+						"type": "int",
+						"precision": 10
+					},
+					{
+						"name": "DimID",
+						"type": "int",
+						"precision": 10
+					}
+				],
+				"typeProperties": {
+					"tableName": "[[Taxonomy].[CreateRelsLookup]"
+				}
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/linkedServices/WarehouseAlphaTest')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/ds_SourceTaxonomyTerm')]",
+			"type": "Microsoft.DataFactory/factories/datasets",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"description": "Created: 09-05-19",
+				"linkedServiceName": {
+					"referenceName": "WarehouseAlphaTest",
+					"type": "LinkedServiceReference"
+				},
+				"annotations": [],
+				"type": "AzureSqlTable",
+				"schema": [
+					{
+						"name": "TermID",
+						"type": "int",
+						"precision": 10,
+						"scale": 255
+					},
+					{
+						"name": "DimID",
+						"type": "int",
+						"precision": 10,
+						"scale": 255
+					}
+				],
+				"typeProperties": {}
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/linkedServices/WarehouseAlphaTest')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/LocalhostSqlServer')]",
+			"type": "Microsoft.DataFactory/factories/linkedServices",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"annotations": [],
+				"type": "SqlServer",
+				"typeProperties": {
+					"connectionString": "[parameters('LocalhostSqlServer_connectionString')]",
+					"userName": "[parameters('LocalhostSqlServer_properties_typeProperties_userName')]",
+					"password": {
+						"type": "SecureString",
+						"value": "[parameters('LocalhostSqlServer_password')]"
+					}
+				},
+				"connectVia": {
+					"referenceName": "LocalhostIntegrationRuntime",
+					"type": "IntegrationRuntimeReference"
+				}
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/integrationRuntimes/LocalhostIntegrationRuntime')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/LocalhostTermType')]",
+			"type": "Microsoft.DataFactory/factories/linkedServices",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"annotations": [],
+				"type": "SqlServer",
+				"typeProperties": {
+					"connectionString": "[parameters('LocalhostTermType_connectionString')]",
+					"userName": "[parameters('LocalhostTermType_properties_typeProperties_userName')]",
+					"password": {
+						"type": "SecureString",
+						"value": "[parameters('LocalhostTermType_password')]"
+					}
+				},
+				"connectVia": {
+					"referenceName": "LocalhostIntegrationRuntime",
+					"type": "IntegrationRuntimeReference"
+				}
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/integrationRuntimes/LocalhostIntegrationRuntime')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/PortThesaurusDB')]",
+			"type": "Microsoft.DataFactory/factories/linkedServices",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"annotations": [],
+				"type": "AzureSqlDatabase",
+				"typeProperties": {
+					"connectionString": "[parameters('PortThesaurusDB_connectionString')]"
+				}
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/WarehouseAlphaTest')]",
+			"type": "Microsoft.DataFactory/factories/linkedServices",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"description": "Links to MySampleDatabase on neswarehousetest",
+				"annotations": [],
+				"type": "AzureSqlDatabase",
+				"typeProperties": {
+					"connectionString": "[parameters('WarehouseAlphaTest_connectionString')]"
+				}
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/WarehouseAlphaTest2')]",
+			"type": "Microsoft.DataFactory/factories/linkedServices",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"description": "Connection to WarehouseAlpha-test",
+				"annotations": [],
+				"type": "AzureSqlDatabase",
+				"typeProperties": {
+					"connectionString": "[parameters('WarehouseAlphaTest2_connectionString')]"
+				}
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/LocalhostIntegrationRuntime')]",
+			"type": "Microsoft.DataFactory/factories/integrationRuntimes",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"type": "SelfHosted",
+				"description": "Localhost is wplp0777\\sqlexpress",
+				"typeProperties": {}
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/dataflow2')]",
+			"type": "Microsoft.DataFactory/factories/dataflows",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"type": "MappingDataFlow",
+				"typeProperties": {
+					"sources": [
+						{
+							"dataset": {
+								"referenceName": "PortfolioDimensionTables",
+								"type": "DatasetReference"
+							},
+							"name": "PortfolioDimensionTables",
+							"script": "source(output(\n\t\tDimTableName as string,\n\t\tDimID as integer,\n\t\tDimCode as string,\n\t\tDimName as string,\n\t\tDimDescription as string,\n\t\tDimActive as boolean\n\t),\n\tallowSchemaDrift: false,\n\tvalidateSchema: false,\n\tformat: 'table') ~> PortfolioDimensionTables",
+							"typeProperties": {}
+						},
+						{
+							"dataset": {
+								"referenceName": "TaxonomyDimensionTerms",
+								"type": "DatasetReference"
+							},
+							"name": "TaxonomyDimensionTerms",
+							"script": "source(output(\n\t\tTermDimTable as string,\n\t\tTermID as integer,\n\t\tTermDimID as long,\n\t\tTermCode as string,\n\t\tTermName as string,\n\t\tTermDescription as string,\n\t\tTermPreferred as boolean,\n\t\tTermAvailable as boolean,\n\t\tTermTypeID as integer\n\t),\n\tallowSchemaDrift: false,\n\tvalidateSchema: false,\n\tformat: 'table') ~> TaxonomyDimensionTerms",
+							"typeProperties": {}
+						},
+						{
+							"dataset": {
+								"referenceName": "CreateTurasDimsLookup",
+								"type": "DatasetReference"
+							},
+							"name": "LookupType",
+							"script": "source(output(\n\t\tTermTypeID as integer,\n\t\tDimTable as string\n\t),\n\tallowSchemaDrift: false,\n\tvalidateSchema: false,\n\tformat: 'table') ~> LookupType",
+							"typeProperties": {}
+						}
+					],
+					"sinks": [
+						{
+							"dataset": {
+								"referenceName": "IntermediateTermTable",
+								"type": "DatasetReference"
+							},
+							"name": "SinkIntoTermTaxonomy",
+							"script": "SelectForInsertion sink(input(\n\t\tTermID as integer,\n\t\tDimID as integer,\n\t\tTermCode as string,\n\t\tTermName as string,\n\t\tDescription as string,\n\t\tPreferred as boolean,\n\t\tAvailable as boolean,\n\t\tTermTypeID as integer\n\t),\n\tallowSchemaDrift: false,\n\tvalidateSchema: false,\n\tformat: 'table',\n\tdeletable:false,\n\tinsertable:true,\n\tupdateable:false,\n\tupsertable:false,\n\tmapColumn(\n\t\tTermID,\n\t\tDimID,\n\t\tTermCode = DimCode,\n\t\tTermName = DimName,\n\t\tDescription = DimDescription,\n\t\tPreferred,\n\t\tAvailable = DimActive,\n\t\tTermTypeID\n\t)) ~> SinkIntoTermTaxonomy"
+						},
+						{
+							"dataset": {
+								"referenceName": "IntermediateTermTable",
+								"type": "DatasetReference"
+							},
+							"name": "DeleteTerm",
+							"script": "MarkForDeletion sink(input(\n\t\tTermID as integer,\n\t\tDimID as integer,\n\t\tTermCode as string,\n\t\tTermName as string,\n\t\tDescription as string,\n\t\tPreferred as boolean,\n\t\tAvailable as boolean,\n\t\tTermTypeID as integer\n\t),\n\tallowSchemaDrift: false,\n\tvalidateSchema: false,\n\tformat: 'table',\n\tdeletable:true,\n\tinsertable:false,\n\tupdateable:false,\n\tupsertable:false,\n\tkeys:['TermID'],\n\tmapColumn(\n\t\tTermID,\n\t\tDimID,\n\t\tTermCode,\n\t\tTermName\n\t)) ~> DeleteTerm"
+						},
+						{
+							"dataset": {
+								"referenceName": "IntermediateTermTable",
+								"type": "DatasetReference"
+							},
+							"name": "UpdateSink",
+							"script": "SelectForUpdate sink(input(\n\t\tTermID as integer,\n\t\tDimID as integer,\n\t\tTermCode as string,\n\t\tTermName as string,\n\t\tDescription as string,\n\t\tPreferred as boolean,\n\t\tAvailable as boolean,\n\t\tTermTypeID as integer\n\t),\n\tallowSchemaDrift: false,\n\tvalidateSchema: false,\n\tformat: 'table',\n\tdeletable:false,\n\tinsertable:false,\n\tupdateable:true,\n\tupsertable:false,\n\tkeys:['TermID'],\n\tmapColumn(\n\t\tTermID,\n\t\tDimID,\n\t\tTermCode = DimCode,\n\t\tTermName = DimName,\n\t\tDescription = DimDescription,\n\t\tPreferred,\n\t\tAvailable = DimActive,\n\t\tTermTypeID\n\t)) ~> UpdateSink"
+						}
+					],
+					"transformations": [
+						{
+							"name": "MergeJoin",
+							"script": "PortfolioDimensionTables, TaxonomyDimensionTerms join(DimID == TermDimID\n\t&& DimTableName == TermDimTable,\n\tjoinType:'outer',\n\tbroadcast: 'none')~> MergeJoin"
+						},
+						{
+							"name": "ConditionalSplit",
+							"script": "MergeJoin split(isNull(TermID),\n\tisNull(DimID),\n\tdisjoint: true) ~> ConditionalSplit@(Insert, Delete, Update)"
+						},
+						{
+							"name": "DerivedColumn",
+							"script": "ConditionalSplit@Insert derive(Preferred = true()) ~> DerivedColumn"
+						},
+						{
+							"name": "Lookup1",
+							"script": "DerivedColumn, LookupType lookup(DimTableName == DimTable,\n\tbroadcast: 'none')~> Lookup1"
+						},
+						{
+							"name": "SelectForInsertion",
+							"script": "Filter1 select(mapColumn(\n\t\tDimID,\n\t\tDimCode,\n\t\tDimName,\n\t\tDimDescription,\n\t\tDimActive,\n\t\tTermID,\n\t\tPreferred,\n\t\tTermTypeID = LookupType@TermTypeID\n\t))~> SelectForInsertion"
+						},
+						{
+							"name": "SelectForDeletion",
+							"script": "ConditionalSplit@Delete select(mapColumn(\n\t\tDimID,\n\t\tTermID,\n\t\tTermCode,\n\t\tTermName\n\t))~> SelectForDeletion"
+						},
+						{
+							"name": "MarkForDeletion",
+							"script": "SelectForDeletion alterRow(deleteIf(isNull(DimID))) ~> MarkForDeletion"
+						},
+						{
+							"name": "SelectForUpdate",
+							"script": "ConditionalSplit@Update select(mapColumn(\n\t\tDimCode,\n\t\tDimDescription,\n\t\tDimActive,\n\t\tDimName,\n\t\tDimID,\n\t\tTermID,\n\t\tPreferred = TermPreferred,\n\t\tTermTypeID\n\t))~> SelectForUpdate"
+						},
+						{
+							"name": "Filter1",
+							"script": "Lookup1 filter(not(isNull(DimTable))) ~> Filter1"
+						}
+					]
+				}
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/datasets/PortfolioDimensionTables')]",
+				"[concat(variables('factoryId'), '/datasets/TaxonomyDimensionTerms')]",
+				"[concat(variables('factoryId'), '/datasets/CreateTurasDimsLookup')]",
+				"[concat(variables('factoryId'), '/datasets/IntermediateTermTable')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/df_CreateRelationships')]",
+			"type": "Microsoft.DataFactory/factories/dataflows",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"type": "MappingDataFlow",
+				"typeProperties": {
+					"sources": [
+						{
+							"dataset": {
+								"referenceName": "GetDimRelationship",
+								"type": "DatasetReference"
+							},
+							"name": "GetDimRelationship",
+							"script": "source(output(\n\t\tXDimID as integer,\n\t\tYDimID as integer,\n\t\tDimKindID as integer\n\t),\n\tallowSchemaDrift: false,\n\tvalidateSchema: false,\n\tformat: 'table') ~> GetDimRelationship",
+							"typeProperties": {}
+						},
+						{
+							"dataset": {
+								"referenceName": "TermRelationship",
+								"type": "DatasetReference"
+							},
+							"name": "TermRelationships",
+							"script": "source(output(\n\t\tRelationshipID as integer,\n\t\tXTermID as integer,\n\t\tXTermDimID as integer,\n\t\tYTermID as integer,\n\t\tYTermDimID as integer,\n\t\tTermKindID as integer\n\t),\n\tallowSchemaDrift: false,\n\tvalidateSchema: false,\n\tformat: 'table') ~> TermRelationships",
+							"typeProperties": {}
+						},
+						{
+							"dataset": {
+								"referenceName": "ds_CreateLookupTable",
+								"type": "DatasetReference"
+							},
+							"name": "LookupTable",
+							"script": "source(output(\n\t\tTermID as integer,\n\t\tDimID as integer\n\t),\n\tallowSchemaDrift: false,\n\tvalidateSchema: false,\n\tformat: 'table') ~> LookupTable",
+							"typeProperties": {}
+						}
+					],
+					"sinks": [
+						{
+							"dataset": {
+								"referenceName": "TermRelationshipSink",
+								"type": "DatasetReference"
+							},
+							"name": "InsertSink",
+							"script": "MarkForInsertion sink(input(\n\t\tRelationshipID as integer,\n\t\tTermXID as integer,\n\t\tTermYID as integer,\n\t\tKindID as integer,\n\t\tDescription as string\n\t),\n\tallowSchemaDrift: false,\n\tvalidateSchema: false,\n\tformat: 'table',\n\tdeletable:false,\n\tinsertable:true,\n\tupdateable:false,\n\tupsertable:false,\n\tmapColumn(\n\t\tTermXID = XTermID,\n\t\tTermYID = YTermID,\n\t\tKindID = DimKindID\n\t)) ~> InsertSink"
+						},
+						{
+							"dataset": {
+								"referenceName": "TermRelationshipSink",
+								"type": "DatasetReference"
+							},
+							"name": "DeleteSink",
+							"script": "MarkForDeletion sink(input(\n\t\tRelationshipID as integer,\n\t\tTermXID as integer,\n\t\tTermYID as integer,\n\t\tKindID as integer,\n\t\tDescription as string\n\t),\n\tallowSchemaDrift: false,\n\tvalidateSchema: false,\n\tformat: 'table',\n\tdeletable:true,\n\tinsertable:false,\n\tupdateable:false,\n\tupsertable:false,\n\tkeys:['RelationshipID'],\n\tmapColumn(\n\t\tRelationshipID,\n\t\tTermXID = XTermID,\n\t\tTermYID = YTermID,\n\t\tKindID = DimKindID\n\t)) ~> DeleteSink"
+						}
+					],
+					"transformations": [
+						{
+							"name": "MergeJoin",
+							"script": "GetDimRelationship, TermRelationships join(XDimID == XTermDimID\n\t&& YDimID == YTermDimID\n\t&& DimKindID == TermKindID,\n\tjoinType:'outer',\n\tbroadcast: 'none')~> MergeJoin"
+						},
+						{
+							"name": "ConditionalSplit",
+							"script": "MergeJoin split(isNull(XTermID),\n\tisNull(XDimID),\n\tdisjoint: false) ~> ConditionalSplit@(Insert, Delete, UpdateDoNothing)"
+						},
+						{
+							"name": "Select1",
+							"script": "LookupXTerm select(mapColumn(\n\t\tYDimID,\n\t\tDimKindID,\n\t\tRelationshipID,\n\t\tXTermID = TermID,\n\t\tYTermID\n\t))~> Select1"
+						},
+						{
+							"name": "Select2",
+							"script": "LookupYTerm select(mapColumn(\n\t\tDimKindID,\n\t\tXTermID,\n\t\tYTermID = TermID\n\t))~> Select2"
+						},
+						{
+							"name": "LookupXTerm",
+							"script": "ConditionalSplit@Insert, LookupTable join(XDimID == DimID,\n\tjoinType:'inner',\n\tbroadcast: 'none')~> LookupXTerm"
+						},
+						{
+							"name": "LookupYTerm",
+							"script": "Select1, LookupTable join(YDimID == DimID,\n\tjoinType:'inner',\n\tbroadcast: 'none')~> LookupYTerm"
+						},
+						{
+							"name": "MarkForInsertion",
+							"script": "Select2 alterRow(insertIf(isNull(XTermID))) ~> MarkForInsertion"
+						},
+						{
+							"name": "SelectForDeletion",
+							"script": "ConditionalSplit@Delete select(mapColumn(\n\t\tXDimID,\n\t\tDimKindID,\n\t\tRelationshipID,\n\t\tXTermID,\n\t\tYTermID\n\t))~> SelectForDeletion"
+						},
+						{
+							"name": "MarkForDeletion",
+							"script": "SelectForDeletion alterRow(deleteIf(isNull(XDimID))) ~> MarkForDeletion"
+						}
+					]
+				}
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/datasets/GetDimRelationship')]",
+				"[concat(variables('factoryId'), '/datasets/TermRelationship')]",
+				"[concat(variables('factoryId'), '/datasets/ds_CreateLookupTable')]",
+				"[concat(variables('factoryId'), '/datasets/TermRelationshipSink')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/df_CreateTerms')]",
+			"type": "Microsoft.DataFactory/factories/dataflows",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"description": "This is the Create Terms dataflow and include lookups to the TermTypeTable in the Taxonomy db.",
+				"type": "MappingDataFlow",
+				"typeProperties": {
+					"sources": [
+						{
+							"dataset": {
+								"referenceName": "ThesaurusTerms",
+								"type": "DatasetReference"
+							},
+							"name": "ThesaurusTerms",
+							"script": "source(output(\n\t\tDimID as integer,\n\t\tDimName as string,\n\t\tRootID as integer,\n\t\tDimPreferred as boolean,\n\t\tDimSourceID as integer,\n\t\tDimDescription as string\n\t),\n\tallowSchemaDrift: false,\n\tvalidateSchema: false,\n\tformat: 'table') ~> ThesaurusTerms",
+							"typeProperties": {}
+						},
+						{
+							"dataset": {
+								"referenceName": "DestTaxonomyTermsSOURCE",
+								"type": "DatasetReference"
+							},
+							"name": "TaxonomyTerms",
+							"script": "source(output(\n\t\tTermID as integer,\n\t\tTermDimID as integer,\n\t\tTermCode as string,\n\t\tTermName as string,\n\t\tTermDescription as string,\n\t\tTermPreferred as boolean,\n\t\tTermTypeID as integer\n\t),\n\tallowSchemaDrift: false,\n\tvalidateSchema: false,\n\tformat: 'table') ~> TaxonomyTerms",
+							"typeProperties": {}
+						},
+						{
+							"dataset": {
+								"referenceName": "TermTypeSink",
+								"type": "DatasetReference"
+							},
+							"name": "TermTypes",
+							"script": "source(output(\n\t\tTermTypeID as integer,\n\t\tTypeName as string,\n\t\tDescription as string,\n\t\tAvailable as boolean,\n\t\tDimTable as string,\n\t\tSourceID as integer\n\t),\n\tallowSchemaDrift: false,\n\tvalidateSchema: false,\n\tformat: 'table') ~> TermTypes",
+							"typeProperties": {}
+						}
+					],
+					"sinks": [
+						{
+							"dataset": {
+								"referenceName": "ThesaurusTermsInsert",
+								"type": "DatasetReference"
+							},
+							"name": "ThesaurusTermsInsert",
+							"script": "SelectForInsertion sink(input(\n\t\tTermID as integer,\n\t\tDimID as integer,\n\t\tTermCode as string,\n\t\tTermName as string,\n\t\tDescription as string,\n\t\tPreferred as boolean,\n\t\tAvailable as boolean,\n\t\tTermTypeID as integer\n\t),\n\tallowSchemaDrift: false,\n\tvalidateSchema: false,\n\tformat: 'table',\n\tdeletable:false,\n\tinsertable:true,\n\tupdateable:false,\n\tupsertable:false,\n\tmapColumn(\n\t\tDimID,\n\t\tTermName,\n\t\tPreferred = DimPreferred,\n\t\tAvailable,\n\t\tTermTypeID\n\t)) ~> ThesaurusTermsInsert"
+						},
+						{
+							"dataset": {
+								"referenceName": "ThesaurusTermsInsert",
+								"type": "DatasetReference"
+							},
+							"name": "UpdateTerm",
+							"script": "ConditionsForUpdate sink(input(\n\t\tTermID as integer,\n\t\tDimID as integer,\n\t\tTermCode as string,\n\t\tTermName as string,\n\t\tDescription as string,\n\t\tPreferred as boolean,\n\t\tAvailable as boolean,\n\t\tTermTypeID as integer\n\t),\n\tallowSchemaDrift: false,\n\tvalidateSchema: false,\n\tformat: 'table',\n\tdeletable:false,\n\tinsertable:false,\n\tupdateable:true,\n\tupsertable:false,\n\tkeys:['TermID'],\n\tmapColumn(\n\t\tTermID,\n\t\tTermName = DimName,\n\t\tDescription = DimDescription,\n\t\tPreferred = DimPreferred\n\t)) ~> UpdateTerm"
+						},
+						{
+							"dataset": {
+								"referenceName": "ThesaurusTermsInsert",
+								"type": "DatasetReference"
+							},
+							"name": "DeleteSink",
+							"script": "SelectForDelete sink(input(\n\t\tTermID as integer,\n\t\tDimID as integer,\n\t\tTermCode as string,\n\t\tTermName as string,\n\t\tDescription as string,\n\t\tPreferred as boolean,\n\t\tAvailable as boolean,\n\t\tTermTypeID as integer\n\t),\n\tallowSchemaDrift: false,\n\tvalidateSchema: false,\n\tformat: 'table',\n\tdeletable:false,\n\tinsertable:false,\n\tupdateable:true,\n\tupsertable:false,\n\tkeys:['TermID'],\n\tmapColumn(\n\t\tTermID,\n\t\tAvailable\n\t)) ~> DeleteSink"
+						}
+					],
+					"transformations": [
+						{
+							"name": "MergeJoin",
+							"script": "SelectFromLookup, TaxonomyTerms join(DimID == TermDimID,\n\tjoinType:'outer',\n\tbroadcast: 'none')~> MergeJoin"
+						},
+						{
+							"name": "ConditionalSplit",
+							"script": "MergeJoin split(isNull(TermID),\n\tisNull(DimID),\n\tdisjoint: false) ~> ConditionalSplit@(Insert, Delete, Update)"
+						},
+						{
+							"name": "SetAvailable",
+							"script": "ConditionalSplit@Insert derive(Available = true()) ~> SetAvailable"
+						},
+						{
+							"name": "ConvertRootToTypeID",
+							"script": "SetAvailable derive(RootTypeID = toShort(RootID)) ~> ConvertRootToTypeID"
+						},
+						{
+							"name": "ConvertDimIDToTypeID",
+							"script": "ThesaurusTerms derive(PossibleTypeID = toShort(DimID)) ~> ConvertDimIDToTypeID"
+						},
+						{
+							"name": "ConvertNameAndDesc",
+							"script": "ConditionalSplit@Update derive(DimTypeName = left(DimName, 80),\n\t\tDimTypeDescription = left(DimDescription, 500)) ~> ConvertNameAndDesc"
+						},
+						{
+							"name": "ConditionsForInsertion",
+							"script": "Lookup2 alterRow(insertIf(isNull(TermID))) ~> ConditionsForInsertion"
+						},
+						{
+							"name": "SelectForInsertion",
+							"script": "ConditionsForInsertion select(mapColumn(\n\t\tDimID,\n\t\tDimPreferred,\n\t\tTermName = DimName,\n\t\tTermTypeID = RootTypeID,\n\t\tAvailable = SetAvailable@Available\n\t))~> SelectForInsertion"
+						},
+						{
+							"name": "ConditionsForDelete",
+							"script": "ConditionalSplit@Delete alterRow(updateIf(isNull(DimID))) ~> ConditionsForDelete"
+						},
+						{
+							"name": "DerivedColumn1",
+							"script": "ConditionsForDelete derive(Available = false()) ~> DerivedColumn1"
+						},
+						{
+							"name": "SelectForDelete",
+							"script": "DerivedColumn1 select(mapColumn(\n\t\tTermID,\n\t\tAvailable\n\t))~> SelectForDelete"
+						},
+						{
+							"name": "Lookup1",
+							"script": "ConvertDimIDToTypeID, TermTypes lookup(DimName == TypeName\n\t&& DimSourceID == SourceID\n\t&& PossibleTypeID == TermTypeID,\n\tbroadcast: 'none')~> Lookup1"
+						},
+						{
+							"name": "SelectFromLookup",
+							"script": "Lookup1 select(mapColumn(\n\t\tDimID,\n\t\tRootID,\n\t\tDimPreferred,\n\t\tDimDescription,\n\t\tPossibleTypeID,\n\t\tDimName = TypeName,\n\t\tDimSourceID = SourceID\n\t))~> SelectFromLookup"
+						},
+						{
+							"name": "Lookup2",
+							"script": "ConvertRootToTypeID, TermTypes lookup(PossibleTypeID == TermTypes@TermTypeID,\n\tbroadcast: 'none')~> Lookup2"
+						},
+						{
+							"name": "ConditionsForUpdate",
+							"script": "SelectUpdate alterRow(updateIf(not(isNull(TermID)))) ~> ConditionsForUpdate"
+						},
+						{
+							"name": "SelectUpdate",
+							"script": "ConvertNameAndDesc select(mapColumn(\n\t\tDimName,\n\t\tDimPreferred,\n\t\tDimDescription,\n\t\tTermID\n\t))~> SelectUpdate"
+						}
+					]
+				}
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/datasets/ThesaurusTerms')]",
+				"[concat(variables('factoryId'), '/datasets/DestTaxonomyTermsSOURCE')]",
+				"[concat(variables('factoryId'), '/datasets/TermTypeSink')]",
+				"[concat(variables('factoryId'), '/datasets/ThesaurusTermsInsert')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/df_DeleteTermRelationships')]",
+			"type": "Microsoft.DataFactory/factories/dataflows",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"type": "MappingDataFlow",
+				"typeProperties": {
+					"sources": [
+						{
+							"dataset": {
+								"referenceName": "TermRelationshipSink",
+								"type": "DatasetReference"
+							},
+							"name": "TermRelationships",
+							"script": "source(output(\n\t\tRelationshipID as integer,\n\t\tTermXID as integer,\n\t\tTermYID as integer,\n\t\tKindID as integer,\n\t\tDescription as string\n\t),\n\tallowSchemaDrift: false,\n\tvalidateSchema: false,\n\tformat: 'table') ~> TermRelationships",
+							"typeProperties": {}
+						}
+					],
+					"sinks": [
+						{
+							"dataset": {
+								"referenceName": "TermRelationshipSink",
+								"type": "DatasetReference"
+							},
+							"name": "DeleteSink",
+							"script": "DelIfTermYIDIsNull sink(input(\n\t\tRelationshipID as integer,\n\t\tTermXID as integer,\n\t\tTermYID as integer,\n\t\tKindID as integer,\n\t\tDescription as string\n\t),\n\tallowSchemaDrift: false,\n\tvalidateSchema: false,\n\tformat: 'table',\n\tdeletable:true,\n\tinsertable:false,\n\tupdateable:false,\n\tupsertable:false,\n\tkeys:['RelationshipID']) ~> DeleteSink"
+						}
+					],
+					"transformations": [
+						{
+							"name": "DelIfTermXIDIsNull",
+							"script": "TermRelationships alterRow(deleteIf(isNull(TermXID))) ~> DelIfTermXIDIsNull"
+						},
+						{
+							"name": "DelIfTermYIDIsNull",
+							"script": "DelIfTermXIDIsNull alterRow(deleteIf(isNull(TermYID))) ~> DelIfTermYIDIsNull"
+						}
+					]
+				}
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/datasets/TermRelationshipSink')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/df_MergePortfolioDimensions')]",
+			"type": "Microsoft.DataFactory/factories/dataflows",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"type": "MappingDataFlow",
+				"typeProperties": {
+					"sources": [
+						{
+							"dataset": {
+								"referenceName": "PortfolioDimensionTables",
+								"type": "DatasetReference"
+							},
+							"name": "PortfolioDimensionTables",
+							"script": "source(output(\n\t\tDimTableName as string,\n\t\tDimID as integer,\n\t\tDimCode as string,\n\t\tDimName as string,\n\t\tDimDescription as string,\n\t\tDimActive as boolean\n\t),\n\tallowSchemaDrift: false,\n\tvalidateSchema: false,\n\tformat: 'table') ~> PortfolioDimensionTables",
+							"typeProperties": {}
+						},
+						{
+							"dataset": {
+								"referenceName": "TaxonomyDimensionTerms",
+								"type": "DatasetReference"
+							},
+							"name": "TaxonomyDimensionTerms",
+							"script": "source(output(\n\t\tTermDimTable as string,\n\t\tTermID as integer,\n\t\tTermDimID as long,\n\t\tTermCode as string,\n\t\tTermName as string,\n\t\tTermDescription as string,\n\t\tTermPreferred as boolean,\n\t\tTermAvailable as boolean,\n\t\tTermTypeID as integer\n\t),\n\tallowSchemaDrift: false,\n\tvalidateSchema: false,\n\tformat: 'table') ~> TaxonomyDimensionTerms",
+							"typeProperties": {}
+						},
+						{
+							"dataset": {
+								"referenceName": "CreateTurasDimsLookup",
+								"type": "DatasetReference"
+							},
+							"name": "LookupType",
+							"script": "source(output(\n\t\tTermTypeID as integer,\n\t\tDimTable as string\n\t),\n\tallowSchemaDrift: false,\n\tvalidateSchema: false,\n\tformat: 'table') ~> LookupType",
+							"typeProperties": {}
+						}
+					],
+					"sinks": [
+						{
+							"dataset": {
+								"referenceName": "IntermediateTermTable",
+								"type": "DatasetReference"
+							},
+							"name": "SinkIntoTermTaxonomy",
+							"script": "AlterRow1 sink(input(\n\t\tTermID as integer,\n\t\tDimID as integer,\n\t\tTermCode as string,\n\t\tTermName as string,\n\t\tDescription as string,\n\t\tPreferred as boolean,\n\t\tAvailable as boolean,\n\t\tTermTypeID as integer\n\t),\n\tallowSchemaDrift: false,\n\tvalidateSchema: false,\n\tformat: 'table',\n\tdeletable:false,\n\tinsertable:true,\n\tupdateable:false,\n\tupsertable:false,\n\tmapColumn(\n\t\tTermID,\n\t\tDimID,\n\t\tTermCode = DimCode,\n\t\tTermName = DimName,\n\t\tDescription = DimDescription,\n\t\tPreferred,\n\t\tAvailable = DimActive,\n\t\tTermTypeID\n\t)) ~> SinkIntoTermTaxonomy"
+						},
+						{
+							"dataset": {
+								"referenceName": "IntermediateTermTable",
+								"type": "DatasetReference"
+							},
+							"name": "DeleteTerm",
+							"script": "MarkForDeletion sink(input(\n\t\tTermID as integer,\n\t\tDimID as integer,\n\t\tTermCode as string,\n\t\tTermName as string,\n\t\tDescription as string,\n\t\tPreferred as boolean,\n\t\tAvailable as boolean,\n\t\tTermTypeID as integer\n\t),\n\tallowSchemaDrift: false,\n\tvalidateSchema: false,\n\tformat: 'table',\n\tdeletable:true,\n\tinsertable:false,\n\tupdateable:false,\n\tupsertable:false,\n\tkeys:['TermID']) ~> DeleteTerm"
+						},
+						{
+							"dataset": {
+								"referenceName": "IntermediateTermTable",
+								"type": "DatasetReference"
+							},
+							"name": "UpdateSink",
+							"script": "SelectForUpdate sink(input(\n\t\tTermID as integer,\n\t\tDimID as integer,\n\t\tTermCode as string,\n\t\tTermName as string,\n\t\tDescription as string,\n\t\tPreferred as boolean,\n\t\tAvailable as boolean,\n\t\tTermTypeID as integer\n\t),\n\tallowSchemaDrift: false,\n\tvalidateSchema: false,\n\tformat: 'table',\n\tdeletable:false,\n\tinsertable:false,\n\tupdateable:true,\n\tupsertable:false,\n\tkeys:['TermID'],\n\tmapColumn(\n\t\tTermID,\n\t\tDimID,\n\t\tTermCode = DimCode,\n\t\tTermName = DimName,\n\t\tDescription = DimDescription,\n\t\tPreferred,\n\t\tAvailable = DimActive,\n\t\tTermTypeID\n\t)) ~> UpdateSink"
+						}
+					],
+					"transformations": [
+						{
+							"name": "MergeJoin",
+							"script": "PortfolioDimensionTables, TaxonomyDimensionTerms join(DimID == TermDimID\n\t&& DimTableName == TermDimTable,\n\tjoinType:'outer',\n\tbroadcast: 'none')~> MergeJoin"
+						},
+						{
+							"name": "ConditionalSplit",
+							"script": "MergeJoin split(isNull(TermID),\n\tisNull(DimID),\n\tdisjoint: true) ~> ConditionalSplit@(Insert, Delete, Update)"
+						},
+						{
+							"name": "DerivedColumn",
+							"script": "ConditionalSplit@Insert derive(Preferred = true()) ~> DerivedColumn"
+						},
+						{
+							"name": "Lookup1",
+							"script": "DerivedColumn, LookupType lookup(DimTableName == DimTable,\n\tbroadcast: 'none')~> Lookup1"
+						},
+						{
+							"name": "SelectForInsertion",
+							"script": "Filter1 select(mapColumn(\n\t\tDimID,\n\t\tDimCode,\n\t\tDimName,\n\t\tDimDescription,\n\t\tDimActive,\n\t\tTermID,\n\t\tPreferred,\n\t\tTermTypeID = LookupType@TermTypeID\n\t))~> SelectForInsertion"
+						},
+						{
+							"name": "SelectForDeletion",
+							"script": "ConditionalSplit@Delete select(mapColumn(\n\t\tDimID,\n\t\tTermID,\n\t\tTermCode,\n\t\tTermName\n\t))~> SelectForDeletion"
+						},
+						{
+							"name": "MarkForDeletion",
+							"script": "SelectForDeletion alterRow(deleteIf(isNull(DimID))) ~> MarkForDeletion"
+						},
+						{
+							"name": "SelectForUpdate",
+							"script": "ConditionalSplit@Update select(mapColumn(\n\t\tDimCode,\n\t\tDimDescription,\n\t\tDimActive,\n\t\tDimName,\n\t\tDimID,\n\t\tTermID,\n\t\tPreferred = TermPreferred,\n\t\tTermTypeID\n\t))~> SelectForUpdate"
+						},
+						{
+							"name": "AlterRow1",
+							"script": "SelectForInsertion alterRow(insertIf(isNull(TermID))) ~> AlterRow1"
+						},
+						{
+							"name": "Filter1",
+							"script": "Lookup1 filter(not(isNull(DimTable))) ~> Filter1"
+						}
+					]
+				}
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/datasets/PortfolioDimensionTables')]",
+				"[concat(variables('factoryId'), '/datasets/TaxonomyDimensionTerms')]",
+				"[concat(variables('factoryId'), '/datasets/CreateTurasDimsLookup')]",
+				"[concat(variables('factoryId'), '/datasets/IntermediateTermTable')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/df_MergeTurasDimensions')]",
+			"type": "Microsoft.DataFactory/factories/dataflows",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"type": "MappingDataFlow",
+				"typeProperties": {
+					"sources": [
+						{
+							"dataset": {
+								"referenceName": "DestinationTurasDimensions",
+								"type": "DatasetReference"
+							},
+							"name": "TurasDimensionTables",
+							"script": "source(output(\n\t\tDimTableName as string,\n\t\tDimID as long,\n\t\tDimCode as string,\n\t\tDimName as string,\n\t\tDimDescription as string,\n\t\tDimActive as boolean\n\t),\n\tallowSchemaDrift: false,\n\tvalidateSchema: false,\n\tformat: 'table') ~> TurasDimensionTables",
+							"typeProperties": {}
+						},
+						{
+							"dataset": {
+								"referenceName": "TaxonomyDimensionTerms",
+								"type": "DatasetReference"
+							},
+							"name": "TaxonomyDimensionTerms",
+							"script": "source(output(\n\t\tTermDimTable as string,\n\t\tTermID as integer,\n\t\tTermDimID as long,\n\t\tTermCode as string,\n\t\tTermName as string,\n\t\tTermDescription as string,\n\t\tTermPreferred as boolean,\n\t\tTermAvailable as boolean,\n\t\tTermTypeID as integer\n\t),\n\tallowSchemaDrift: true,\n\tvalidateSchema: false,\n\tformat: 'table') ~> TaxonomyDimensionTerms",
+							"typeProperties": {}
+						},
+						{
+							"dataset": {
+								"referenceName": "CreateTurasDimsLookup",
+								"type": "DatasetReference"
+							},
+							"name": "LookupType",
+							"script": "source(output(\n\t\tTermTypeID as integer,\n\t\tDimTable as string\n\t),\n\tallowSchemaDrift: false,\n\tvalidateSchema: false,\n\tformat: 'table') ~> LookupType",
+							"typeProperties": {}
+						}
+					],
+					"sinks": [
+						{
+							"dataset": {
+								"referenceName": "TaxonomyTermTable",
+								"type": "DatasetReference"
+							},
+							"name": "SinkIntoTermTaxonomy",
+							"script": "AlterRow1 sink(input(\n\t\tTermID as integer,\n\t\tDimID as integer,\n\t\tTermCode as string,\n\t\tTermName as string,\n\t\tDescription as string,\n\t\tPreferred as boolean,\n\t\tAvailable as boolean,\n\t\tTermTypeID as integer\n\t),\n\tallowSchemaDrift: false,\n\tvalidateSchema: false,\n\tformat: 'table',\n\tdeletable:false,\n\tinsertable:true,\n\tupdateable:false,\n\tupsertable:false,\n\tmapColumn(\n\t\tTermID,\n\t\tDimID,\n\t\tPreferred\n\t)) ~> SinkIntoTermTaxonomy"
+						},
+						{
+							"dataset": {
+								"referenceName": "TaxonomyTermTable",
+								"type": "DatasetReference"
+							},
+							"name": "DeleteTerm",
+							"script": "MarkForDeletion sink(input(\n\t\tTermID as integer,\n\t\tDimID as integer,\n\t\tTermCode as string,\n\t\tTermName as string,\n\t\tDescription as string,\n\t\tPreferred as boolean,\n\t\tAvailable as boolean,\n\t\tTermTypeID as integer\n\t),\n\tallowSchemaDrift: false,\n\tvalidateSchema: false,\n\tformat: 'table',\n\tdeletable:true,\n\tinsertable:false,\n\tupdateable:false,\n\tupsertable:false,\n\tkeys:['TermID'],\n\tmapColumn(\n\t\tTermID,\n\t\tDimID,\n\t\tTermCode,\n\t\tTermName\n\t)) ~> DeleteTerm"
+						},
+						{
+							"dataset": {
+								"referenceName": "TaxonomyTermTable",
+								"type": "DatasetReference"
+							},
+							"name": "UpdateSink",
+							"script": "MarkForUpdate sink(input(\n\t\tTermID as integer,\n\t\tDimID as integer,\n\t\tTermCode as string,\n\t\tTermName as string,\n\t\tDescription as string,\n\t\tPreferred as boolean,\n\t\tAvailable as boolean,\n\t\tTermTypeID as integer\n\t),\n\tallowSchemaDrift: false,\n\tvalidateSchema: false,\n\tformat: 'table',\n\tdeletable:false,\n\tinsertable:false,\n\tupdateable:true,\n\tupsertable:false,\n\tkeys:['TermID'],\n\tmapColumn(\n\t\tTermID,\n\t\tDescription,\n\t\tAvailable = DimActive\n\t)) ~> UpdateSink"
+						}
+					],
+					"transformations": [
+						{
+							"name": "MergeJoin",
+							"script": "TurasDimensionTables, TaxonomyDimensionTerms join(DimID == TermDimID\n\t&& DimTableName == TermDimTable,\n\tjoinType:'outer',\n\tbroadcast: 'none')~> MergeJoin"
+						},
+						{
+							"name": "ConditionalSplit",
+							"script": "MergeJoin split(isNull(TermID),\n\tisNull(DimID),\n\tdisjoint: true) ~> ConditionalSplit@(Insert, Delete, Update)"
+						},
+						{
+							"name": "DerivedColumn",
+							"script": "ConditionalSplit@Insert derive(Preferred = true()) ~> DerivedColumn"
+						},
+						{
+							"name": "Lookup1",
+							"script": "DerivedColumn, LookupType lookup(DimTableName == DimTable,\n\tbroadcast: 'none')~> Lookup1"
+						},
+						{
+							"name": "SelectForInsertion",
+							"script": "Lookup1 select(mapColumn(\n\t\tDimID,\n\t\tDimCode,\n\t\tDimName,\n\t\tDimDescription,\n\t\tDimActive,\n\t\tTermID,\n\t\tPreferred,\n\t\tTermTypeID = LookupType@TermTypeID\n\t))~> SelectForInsertion"
+						},
+						{
+							"name": "SelectForDeletion",
+							"script": "ConditionalSplit@Delete select(mapColumn(\n\t\tDimID,\n\t\tTermID,\n\t\tTermCode,\n\t\tTermName\n\t))~> SelectForDeletion"
+						},
+						{
+							"name": "MarkForDeletion",
+							"script": "SelectForDeletion alterRow(deleteIf(isNull(DimID))) ~> MarkForDeletion"
+						},
+						{
+							"name": "SelectForUpdate",
+							"script": "ConditionalSplit@Update select(mapColumn(\n\t\tDimCode,\n\t\tDimName,\n\t\tDescription = DimDescription,\n\t\tDimActive,\n\t\tTermID\n\t))~> SelectForUpdate"
+						},
+						{
+							"name": "MarkForUpdate",
+							"script": "SelectForUpdate alterRow(updateIf(not(isNull(TermID)))) ~> MarkForUpdate"
+						},
+						{
+							"name": "AlterRow1",
+							"script": "SelectForInsertion alterRow(insertIf(isNull(TermID))) ~> AlterRow1"
+						}
+					]
+				}
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/datasets/DestinationTurasDimensions')]",
+				"[concat(variables('factoryId'), '/datasets/TaxonomyDimensionTerms')]",
+				"[concat(variables('factoryId'), '/datasets/CreateTurasDimsLookup')]",
+				"[concat(variables('factoryId'), '/datasets/TaxonomyTermTable')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/df_PortThesaurusTerms')]",
+			"type": "Microsoft.DataFactory/factories/dataflows",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"type": "MappingDataFlow",
+				"typeProperties": {
+					"sources": [
+						{
+							"dataset": {
+								"referenceName": "TermTable",
+								"type": "DatasetReference"
+							},
+							"name": "GetThesaurusTypes",
+							"script": "source(output(\n\t\tDimId as integer,\n\t\tDimName as string,\n\t\tDimDescription as string\n\t),\n\tallowSchemaDrift: false,\n\tvalidateSchema: false,\n\tformat: 'table') ~> GetThesaurusTypes",
+							"typeProperties": {}
+						},
+						{
+							"dataset": {
+								"referenceName": "AzureSqlTermTypes",
+								"type": "DatasetReference"
+							},
+							"name": "GetTaxonomyTermTypes",
+							"script": "source(output(\n\t\tTermTypeID as integer,\n\t\tTypeName as string,\n\t\tTypeDescription as string,\n\t\tTypeAvailable as boolean,\n\t\tTypeSourceID as integer\n\t),\n\tallowSchemaDrift: false,\n\tvalidateSchema: false,\n\tformat: 'table') ~> GetTaxonomyTermTypes",
+							"typeProperties": {}
+						}
+					],
+					"sinks": [
+						{
+							"dataset": {
+								"referenceName": "TermTypeSink",
+								"type": "DatasetReference"
+							},
+							"name": "InsertSink",
+							"script": "AssignForInsertion sink(input(\n\t\tTermTypeID as integer,\n\t\tTypeName as string,\n\t\tDescription as string,\n\t\tAvailable as boolean,\n\t\tDimTable as string,\n\t\tSourceID as integer\n\t),\n\tallowSchemaDrift: false,\n\tvalidateSchema: false,\n\tformat: 'table',\n\tdeletable:false,\n\tinsertable:true,\n\tupdateable:false,\n\tupsertable:false,\n\tkeys:['TermTypeID'],\n\tmapColumn(\n\t\tTermTypeID,\n\t\tTypeName,\n\t\tDescription = TypeName,\n\t\tAvailable = TypeAvailable,\n\t\tSourceID = DimSourceID\n\t)) ~> InsertSink"
+						},
+						{
+							"dataset": {
+								"referenceName": "TermTypeSink",
+								"type": "DatasetReference"
+							},
+							"name": "UpdateSink",
+							"script": "SelectForUpdate sink(input(\n\t\tTermTypeID as integer,\n\t\tTypeName as string,\n\t\tDescription as string,\n\t\tAvailable as boolean,\n\t\tDimTable as string,\n\t\tSourceID as integer\n\t),\n\tallowSchemaDrift: false,\n\tvalidateSchema: false,\n\tformat: 'table',\n\tdeletable:false,\n\tinsertable:false,\n\tupdateable:true,\n\tupsertable:false,\n\tkeys:['TermTypeID'],\n\tmapColumn(\n\t\tTermTypeID,\n\t\tTypeName = DimTypeName,\n\t\tDescription = DimTypeDescription\n\t)) ~> UpdateSink"
+						},
+						{
+							"dataset": {
+								"referenceName": "TermTypeSink",
+								"type": "DatasetReference"
+							},
+							"name": "DeleteSink",
+							"script": "TermTypeSoftDelete sink(input(\n\t\tTermTypeID as integer,\n\t\tTypeName as string,\n\t\tDescription as string,\n\t\tAvailable as boolean,\n\t\tDimTable as string,\n\t\tSourceID as integer\n\t),\n\tallowSchemaDrift: false,\n\tvalidateSchema: false,\n\tformat: 'table',\n\tdeletable:false,\n\tinsertable:false,\n\tupdateable:true,\n\tupsertable:false,\n\tkeys:['TermTypeID'],\n\tmapColumn(\n\t\tTermTypeID,\n\t\tTypeName,\n\t\tDescription,\n\t\tAvailable = TypeAvailable,\n\t\tSourceID = TypeSourceID\n\t)) ~> DeleteSink"
+						},
+						{
+							"dataset": {
+								"referenceName": "TermSINK",
+								"type": "DatasetReference"
+							},
+							"name": "DeleteAvailableFromTermSink",
+							"script": "SoftDeleteTermTable sink(input(\n\t\tTermID as integer,\n\t\tDimID as integer,\n\t\tTermCode as string,\n\t\tTermName as string,\n\t\tDescription as string,\n\t\tPreferred as boolean,\n\t\tAvailable as boolean,\n\t\tTermTypeID as integer\n\t),\n\tallowSchemaDrift: false,\n\tvalidateSchema: false,\n\tformat: 'table',\n\tdeletable:false,\n\tinsertable:false,\n\tupdateable:true,\n\tupsertable:false,\n\tkeys:['TermTypeID'],\n\tmapColumn(\n\t\tTermTypeID\n\t)) ~> DeleteAvailableFromTermSink"
+						}
+					],
+					"transformations": [
+						{
+							"name": "MergeJoin",
+							"script": "GetThesaurusTypes, GetTaxonomyTermTypes join(DimId == TermTypeID,\n\tjoinType:'outer',\n\tbroadcast: 'none')~> MergeJoin"
+						},
+						{
+							"name": "ConditionalSplit1",
+							"script": "MergeJoin split(isNull(TermTypeID),\n\tisNull(DimId),\n\tdisjoint: true) ~> ConditionalSplit1@(insert, delete, update)"
+						},
+						{
+							"name": "ConvertDimToType",
+							"script": "ConditionalSplit1@insert derive(DimAvailable = true(),\n\t\tDimSourceID = 2,\n\t\tDimTypeName = left(DimName, 80),\n\t\tDimTypeDescription = left(DimDescription, 500)) ~> ConvertDimToType"
+						},
+						{
+							"name": "SelectColumnsToInsert",
+							"script": "ConvertDimToType select(mapColumn(\n\t\tTermTypeID = DimId,\n\t\tTypeName = DimTypeName,\n\t\tTypeDescription = DimTypeDescription,\n\t\tTypeAvailable = DimAvailable,\n\t\tDimSourceID\n\t))~> SelectColumnsToInsert"
+						},
+						{
+							"name": "ConvertNameAndDesc",
+							"script": "ConditionalSplit1@update derive(DimTypeName = left(DimName, 80),\n\t\tDimTypeDescription = left(DimDescription, 500)) ~> ConvertNameAndDesc"
+						},
+						{
+							"name": "SelectForUpdate",
+							"script": "ConditionForUpdate select(mapColumn(\n\t\tTermTypeID,\n\t\tDimTypeName,\n\t\tDimTypeDescription\n\t))~> SelectForUpdate"
+						},
+						{
+							"name": "ConditionForUpdate",
+							"script": "ConvertNameAndDesc alterRow(updateIf(not(isNull(DimName)))) ~> ConditionForUpdate"
+						},
+						{
+							"name": "ConditionForDelete",
+							"script": "ConditionalSplit1@delete alterRow(updateIf(isNull(DimId))) ~> ConditionForDelete"
+						},
+						{
+							"name": "TermTypeSoftDelete",
+							"script": "SelectValueToModify select(mapColumn(\n\t\tTermTypeID,\n\t\tTypeName,\n\t\tTypeAvailable,\n\t\tTypeSourceID,\n\t\tDescription = TypeDescription\n\t))~> TermTypeSoftDelete"
+						},
+						{
+							"name": "SelectValueToModify",
+							"script": "ConditionForDelete derive(TypeAvailable = TypeAvailable == false()) ~> SelectValueToModify"
+						},
+						{
+							"name": "SoftDeleteTermTable",
+							"script": "SelectValueToModify select(mapColumn(\n\t\tTermTypeID,\n\t\tTypeName,\n\t\tTypeDescription,\n\t\tTypeAvailable\n\t))~> SoftDeleteTermTable"
+						},
+						{
+							"name": "AssignForInsertion",
+							"script": "SelectColumnsToInsert alterRow(insertIf(isNull(TermTypeID))) ~> AssignForInsertion"
+						}
+					]
+				}
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/datasets/TermTable')]",
+				"[concat(variables('factoryId'), '/datasets/AzureSqlTermTypes')]",
+				"[concat(variables('factoryId'), '/datasets/TermTypeSink')]",
+				"[concat(variables('factoryId'), '/datasets/TermSINK')]"
+			]
+		}
+	]
+}
