@@ -4,7 +4,7 @@
 		"description": "Copy Turas Dimension Tables from Warehouse Alpha to MySampleDB using a query.",
 		"activities": [
 			{
-				"name": "CopyTurasDimensionTables",
+				"name": "CreateTurasDimensionTables",
 				"type": "Copy",
 				"policy": {
 					"timeout": "7.00:00:00",
