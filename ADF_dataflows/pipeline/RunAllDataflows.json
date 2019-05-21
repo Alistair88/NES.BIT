@@ -124,6 +124,12 @@
 						"dependencyConditions": [
 							"Succeeded"
 						]
+					},
+					{
+						"activity": "ExecuteCreateTaxonomyDimensionTerms",
+						"dependencyConditions": [
+							"Succeeded"
+						]
 					}
 				],
 				"policy": {
@@ -275,6 +281,25 @@
 				"typeProperties": {
 					"pipeline": {
 						"referenceName": "RunMergePortfolioDimensions",
+						"type": "PipelineReference"
+					},
+					"waitOnCompletion": true
+				}
+			},
+			{
+				"name": "ExecuteCreateTaxonomyDimensionTerms",
+				"type": "ExecutePipeline",
+				"dependsOn": [
+					{
+						"activity": "df_MergeTurasDimensions",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"typeProperties": {
+					"pipeline": {
+						"referenceName": "pl_CreateTaxonomyDimensionTerms",
 						"type": "PipelineReference"
 					},
 					"waitOnCompletion": true
