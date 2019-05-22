@@ -20,7 +20,10 @@
 				"precision": 10,
 				"scale": 255
 			}
-		]
+		],
+		"typeProperties": {
+			"tableName": "[dbo].[TaxonomyTerms]"
+		}
 	},
 	"type": "Microsoft.DataFactory/factories/datasets"
 }
