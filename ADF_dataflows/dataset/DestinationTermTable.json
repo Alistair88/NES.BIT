@@ -57,7 +57,7 @@
 			}
 		],
 		"typeProperties": {
-			"tableName": "Term"
+			"tableName": "[dbo].[Term]"
 		}
 	},
 	"type": "Microsoft.DataFactory/factories/datasets"
