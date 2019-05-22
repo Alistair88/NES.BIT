@@ -15,19 +15,7 @@
 			"type": "secureString",
 			"metadata": "Secure string for 'password' of 'LocalhostSqlServer'"
 		},
-		"LocalhostTermType_connectionString": {
-			"type": "secureString",
-			"metadata": "Secure string for 'connectionString' of 'LocalhostTermType'"
-		},
-		"LocalhostTermType_password": {
-			"type": "secureString",
-			"metadata": "Secure string for 'password' of 'LocalhostTermType'"
-		},
 		"LocalhostSqlServer_properties_typeProperties_userName": {
-			"type": "string",
-			"defaultValue": "NES\\AlistairB"
-		},
-		"LocalhostTermType_properties_typeProperties_userName": {
 			"type": "string",
 			"defaultValue": "NES\\AlistairB"
 		}
@@ -36,6 +24,60 @@
 		"factoryId": "[concat('Microsoft.DataFactory/factories/', parameters('factoryName'))]"
 	},
 	"resources": [
+		{
+			"name": "[concat(parameters('factoryName'), '/TaxonomyTerms')]",
+			"type": "Microsoft.DataFactory/factories/datasets",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"linkedServiceName": {
+					"referenceName": "WarehouseAlphaTest",
+					"type": "LinkedServiceReference"
+				},
+				"annotations": [],
+				"type": "AzureSqlTable",
+				"schema": [
+					{
+						"name": "TermID",
+						"type": "int",
+						"precision": 10
+					},
+					{
+						"name": "TermDimID",
+						"type": "int",
+						"precision": 10
+					},
+					{
+						"name": "TermCode",
+						"type": "nvarchar"
+					},
+					{
+						"name": "TermName",
+						"type": "nvarchar"
+					},
+					{
+						"name": "TermDescription",
+						"type": "nvarchar"
+					},
+					{
+						"name": "TermPreferred",
+						"type": "bit"
+					},
+					{
+						"name": "Available",
+						"type": "bit"
+					},
+					{
+						"name": "TermTypeID",
+						"type": "smallint",
+						"precision": 5
+					}
+				],
+				"typeProperties": {
+					"tableName": "[[dbo].[TaxonomyTerms]"
+				}
+			},
+			"dependsOn": []
+		},
 		{
 			"name": "[concat(parameters('factoryName'), '/TaxonomyTermsFromTaxonomy')]",
 			"type": "Microsoft.DataFactory/factories/datasets",
@@ -884,29 +926,7 @@
 					}
 				},
 				"connectVia": {
-					"referenceName": "LocalhostIntegrationRuntime",
-					"type": "IntegrationRuntimeReference"
-				}
-			},
-			"dependsOn": []
-		},
-		{
-			"name": "[concat(parameters('factoryName'), '/LocalhostTermType')]",
-			"type": "Microsoft.DataFactory/factories/linkedServices",
-			"apiVersion": "2018-06-01",
-			"properties": {
-				"annotations": [],
-				"type": "SqlServer",
-				"typeProperties": {
-					"connectionString": "[parameters('LocalhostTermType_connectionString')]",
-					"userName": "[parameters('LocalhostTermType_properties_typeProperties_userName')]",
-					"password": {
-						"type": "SecureString",
-						"value": "[parameters('LocalhostTermType_password')]"
-					}
-				},
-				"connectVia": {
-					"referenceName": "LocalhostIntegrationRuntime",
+					"referenceName": "integrationRuntimeLocal",
 					"type": "IntegrationRuntimeReference"
 				}
 			},

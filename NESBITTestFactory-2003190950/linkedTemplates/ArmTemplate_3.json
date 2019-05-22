@@ -6,12 +6,46 @@
 			"type": "string",
 			"metadata": "Data Factory Name",
 			"defaultValue": "nesbittestfactory-2003190950"
+		},
+		"LocalhostTermType_connectionString": {
+			"type": "secureString",
+			"metadata": "Secure string for 'connectionString' of 'LocalhostTermType'"
+		},
+		"LocalhostTermType_password": {
+			"type": "secureString",
+			"metadata": "Secure string for 'password' of 'LocalhostTermType'"
+		},
+		"LocalhostTermType_properties_typeProperties_userName": {
+			"type": "string",
+			"defaultValue": "NES\\AlistairB"
 		}
 	},
 	"variables": {
 		"factoryId": "[concat('Microsoft.DataFactory/factories/', parameters('factoryName'))]"
 	},
 	"resources": [
+		{
+			"name": "[concat(parameters('factoryName'), '/LocalhostTermType')]",
+			"type": "Microsoft.DataFactory/factories/linkedServices",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"annotations": [],
+				"type": "SqlServer",
+				"typeProperties": {
+					"connectionString": "[parameters('LocalhostTermType_connectionString')]",
+					"userName": "[parameters('LocalhostTermType_properties_typeProperties_userName')]",
+					"password": {
+						"type": "SecureString",
+						"value": "[parameters('LocalhostTermType_password')]"
+					}
+				},
+				"connectVia": {
+					"referenceName": "integrationRuntimeLocal",
+					"type": "IntegrationRuntimeReference"
+				}
+			},
+			"dependsOn": []
+		},
 		{
 			"name": "[concat(parameters('factoryName'), '/CopyToPortThesaurusDB')]",
 			"type": "Microsoft.DataFactory/factories/pipelines",
@@ -1263,7 +1297,9 @@
 					"tableName": "[[dbo].[TermRelationship]"
 				}
 			},
-			"dependsOn": []
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/linkedServices/LocalhostTermType')]"
+			]
 		},
 		{
 			"name": "[concat(parameters('factoryName'), '/LocalTermsTableOnThesaurus')]",
@@ -1386,7 +1422,9 @@
 				],
 				"typeProperties": {}
 			},
-			"dependsOn": []
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/linkedServices/LocalhostTermType')]"
+			]
 		},
 		{
 			"name": "[concat(parameters('factoryName'), '/SourceRelationFromLocal')]",
@@ -1450,9 +1488,13 @@
 						"type": "Int16"
 					}
 				],
-				"typeProperties": {}
+				"typeProperties": {
+					"tableName": "[[dbo].[TermType]"
+				}
 			},
-			"dependsOn": []
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/linkedServices/LocalhostTermType')]"
+			]
 		},
 		{
 			"name": "[concat(parameters('factoryName'), '/Taxonomy_tst')]",
@@ -1491,111 +1533,9 @@
 					"tableName": "[[dbo].[TermType]"
 				}
 			},
-			"dependsOn": []
-		},
-		{
-			"name": "[concat(parameters('factoryName'), '/dataflow2')]",
-			"type": "Microsoft.DataFactory/factories/dataflows",
-			"apiVersion": "2018-06-01",
-			"properties": {
-				"type": "MappingDataFlow",
-				"typeProperties": {
-					"sources": [
-						{
-							"dataset": {
-								"referenceName": "PortfolioDimensionTables",
-								"type": "DatasetReference"
-							},
-							"name": "PortfolioDimensionTables",
-							"script": "source(output(\n\t\tDimTableName as string,\n\t\tDimID as integer,\n\t\tDimCode as string,\n\t\tDimName as string,\n\t\tDimDescription as string,\n\t\tDimActive as boolean\n\t),\n\tallowSchemaDrift: false,\n\tvalidateSchema: false,\n\tformat: 'table') ~> PortfolioDimensionTables",
-							"typeProperties": {}
-						},
-						{
-							"dataset": {
-								"referenceName": "TaxonomyDimensionTerms",
-								"type": "DatasetReference"
-							},
-							"name": "TaxonomyDimensionTerms",
-							"script": "source(output(\n\t\tTermDimTable as string,\n\t\tTermID as integer,\n\t\tTermDimID as long,\n\t\tTermCode as string,\n\t\tTermName as string,\n\t\tTermDescription as string,\n\t\tTermPreferred as boolean,\n\t\tTermAvailable as boolean,\n\t\tTermTypeID as integer\n\t),\n\tallowSchemaDrift: false,\n\tvalidateSchema: false,\n\tformat: 'table') ~> TaxonomyDimensionTerms",
-							"typeProperties": {}
-						},
-						{
-							"dataset": {
-								"referenceName": "CreateTurasDimsLookup",
-								"type": "DatasetReference"
-							},
-							"name": "LookupType",
-							"script": "source(output(\n\t\tTermTypeID as integer,\n\t\tDimTable as string\n\t),\n\tallowSchemaDrift: false,\n\tvalidateSchema: false,\n\tformat: 'table') ~> LookupType",
-							"typeProperties": {}
-						}
-					],
-					"sinks": [
-						{
-							"dataset": {
-								"referenceName": "IntermediateTermTable",
-								"type": "DatasetReference"
-							},
-							"name": "SinkIntoTermTaxonomy",
-							"script": "SelectForInsertion sink(input(\n\t\tTermID as integer,\n\t\tDimID as integer,\n\t\tTermCode as string,\n\t\tTermName as string,\n\t\tDescription as string,\n\t\tPreferred as boolean,\n\t\tAvailable as boolean,\n\t\tTermTypeID as integer\n\t),\n\tallowSchemaDrift: false,\n\tvalidateSchema: false,\n\tformat: 'table',\n\tdeletable:false,\n\tinsertable:true,\n\tupdateable:false,\n\tupsertable:false,\n\tmapColumn(\n\t\tTermID,\n\t\tDimID,\n\t\tTermCode = DimCode,\n\t\tTermName = DimName,\n\t\tDescription = DimDescription,\n\t\tPreferred,\n\t\tAvailable = DimActive,\n\t\tTermTypeID\n\t)) ~> SinkIntoTermTaxonomy"
-						},
-						{
-							"dataset": {
-								"referenceName": "IntermediateTermTable",
-								"type": "DatasetReference"
-							},
-							"name": "DeleteTerm",
-							"script": "MarkForDeletion sink(input(\n\t\tTermID as integer,\n\t\tDimID as integer,\n\t\tTermCode as string,\n\t\tTermName as string,\n\t\tDescription as string,\n\t\tPreferred as boolean,\n\t\tAvailable as boolean,\n\t\tTermTypeID as integer\n\t),\n\tallowSchemaDrift: false,\n\tvalidateSchema: false,\n\tformat: 'table',\n\tdeletable:true,\n\tinsertable:false,\n\tupdateable:false,\n\tupsertable:false,\n\tkeys:['TermID'],\n\tmapColumn(\n\t\tTermID,\n\t\tDimID,\n\t\tTermCode,\n\t\tTermName\n\t)) ~> DeleteTerm"
-						},
-						{
-							"dataset": {
-								"referenceName": "IntermediateTermTable",
-								"type": "DatasetReference"
-							},
-							"name": "UpdateSink",
-							"script": "SelectForUpdate sink(input(\n\t\tTermID as integer,\n\t\tDimID as integer,\n\t\tTermCode as string,\n\t\tTermName as string,\n\t\tDescription as string,\n\t\tPreferred as boolean,\n\t\tAvailable as boolean,\n\t\tTermTypeID as integer\n\t),\n\tallowSchemaDrift: false,\n\tvalidateSchema: false,\n\tformat: 'table',\n\tdeletable:false,\n\tinsertable:false,\n\tupdateable:true,\n\tupsertable:false,\n\tkeys:['TermID'],\n\tmapColumn(\n\t\tTermID,\n\t\tDimID,\n\t\tTermCode = DimCode,\n\t\tTermName = DimName,\n\t\tDescription = DimDescription,\n\t\tPreferred,\n\t\tAvailable = DimActive,\n\t\tTermTypeID\n\t)) ~> UpdateSink"
-						}
-					],
-					"transformations": [
-						{
-							"name": "MergeJoin",
-							"script": "PortfolioDimensionTables, TaxonomyDimensionTerms join(DimID == TermDimID\n\t&& DimTableName == TermDimTable,\n\tjoinType:'outer',\n\tbroadcast: 'none')~> MergeJoin"
-						},
-						{
-							"name": "ConditionalSplit",
-							"script": "MergeJoin split(isNull(TermID),\n\tisNull(DimID),\n\tdisjoint: true) ~> ConditionalSplit@(Insert, Delete, Update)"
-						},
-						{
-							"name": "DerivedColumn",
-							"script": "ConditionalSplit@Insert derive(Preferred = true()) ~> DerivedColumn"
-						},
-						{
-							"name": "Lookup1",
-							"script": "DerivedColumn, LookupType lookup(DimTableName == DimTable,\n\tbroadcast: 'none')~> Lookup1"
-						},
-						{
-							"name": "SelectForInsertion",
-							"script": "Filter1 select(mapColumn(\n\t\tDimID,\n\t\tDimCode,\n\t\tDimName,\n\t\tDimDescription,\n\t\tDimActive,\n\t\tTermID,\n\t\tPreferred,\n\t\tTermTypeID = LookupType@TermTypeID\n\t))~> SelectForInsertion"
-						},
-						{
-							"name": "SelectForDeletion",
-							"script": "ConditionalSplit@Delete select(mapColumn(\n\t\tDimID,\n\t\tTermID,\n\t\tTermCode,\n\t\tTermName\n\t))~> SelectForDeletion"
-						},
-						{
-							"name": "MarkForDeletion",
-							"script": "SelectForDeletion alterRow(deleteIf(isNull(DimID))) ~> MarkForDeletion"
-						},
-						{
-							"name": "SelectForUpdate",
-							"script": "ConditionalSplit@Update select(mapColumn(\n\t\tDimCode,\n\t\tDimDescription,\n\t\tDimActive,\n\t\tDimName,\n\t\tDimID,\n\t\tTermID,\n\t\tPreferred = TermPreferred,\n\t\tTermTypeID\n\t))~> SelectForUpdate"
-						},
-						{
-							"name": "Filter1",
-							"script": "Lookup1 filter(not(isNull(DimTable))) ~> Filter1"
-						}
-					]
-				}
-			},
-			"dependsOn": []
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/linkedServices/LocalhostTermType')]"
+			]
 		}
 	]
 }

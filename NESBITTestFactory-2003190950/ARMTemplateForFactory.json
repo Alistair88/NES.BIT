@@ -4424,7 +4424,9 @@
 						"type": "Int16"
 					}
 				],
-				"typeProperties": {}
+				"typeProperties": {
+					"tableName": "[[dbo].[TermType]"
+				}
 			},
 			"dependsOn": [
 				"[concat(variables('factoryId'), '/linkedServices/LocalhostTermType')]"
@@ -5629,12 +5631,12 @@
 					}
 				},
 				"connectVia": {
-					"referenceName": "LocalhostIntegrationRuntime",
+					"referenceName": "integrationRuntimeLocal",
 					"type": "IntegrationRuntimeReference"
 				}
 			},
 			"dependsOn": [
-				"[concat(variables('factoryId'), '/integrationRuntimes/LocalhostIntegrationRuntime')]"
+				"[concat(variables('factoryId'), '/integrationRuntimes/integrationRuntimeLocal')]"
 			]
 		},
 		{
@@ -5653,12 +5655,12 @@
 					}
 				},
 				"connectVia": {
-					"referenceName": "LocalhostIntegrationRuntime",
+					"referenceName": "integrationRuntimeLocal",
 					"type": "IntegrationRuntimeReference"
 				}
 			},
 			"dependsOn": [
-				"[concat(variables('factoryId'), '/integrationRuntimes/LocalhostIntegrationRuntime')]"
+				"[concat(variables('factoryId'), '/integrationRuntimes/integrationRuntimeLocal')]"
 			]
 		},
 		{
@@ -6450,6 +6452,17 @@
 				"[concat(variables('factoryId'), '/datasets/TermTypeSink')]",
 				"[concat(variables('factoryId'), '/datasets/TermSINK')]"
 			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/integrationRuntimeLocal')]",
+			"type": "Microsoft.DataFactory/factories/integrationRuntimes",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"type": "SelfHosted",
+				"description": "connection to the local computer",
+				"typeProperties": {}
+			},
+			"dependsOn": []
 		}
 	]
 }
