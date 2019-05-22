@@ -76,7 +76,7 @@
 						]
 					},
 					{
-						"activity": "ExecutePl_CopyFromLOcalToRelation",
+						"activity": "ExecutePl_CopyFromLocalToRelation",
 						"dependencyConditions": [
 							"Succeeded"
 						]
@@ -337,7 +337,7 @@
 				}
 			},
 			{
-				"name": "ExecutePl_CopyFromLOcalToRelation",
+				"name": "ExecutePl_CopyFromLocalToRelation",
 				"type": "ExecutePipeline",
 				"dependsOn": [
 					{
