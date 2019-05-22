@@ -416,7 +416,7 @@
 			"apiVersion": "2018-06-01",
 			"properties": {
 				"linkedServiceName": {
-					"referenceName": "PortThesaurusDB",
+					"referenceName": "WarehouseAlphaTest",
 					"type": "LinkedServiceReference"
 				},
 				"folder": {
@@ -453,7 +453,7 @@
 					}
 				],
 				"typeProperties": {
-					"tableName": "[[dbo].[IntermediateTerm]"
+					"tableName": "[[Taxonomy].[TermTypeSINK]"
 				}
 			},
 			"dependsOn": []
