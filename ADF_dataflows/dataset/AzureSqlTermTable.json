@@ -1,7 +1,7 @@
 {
 	"name": "AzureSqlTermTable",
 	"properties": {
-		"description": "Term table used as a sink for Thesaurus data",
+		"description": "Term table used as a sink for Thesaurus data.",
 		"linkedServiceName": {
 			"referenceName": "WarehouseAlphaTest",
 			"type": "LinkedServiceReference"
