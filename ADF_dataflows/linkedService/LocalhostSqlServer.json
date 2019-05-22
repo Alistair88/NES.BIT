@@ -6,10 +6,10 @@
 		"typeProperties": {
 			"connectionString": "integrated security=True;data source=.;initial catalog=ThesarusNES",
 			"userName": "NES\\AlistairB",
-			"encryptedCredential": "eyJDcmVkZW50aWFsSWQiOiI4NTQ4MjEyNi0wZDdhLTQ3NjgtOTllOS03OTA2NWJlMmM0YzIiLCJWZXJzaW9uIjoiMi4wIiwiQ2xhc3NUeXBlIjoiTWljcm9zb2Z0LkRhdGFQcm94eS5Db3JlLkludGVyU2VydmljZURhdGFDb250cmFjdC5DcmVkZW50aWFsU1UwNkNZMTQifQ=="
+			"encryptedCredential": "eyJDcmVkZW50aWFsSWQiOiI2NGEwMjBiMS1kNjc0LTQzNzUtYWJkNy04MGY0MmVmZmVmNGYiLCJWZXJzaW9uIjoiMi4wIiwiQ2xhc3NUeXBlIjoiTWljcm9zb2Z0LkRhdGFQcm94eS5Db3JlLkludGVyU2VydmljZURhdGFDb250cmFjdC5DcmVkZW50aWFsU1UwNkNZMTQifQ=="
 		},
 		"connectVia": {
-			"referenceName": "LocalhostIntegrationRuntime",
+			"referenceName": "integrationRuntimeLocal",
 			"type": "IntegrationRuntimeReference"
 		}
 	}
