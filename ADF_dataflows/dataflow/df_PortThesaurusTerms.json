@@ -10,7 +10,7 @@
 						"type": "DatasetReference"
 					},
 					"name": "GetThesaurusTypes",
-					"script": "source(output(\n\t\tDimId as integer,\n\t\tDimName as string,\n\t\tDimDescription as string\n\t),\n\tallowSchemaDrift: false,\n\tvalidateSchema: false,\n\tformat: 'table') ~> GetThesaurusTypes"
+					"script": "source(output(\n\t\tDimID as integer,\n\t\tDimName as string,\n\t\tDimDescription as string\n\t),\n\tallowSchemaDrift: false,\n\tvalidateSchema: false,\n\tformat: 'table') ~> GetThesaurusTypes"
 				},
 				{
 					"dataset": {

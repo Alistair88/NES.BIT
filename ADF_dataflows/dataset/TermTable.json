@@ -11,7 +11,7 @@
 		"type": "AzureSqlTable",
 		"schema": [
 			{
-				"name": "DimId",
+				"name": "DimID",
 				"type": "int",
 				"precision": 10
 			},
