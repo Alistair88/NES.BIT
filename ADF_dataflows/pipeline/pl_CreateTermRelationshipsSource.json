@@ -22,7 +22,7 @@
 				"typeProperties": {
 					"source": {
 						"type": "AzureSqlSource",
-						"sqlReaderQuery": "SELECT TermRelationship.RelationshipID,\n       TermX.TermID XTermID,\n       TermX.DimID XTermDimID,\n       TermY.TermID YTermID,\n       TermY.DimID YTermDimID,\n       TermRelationship.KindID TermKindID\nFROM [Taxonomy].[TermRelationship] TermRelationship\n    LEFT JOIN dbo.TermInsert TermX\n        ON TermX.TermID = TermRelationship.TermXID\n    LEFT JOIN dbo.TermInsert TermY\n        ON TermY.TermID = TermRelationship.TermYID\n    LEFT JOIN [Taxonomy].[TermTypeSINK] TermType\n        ON TermType.TermTypeID = TermX.TermTypeID\nWHERE TermType.SourceID = 2\nORDER BY TermX.DimID,\n         TermY.DimID,\n         TermKindID;"
+						"sqlReaderQuery": "SELECT \n\tTermRelationship.RelationshipID, \n\tTermX.TermID XTermID, \n\tTermX.DimID XTermDimID,\n\tTermY.TermID YTermID, \n\tTermY.DimID YTermDimID,\n\tTermRelationship.KindID TermKindID\nFROM \n\tdbo.TermRelationship\n  LEFT JOIN \n\tdbo.intermediateTerm TermX on TermX.TermID = TermRelationship.TermXID\n  LEFT JOIN \n\tdbo.intermediateTerm TermY on TermY.TermID = TermRelationship.TermYID\n  LEFT JOIN \n\tdbo.IntermediateTermType TermType on TermType.TermTypeID = TermX.TermTypeID\nWHERE \n\tTermType.SourceID = 2\nORDER BY \n\tTermX.DimID, TermY.DimID, TermKindID;"
 					},
 					"sink": {
 						"type": "AzureSqlSink",
