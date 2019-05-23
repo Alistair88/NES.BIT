@@ -40,7 +40,7 @@
 			}
 		],
 		"typeProperties": {
-			"tableName": "[dbo].[ThesaurusTerms]"
+			"tableName": "[dbo].[ThesaurusTerms_Dim_Source]"
 		}
 	},
 	"type": "Microsoft.DataFactory/factories/datasets"
