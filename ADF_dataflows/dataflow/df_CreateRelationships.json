@@ -43,8 +43,8 @@
 						"referenceName": "TermRelationshipSink",
 						"type": "DatasetReference"
 					},
-					"name": "DeleteSink",
-					"script": "MarkForDeletion sink(input(\n\t\tRelationshipID as integer,\n\t\tTermXID as integer,\n\t\tTermYID as integer,\n\t\tKindID as integer,\n\t\tDescription as string\n\t),\n\tallowSchemaDrift: false,\n\tvalidateSchema: false,\n\tformat: 'table',\n\tdeletable:true,\n\tinsertable:false,\n\tupdateable:false,\n\tupsertable:false,\n\tkeys:['RelationshipID'],\n\tmapColumn(\n\t\tRelationshipID,\n\t\tTermXID = XTermID,\n\t\tTermYID = YTermID,\n\t\tKindID = DimKindID\n\t)) ~> DeleteSink"
+					"name": "DeleteRelationship",
+					"script": "MarkForDeletion sink(input(\n\t\tRelationshipID as integer,\n\t\tTermXID as integer,\n\t\tTermYID as integer,\n\t\tKindID as integer,\n\t\tDescription as string\n\t),\n\tallowSchemaDrift: false,\n\tvalidateSchema: false,\n\tformat: 'table',\n\tdeletable:true,\n\tinsertable:false,\n\tupdateable:false,\n\tupsertable:false,\n\tkeys:['RelationshipID'],\n\tmapColumn(\n\t\tRelationshipID,\n\t\tTermXID = XTermID,\n\t\tTermYID = YTermID,\n\t\tKindID = DimKindID\n\t)) ~> DeleteRelationship"
 				}
 			],
 			"transformations": [
