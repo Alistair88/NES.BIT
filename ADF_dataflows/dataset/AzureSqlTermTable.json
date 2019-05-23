@@ -9,7 +9,7 @@
 		"type": "AzureSqlTable",
 		"structure": [
 			{
-				"name": "DimId",
+				"name": "DimID",
 				"type": "Int32"
 			},
 			{
