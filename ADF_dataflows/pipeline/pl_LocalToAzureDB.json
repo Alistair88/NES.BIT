@@ -27,7 +27,7 @@
 					"translator": {
 						"type": "TabularTranslator",
 						"columnMappings": {
-							"DimID": "DimId",
+							"DimID": "DimID",
 							"DimName": "DimName",
 							"DimDescription": "DimDescription"
 						}
