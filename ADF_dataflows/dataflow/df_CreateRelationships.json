@@ -26,7 +26,7 @@
 						"type": "DatasetReference"
 					},
 					"name": "LookupTable",
-					"script": "source(output(\n\t\tTermID as integer,\n\t\tDimID as integer\n\t),\n\tallowSchemaDrift: false,\n\tvalidateSchema: false,\n\tformat: 'table') ~> LookupTable"
+					"script": "source(output(\n\t\tTermID as integer,\n\t\tDimID as integer\n\t),\n\tallowSchemaDrift: true,\n\tvalidateSchema: false,\n\tquery: 'SELECT Term.TermID, Term.DimID FROM dbo.intermediateTerm Term',\n\tformat: 'query') ~> LookupTable"
 				}
 			],
 			"sinks": [
