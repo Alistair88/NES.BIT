@@ -1,5 +1,5 @@
 {
-	"name": "ThesaurusTermsInsert",
+	"name": "TaxonomyTermsInsert",
 	"properties": {
 		"description": "Sink table for the insert branch of  the dataflow",
 		"linkedServiceName": {
