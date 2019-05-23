@@ -15,7 +15,7 @@
 				"typeProperties": {
 					"source": {
 						"type": "AzureSqlSource",
-						"sqlReaderQuery": "SELECT RTRIM(CAST(TermType.DimTable AS NVARCHAR(80))) TermDimTable,\n       Term.TermID,\n       CAST(Term.DimID AS BIGINT) TermDimID,\n       Term.TermCode,\n       Term.TermName,\n       Term.Description AS TermDescription,\n       Term.Preferred AS TermPreferred,\n       Term.Available AS TermAvailable,\n       Term.TermTypeID\nFROM [Taxonomy].[Term] Term\n    LEFT OUTER JOIN [Taxonomy].[TermType] TermType\n        ON TermType.TermTypeID = Term.TermTypeID\nWHERE TermType.SourceID = 1\nORDER BY TermType.DimTable,\n         Term.DimID;"
+						"sqlReaderQuery": "SELECT RTRIM(CAST(TermType.DimTable AS NVARCHAR(80))) TermDimTable,\n       Term.TermID,\n       CAST(Term.DimID AS BIGINT) TermDimID,\n       Term.TermCode,\n       Term.TermName,\n       Term.Description AS TermDescription,\n       Term.Preferred AS TermPreferred,\n       Term.Available AS TermAvailable,\n       Term.TermTypeID\nFROM [dbo].[IntermediateTerm] Term\n    LEFT OUTER JOIN [dbo].[IntermediateTermType] TermType\n        ON TermType.TermTypeID = Term.TermTypeID\nWHERE TermType.SourceID = 1\nORDER BY TermType.DimTable,\n         Term.DimID;"
 					},
 					"sink": {
 						"type": "AzureSqlSink",
