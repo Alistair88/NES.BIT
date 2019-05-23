@@ -3,7 +3,7 @@
 	"properties": {
 		"description": "Created: 09-05-19",
 		"linkedServiceName": {
-			"referenceName": "WarehouseAlphaTest",
+			"referenceName": "PortThesaurusDB",
 			"type": "LinkedServiceReference"
 		},
 		"folder": {
@@ -20,10 +20,35 @@
 				"name": "DimID",
 				"type": "int",
 				"precision": 10
+			},
+			{
+				"name": "TermCode",
+				"type": "nvarchar"
+			},
+			{
+				"name": "TermName",
+				"type": "nvarchar"
+			},
+			{
+				"name": "Description",
+				"type": "nvarchar"
+			},
+			{
+				"name": "Preferred",
+				"type": "bit"
+			},
+			{
+				"name": "Available",
+				"type": "bit"
+			},
+			{
+				"name": "TermTypeID",
+				"type": "smallint",
+				"precision": 5
 			}
 		],
 		"typeProperties": {
-			"tableName": "[Taxonomy].[CreateRelsLookup]"
+			"tableName": "[dbo].[IntermediateTerm]"
 		}
 	},
 	"type": "Microsoft.DataFactory/factories/datasets"
