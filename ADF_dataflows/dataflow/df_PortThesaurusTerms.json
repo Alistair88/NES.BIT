@@ -58,11 +58,11 @@
 			"transformations": [
 				{
 					"name": "MergeJoin",
-					"script": "GetThesaurusTypes, GetTaxonomyTermTypes join(DimId == TermTypeID,\n\tjoinType:'outer',\n\tbroadcast: 'none')~> MergeJoin"
+					"script": "GetThesaurusTypes, GetTaxonomyTermTypes join(DimID == TermTypeID,\n\tjoinType:'outer',\n\tbroadcast: 'none')~> MergeJoin"
 				},
 				{
 					"name": "ConditionalSplit1",
-					"script": "MergeJoin split(isNull(TermTypeID),\n\tisNull(DimId),\n\tdisjoint: true) ~> ConditionalSplit1@(insert, delete, update)"
+					"script": "MergeJoin split(isNull(TermTypeID),\n\tisNull(DimID),\n\tdisjoint: true) ~> ConditionalSplit1@(insert, delete, update)"
 				},
 				{
 					"name": "ConvertDimToType",
@@ -70,7 +70,7 @@
 				},
 				{
 					"name": "SelectColumnsToInsert",
-					"script": "ConvertDimToType select(mapColumn(\n\t\tTermTypeID = DimId,\n\t\tTypeName = DimTypeName,\n\t\tTypeDescription = DimTypeDescription,\n\t\tTypeAvailable = DimAvailable,\n\t\tDimSourceID\n\t))~> SelectColumnsToInsert"
+					"script": "ConvertDimToType select(mapColumn(\n\t\tTermTypeID = DimID,\n\t\tTypeName = DimTypeName,\n\t\tTypeDescription = DimTypeDescription,\n\t\tTypeAvailable = DimAvailable,\n\t\tDimSourceID\n\t))~> SelectColumnsToInsert"
 				},
 				{
 					"name": "ConvertNameAndDesc",
@@ -86,7 +86,7 @@
 				},
 				{
 					"name": "ConditionForDelete",
-					"script": "ConditionalSplit1@delete alterRow(updateIf(isNull(DimId))) ~> ConditionForDelete"
+					"script": "ConditionalSplit1@delete alterRow(updateIf(isNull(DimID))) ~> ConditionForDelete"
 				},
 				{
 					"name": "TermTypeSoftDelete",
