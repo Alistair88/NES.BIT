@@ -2,7 +2,7 @@
 	"name": "DestTaxonomyTermsSOURCE",
 	"properties": {
 		"linkedServiceName": {
-			"referenceName": "WarehouseAlphaTest",
+			"referenceName": "PortThesaurusDB",
 			"type": "LinkedServiceReference"
 		},
 		"folder": {
@@ -16,7 +16,7 @@
 				"precision": 10
 			},
 			{
-				"name": "TermDimID",
+				"name": "DimID",
 				"type": "int",
 				"precision": 10
 			},
@@ -29,11 +29,15 @@
 				"type": "nvarchar"
 			},
 			{
-				"name": "TermDescription",
+				"name": "Description",
 				"type": "nvarchar"
 			},
 			{
-				"name": "TermPreferred",
+				"name": "Preferred",
+				"type": "bit"
+			},
+			{
+				"name": "Available",
 				"type": "bit"
 			},
 			{
@@ -43,7 +47,7 @@
 			}
 		],
 		"typeProperties": {
-			"tableName": "[Taxonomy].[TermSOURCE]"
+			"tableName": "[dbo].[IntermediateTerm]"
 		}
 	},
 	"type": "Microsoft.DataFactory/factories/datasets"
