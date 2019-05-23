@@ -37,7 +37,7 @@
 						"type": "DatasetReference"
 					},
 					"name": "TaxonomyTermsInsert",
-					"script": "SelectForInsertion sink(input(\n\t\tTermID as integer,\n\t\tDimID as integer,\n\t\tTermCode as string,\n\t\tTermName as string,\n\t\tDescription as string,\n\t\tPreferred as boolean,\n\t\tAvailable as boolean,\n\t\tTermTypeID as integer\n\t),\n\tallowSchemaDrift: false,\n\tvalidateSchema: false,\n\tformat: 'table',\n\tdeletable:false,\n\tinsertable:true,\n\tupdateable:false,\n\tupsertable:false) ~> TaxonomyTermsInsert"
+					"script": "SelectForInsertion sink(input(\n\t\tTermID as integer,\n\t\tDimID as integer,\n\t\tTermCode as string,\n\t\tTermName as string,\n\t\tDescription as string,\n\t\tPreferred as boolean,\n\t\tAvailable as boolean,\n\t\tTermTypeID as integer\n\t),\n\tallowSchemaDrift: false,\n\tvalidateSchema: false,\n\tformat: 'table',\n\tdeletable:false,\n\tinsertable:true,\n\tupdateable:false,\n\tupsertable:false,\n\tmapColumn(\n\t\tDimID,\n\t\tTermName,\n\t\tAvailable,\n\t\tTermTypeID\n\t)) ~> TaxonomyTermsInsert"
 				},
 				{
 					"dataset": {
@@ -59,11 +59,11 @@
 			"transformations": [
 				{
 					"name": "MergeJoin",
-					"script": "SelectFromLookup, TaxonomyTerms join(DimID == TermDimID,\n\tjoinType:'outer',\n\tbroadcast: 'none')~> MergeJoin"
+					"script": "SelectFromLookup, TaxonomyTerms join(SelectFromLookup@DimID == TermDimID,\n\tjoinType:'outer',\n\tbroadcast: 'none')~> MergeJoin"
 				},
 				{
 					"name": "ConditionalSplit",
-					"script": "MergeJoin split(isNull(TermID),\n\tisNull(DimID),\n\tdisjoint: false) ~> ConditionalSplit@(Insert, Delete, Update)"
+					"script": "MergeJoin split(isNull(TermID),\n\tisNull(SelectFromLookup@DimID),\n\tdisjoint: false) ~> ConditionalSplit@(Insert, Delete, Update)"
 				},
 				{
 					"name": "SetAvailable",
