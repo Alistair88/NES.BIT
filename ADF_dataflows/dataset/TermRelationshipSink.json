@@ -2,7 +2,7 @@
 	"name": "TermRelationshipSink",
 	"properties": {
 		"linkedServiceName": {
-			"referenceName": "WarehouseAlphaTest",
+			"referenceName": "PortThesaurusDB",
 			"type": "LinkedServiceReference"
 		},
 		"folder": {
@@ -36,7 +36,7 @@
 			}
 		],
 		"typeProperties": {
-			"tableName": "[Taxonomy].[TermRelationship]"
+			"tableName": "[dbo].[TermRelationship]"
 		}
 	},
 	"type": "Microsoft.DataFactory/factories/datasets"

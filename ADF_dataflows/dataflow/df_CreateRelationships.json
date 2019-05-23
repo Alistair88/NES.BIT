@@ -35,8 +35,8 @@
 						"referenceName": "TermRelationshipSink",
 						"type": "DatasetReference"
 					},
-					"name": "InsertSink",
-					"script": "MarkForInsertion sink(input(\n\t\tRelationshipID as integer,\n\t\tTermXID as integer,\n\t\tTermYID as integer,\n\t\tKindID as integer,\n\t\tDescription as string\n\t),\n\tallowSchemaDrift: false,\n\tvalidateSchema: false,\n\tformat: 'table',\n\tdeletable:false,\n\tinsertable:true,\n\tupdateable:false,\n\tupsertable:false,\n\tmapColumn(\n\t\tTermXID = XTermID,\n\t\tTermYID = YTermID,\n\t\tKindID = DimKindID\n\t)) ~> InsertSink"
+					"name": "InsertRelationship",
+					"script": "MarkForInsertion sink(input(\n\t\tRelationshipID as integer,\n\t\tTermXID as integer,\n\t\tTermYID as integer,\n\t\tKindID as integer,\n\t\tDescription as string\n\t),\n\tallowSchemaDrift: false,\n\tvalidateSchema: false,\n\tformat: 'table',\n\tdeletable:false,\n\tinsertable:true,\n\tupdateable:false,\n\tupsertable:false) ~> InsertRelationship"
 				},
 				{
 					"dataset": {
