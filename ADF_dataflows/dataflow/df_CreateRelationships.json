@@ -54,7 +54,7 @@
 				},
 				{
 					"name": "ConditionalSplit",
-					"script": "MergeJoin split(isNull(XTermID),\n\tisNull(XDimID),\n\tdisjoint: false) ~> ConditionalSplit@(Insert, Delete, UpdateDoNothing)"
+					"script": "MergeJoin split(isNull(XTermID),\n\tisNull(XDimID),\n\tdisjoint: true) ~> ConditionalSplit@(Insert, Delete, UpdateDoNothing)"
 				},
 				{
 					"name": "Select1",
