@@ -14,7 +14,7 @@
 				},
 				"typeProperties": {
 					"dataflow": {
-						"referenceName": "df_CreateRelationships",
+						"referenceName": "dataflow1",
 						"type": "DataFlowReference"
 					}
 				}
