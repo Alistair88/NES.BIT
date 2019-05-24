@@ -58,19 +58,11 @@
 				},
 				{
 					"name": "Select1",
-					"script": "LookupXTerm select(mapColumn(\n\t\tYDimID,\n\t\tDimKindID,\n\t\tRelationshipID,\n\t\tXTermID = TermID,\n\t\tYTermID\n\t))~> Select1"
+					"script": "Lookup1 select(mapColumn(\n\t\tYDimID,\n\t\tDimKindID,\n\t\tRelationshipID,\n\t\tXTermID = LookupTable@TermID,\n\t\tYTermID\n\t))~> Select1"
 				},
 				{
 					"name": "Select2",
-					"script": "LookupYTerm select(mapColumn(\n\t\tDimKindID,\n\t\tXTermID,\n\t\tYTermID = TermID\n\t))~> Select2"
-				},
-				{
-					"name": "LookupXTerm",
-					"script": "ConditionalSplit@Insert, LookupTable join(XDimID == DimID,\n\tjoinType:'inner',\n\tbroadcast: 'none')~> LookupXTerm"
-				},
-				{
-					"name": "LookupYTerm",
-					"script": "Select1, LookupTable join(YDimID == DimID,\n\tjoinType:'inner',\n\tbroadcast: 'none')~> LookupYTerm"
+					"script": "Lookup2 select(mapColumn(\n\t\tDimKindID,\n\t\tXTermID,\n\t\tYTermID = LookupTable@TermID\n\t))~> Select2"
 				},
 				{
 					"name": "MarkForInsertion",
@@ -87,6 +79,14 @@
 				{
 					"name": "Filter2",
 					"script": "MarkForInsertion filter(not(isNull(YTermID)) || not(isNull(XTermID))) ~> Filter2"
+				},
+				{
+					"name": "Lookup1",
+					"script": "ConditionalSplit@Insert, LookupTable lookup(ERROR_FUNCTION('') == ERROR_FUNCTION(''),\n\tbroadcast: 'none')~> Lookup1"
+				},
+				{
+					"name": "Lookup2",
+					"script": "ConditionalSplit@Insert, LookupTable lookup(YDimID == DimID,\n\tbroadcast: 'none')~> Lookup2"
 				}
 			]
 		}
