@@ -86,7 +86,7 @@
 				},
 				{
 					"name": "Filter1",
-					"script": "Select2 filter(not(isNull(YTermID))) ~> Filter1"
+					"script": "Select2 filter(not(isNull(YTermID)) || not(isNull(XTermID))) ~> Filter1"
 				}
 			]
 		}
