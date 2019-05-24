@@ -87,6 +87,10 @@
 				{
 					"name": "Lookup2",
 					"script": "ConditionalSplit@Insert, LookupTable lookup(YDimID == DimID,\n\tbroadcast: 'none')~> Lookup2"
+				},
+				{
+					"name": "AlterRow1",
+					"script": "Select1 alterRow(insertIf(not(isNull(XTermID)))) ~> AlterRow1"
 				}
 			]
 		}
