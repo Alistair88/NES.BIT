@@ -36,7 +36,7 @@
 						"type": "DatasetReference"
 					},
 					"name": "InsertRelationship",
-					"script": "MarkForInsertion sink(input(\n\t\tRelationshipID as integer,\n\t\tTermXID as integer,\n\t\tTermYID as integer,\n\t\tKindID as integer,\n\t\tDescription as string\n\t),\n\tallowSchemaDrift: true,\n\tvalidateSchema: false,\n\tformat: 'table',\n\tdeletable:false,\n\tinsertable:true,\n\tupdateable:false,\n\tupsertable:false,\n\tmapColumn(\n\t\tTermXID = XTermID,\n\t\tTermYID = TermID,\n\t\tKindID = DimKindID\n\t)) ~> InsertRelationship"
+					"script": "MarkForInsertion sink(input(\n\t\tRelationshipID as integer,\n\t\tTermXID as integer,\n\t\tTermYID as integer,\n\t\tKindID as integer,\n\t\tDescription as string\n\t),\n\tallowSchemaDrift: true,\n\tvalidateSchema: false,\n\tformat: 'table',\n\tdeletable:false,\n\tinsertable:true,\n\tupdateable:false,\n\tupsertable:false,\n\tmapColumn(\n\t\tTermXID = XTermID,\n\t\tTermYID = TermID,\n\t\tKindID = DimKindID,\n\t\tRelationshipID\n\t)) ~> InsertRelationship"
 				}
 			],
 			"transformations": [
@@ -70,7 +70,7 @@
 				},
 				{
 					"name": "Filter3",
-					"script": "Select2 filter(not(isNull(TermID)) || not(isNull(XTermID))) ~> Filter3"
+					"script": "Select2 filter(not(isNull(YTermID))) ~> Filter3"
 				}
 			]
 		}
