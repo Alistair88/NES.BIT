@@ -82,7 +82,7 @@
 				},
 				{
 					"name": "Lookup1",
-					"script": "ConditionalSplit@Insert, LookupTable lookup(ERROR_FUNCTION('') == ERROR_FUNCTION(''),\n\tbroadcast: 'none')~> Lookup1"
+					"script": "ConditionalSplit@Insert, LookupTable lookup(XDimID == DimID,\n\tbroadcast: 'none')~> Lookup1"
 				},
 				{
 					"name": "Lookup2",
