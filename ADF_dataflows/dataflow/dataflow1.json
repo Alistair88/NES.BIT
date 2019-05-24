@@ -50,15 +50,15 @@
 				},
 				{
 					"name": "Select1",
-					"script": "LookupXTerm select(mapColumn(\n\t\tYDimID,\n\t\tDimKindID,\n\t\tRelationshipID,\n\t\tXTermID = LookupTable@TermID,\n\t\tYTermID\n\t))~> Select1"
+					"script": "LookupXTerm select(mapColumn(\n\t\tYDimID,\n\t\tDimKindID,\n\t\tRelationshipID,\n\t\tXTermID = LookupTable@TermID,\n\t\tYTermID,\n\t\tDimID = LookupTable@DimID\n\t))~> Select1"
 				},
 				{
 					"name": "Select2",
-					"script": "LookupYTerm select(mapColumn(\n\t\tYDimID,\n\t\tDimKindID,\n\t\tRelationshipID,\n\t\tXTermID,\n\t\tYTermID,\n\t\tTermID,\n\t\tDimID\n\t))~> Select2"
+					"script": "LookupYTerm select(mapColumn(\n\t\tYDimID,\n\t\tDimKindID,\n\t\tRelationshipID,\n\t\tXTermID,\n\t\tYTermID,\n\t\tTermID,\n\t\tDimID = LookupTable@DimID\n\t))~> Select2"
 				},
 				{
 					"name": "LookupYTerm",
-					"script": "Select1, LookupTable join(YDimID == DimID,\n\tjoinType:'inner',\n\tbroadcast: 'none')~> LookupYTerm"
+					"script": "Select1, LookupTable join(YDimID == LookupTable@DimID,\n\tjoinType:'inner',\n\tbroadcast: 'none')~> LookupYTerm"
 				},
 				{
 					"name": "MarkForInsertion",
