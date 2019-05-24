@@ -58,15 +58,11 @@
 				},
 				{
 					"name": "Select1",
-					"script": "LookupXTerm select(mapColumn(\n\t\tYDimID,\n\t\tDimKindID,\n\t\tRelationshipID,\n\t\tXTermID = TermID,\n\t\tYTermID\n\t))~> Select1"
+					"script": "LookupXTerm select(mapColumn(\n\t\tYDimID,\n\t\tDimKindID,\n\t\tRelationshipID,\n\t\tXTermID = LookupTable@TermID,\n\t\tYTermID\n\t))~> Select1"
 				},
 				{
 					"name": "Select2",
 					"script": "LookupYTerm select(mapColumn(\n\t\tDimKindID,\n\t\tXTermID,\n\t\tYTermID = TermID\n\t))~> Select2"
-				},
-				{
-					"name": "LookupXTerm",
-					"script": "ConditionalSplit@Insert, LookupTable join(XDimID == DimID,\n\tjoinType:'inner',\n\tbroadcast: 'none')~> LookupXTerm"
 				},
 				{
 					"name": "LookupYTerm",
@@ -87,6 +83,10 @@
 				{
 					"name": "Filter2",
 					"script": "MarkForInsertion filter(not(isNull(YTermID)) || not(isNull(XTermID))) ~> Filter2"
+				},
+				{
+					"name": "LookupXTerm",
+					"script": "ConditionalSplit@Insert, LookupTable lookup(XDimID == DimID,\n\tbroadcast: 'none')~> LookupXTerm"
 				}
 			]
 		}
