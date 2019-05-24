@@ -74,7 +74,7 @@
 				},
 				{
 					"name": "MarkForInsertion",
-					"script": "Select2 alterRow(insertIf(isNull(XTermID))) ~> MarkForInsertion"
+					"script": "Select2 alterRow(insertIf(isNull(XTermID)),\n\tinsertIf(not(isNull(YTermID)))) ~> MarkForInsertion"
 				},
 				{
 					"name": "SelectForDeletion",
