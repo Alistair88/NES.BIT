@@ -58,7 +58,7 @@
 				},
 				{
 					"name": "Select1",
-					"script": "LookupXTerm select(mapColumn(\n\t\tYDimID,\n\t\tDimKindID,\n\t\tRelationshipID,\n\t\tXTermID = TermID,\n\t\tYTermID\n\t))~> Select1"
+					"script": "LookupXTerm select(mapColumn(\n\t\tXDimID,\n\t\tYDimID,\n\t\tDimKindID,\n\t\tRelationshipID,\n\t\tXTermDimID,\n\t\tYTermID,\n\t\tYTermDimID,\n\t\tTermKindID,\n\t\tXTermID = TermID,\n\t\tDimID\n\t))~> Select1"
 				},
 				{
 					"name": "Select2",
@@ -70,7 +70,7 @@
 				},
 				{
 					"name": "LookupYTerm",
-					"script": "Select1, LookupTable join(YDimID == DimID,\n\tjoinType:'inner',\n\tbroadcast: 'none')~> LookupYTerm"
+					"script": "Select1, LookupTable join(ERROR_FUNCTION('') == ERROR_FUNCTION(''),\n\tjoinType:'inner',\n\tbroadcast: 'none')~> LookupYTerm"
 				},
 				{
 					"name": "MarkForInsertion",
