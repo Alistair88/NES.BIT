@@ -70,7 +70,7 @@
 				},
 				{
 					"name": "LookupYTerm",
-					"script": "Select1, LookupTable join(ERROR_FUNCTION('') == ERROR_FUNCTION(''),\n\tjoinType:'inner',\n\tbroadcast: 'none')~> LookupYTerm"
+					"script": "Select1, LookupTable join(YDimID == LookupTable@DimID,\n\tjoinType:'inner',\n\tbroadcast: 'none')~> LookupYTerm"
 				},
 				{
 					"name": "MarkForInsertion",
