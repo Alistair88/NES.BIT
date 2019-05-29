@@ -70,7 +70,7 @@
 				},
 				{
 					"name": "Filter1",
-					"script": "AlterRow1 filter(XTermID == 300383) ~> Filter1"
+					"script": "AlterRow1 filter(XTermID == 300383 && YTermID == 300456) ~> Filter1"
 				}
 			]
 		}
