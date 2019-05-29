@@ -29,6 +29,12 @@
 					"script": "source(output(\n\t\tTermID as integer,\n\t\tDimID as integer\n\t),\n\tallowSchemaDrift: true,\n\tvalidateSchema: false,\n\tquery: 'SELECT Term.TermID, Term.DimID FROM dbo.intermediateTerm Term',\n\tformat: 'query') ~> LookupTable"
 				}
 			],
+			"sinks": [
+				{
+					"name": "sink1",
+					"script": "AlterRow1 sink() ~> sink1"
+				}
+			],
 			"transformations": [
 				{
 					"name": "MergeJoin",
@@ -39,8 +45,24 @@
 					"script": "MergeJoin split(isNull(XTermID),\n\tdisjoint: true) ~> ConditionalSplit@(Insert, UpdateDoNothing)"
 				},
 				{
-					"name": "Lookup1",
-					"script": "ConditionalSplit@Insert, LookupTable lookup(XDimID == DimID,\n\tbroadcast: 'none')~> Lookup1"
+					"name": "Join1",
+					"script": "ConditionalSplit@Insert, LookupTable join(XDimID == DimID,\n\tjoinType:'inner',\n\tbroadcast: 'none')~> Join1"
+				},
+				{
+					"name": "Select1",
+					"script": "Join1 select(mapColumn(\n\t\tXDimID,\n\t\tYDimID,\n\t\tDimKindID,\n\t\tRelationshipID,\n\t\tXTermDimID,\n\t\tYTermID,\n\t\tYTermDimID,\n\t\tTermKindID,\n\t\tXTermID = TermID\n\t))~> Select1"
+				},
+				{
+					"name": "Join2",
+					"script": "Select1, LookupTable join(YDimID == DimID,\n\tjoinType:'inner',\n\tbroadcast: 'none')~> Join2"
+				},
+				{
+					"name": "Select2",
+					"script": "Join2 select(mapColumn(\n\t\tXDimID,\n\t\tYDimID,\n\t\tDimKindID,\n\t\tRelationshipID,\n\t\tXTermDimID,\n\t\tYTermDimID,\n\t\tTermKindID,\n\t\tXTermID,\n\t\tYTermID = TermID\n\t))~> Select2"
+				},
+				{
+					"name": "AlterRow1",
+					"script": "Select2 alterRow(insertIf(not(isNull(YTermID)))) ~> AlterRow1"
 				}
 			]
 		}
