@@ -36,7 +36,7 @@
 						"type": "DatasetReference"
 					},
 					"name": "InsertRelationship",
-					"script": "MarkForInsertion sink(input(\n\t\tRelationshipID as integer,\n\t\tTermXID as integer,\n\t\tTermYID as integer,\n\t\tKindID as integer,\n\t\tDescription as string\n\t),\n\tallowSchemaDrift: false,\n\tvalidateSchema: false,\n\tformat: 'table',\n\tdeletable:false,\n\tinsertable:true,\n\tupdateable:false,\n\tupsertable:false,\n\tmapColumn(\n\t\tTermXID = XTermID,\n\t\tTermYID = YTermID,\n\t\tKindID = DimKindID\n\t)) ~> InsertRelationship"
+					"script": "Filter1 sink(input(\n\t\tRelationshipID as integer,\n\t\tTermXID as integer,\n\t\tTermYID as integer,\n\t\tKindID as integer,\n\t\tDescription as string\n\t),\n\tallowSchemaDrift: false,\n\tvalidateSchema: false,\n\tformat: 'table',\n\tdeletable:false,\n\tinsertable:true,\n\tupdateable:false,\n\tupsertable:false,\n\tmapColumn(\n\t\tTermXID = XTermID,\n\t\tTermYID = YTermID,\n\t\tKindID = DimKindID\n\t)) ~> InsertRelationship"
 				},
 				{
 					"dataset": {
@@ -74,7 +74,7 @@
 				},
 				{
 					"name": "MarkForInsertion",
-					"script": "Select2 alterRow(insertIf(not(isNull(XTermID)) && not(isNull(YTermID)))) ~> MarkForInsertion"
+					"script": "Select2 alterRow(insertIf(true())) ~> MarkForInsertion"
 				},
 				{
 					"name": "SelectForDeletion",
@@ -83,6 +83,10 @@
 				{
 					"name": "MarkForDeletion",
 					"script": "SelectForDeletion alterRow(deleteIf(isNull(XDimID))) ~> MarkForDeletion"
+				},
+				{
+					"name": "Filter1",
+					"script": "MarkForInsertion filter(not(isNull(XTermID)) && not(isNull(YTermID))) ~> Filter1"
 				}
 			]
 		}
