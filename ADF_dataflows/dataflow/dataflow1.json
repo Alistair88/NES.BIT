@@ -62,7 +62,7 @@
 				},
 				{
 					"name": "Select2",
-					"script": "LookupYTerm select(mapColumn(\n\t\tDimKindID,\n\t\tXTermID,\n\t\tYTermID = TermID\n\t))~> Select2"
+					"script": "LookupYTerm select(mapColumn(\n\t\tDimKindID,\n\t\tXTermID,\n\t\tYTermID = LookupTable@TermID\n\t))~> Select2"
 				},
 				{
 					"name": "LookupXTerm",
