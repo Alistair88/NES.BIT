@@ -86,7 +86,7 @@
 				},
 				{
 					"name": "Filter1",
-					"script": "MarkForInsertion filter(not(isNull(XTermID)) && not(isNull(YTermID))) ~> Filter1"
+					"script": "MarkForInsertion filter(not(isNull(YTermID))) ~> Filter1"
 				}
 			]
 		}
