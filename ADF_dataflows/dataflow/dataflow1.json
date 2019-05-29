@@ -26,7 +26,7 @@
 						"type": "DatasetReference"
 					},
 					"name": "LookupTable",
-					"script": "source(output(\n\t\tTermID as integer,\n\t\tDimID as integer\n\t),\n\tallowSchemaDrift: true,\n\tvalidateSchema: false,\n\tquery: 'SELECT Term.TermID, Term.DimID FROM dbo.intermediateTerm Term',\n\tformat: 'query') ~> LookupTable"
+					"script": "source(output(\n\t\tTermID as integer,\n\t\tDimID as integer\n\t),\n\tallowSchemaDrift: false,\n\tvalidateSchema: false,\n\tformat: 'table') ~> LookupTable"
 				}
 			],
 			"sinks": [
@@ -35,16 +35,16 @@
 						"referenceName": "TermRelationshipSink",
 						"type": "DatasetReference"
 					},
-					"name": "InsertRelationship",
-					"script": "Filter1 sink(input(\n\t\tRelationshipID as integer,\n\t\tTermXID as integer,\n\t\tTermYID as integer,\n\t\tKindID as integer,\n\t\tDescription as string\n\t),\n\tallowSchemaDrift: false,\n\tvalidateSchema: false,\n\tformat: 'table',\n\tdeletable:false,\n\tinsertable:true,\n\tupdateable:false,\n\tupsertable:false,\n\tmapColumn(\n\t\tTermXID = XTermID,\n\t\tTermYID = YTermID,\n\t\tKindID = DimKindID\n\t)) ~> InsertRelationship"
+					"name": "InsertSink",
+					"script": "MarkForInsertion sink(input(\n\t\tRelationshipID as integer,\n\t\tTermXID as integer,\n\t\tTermYID as integer,\n\t\tKindID as integer,\n\t\tDescription as string\n\t),\n\tallowSchemaDrift: false,\n\tvalidateSchema: false,\n\tformat: 'table',\n\tdeletable:false,\n\tinsertable:true,\n\tupdateable:false,\n\tupsertable:false,\n\tmapColumn(\n\t\tTermXID = XTermID,\n\t\tTermYID = YTermID,\n\t\tKindID = DimKindID\n\t)) ~> InsertSink"
 				},
 				{
 					"dataset": {
 						"referenceName": "TermRelationshipSink",
 						"type": "DatasetReference"
 					},
-					"name": "DeleteRelationship",
-					"script": "MarkForDeletion sink(input(\n\t\tRelationshipID as integer,\n\t\tTermXID as integer,\n\t\tTermYID as integer,\n\t\tKindID as integer,\n\t\tDescription as string\n\t),\n\tallowSchemaDrift: false,\n\tvalidateSchema: false,\n\tformat: 'table',\n\tdeletable:true,\n\tinsertable:false,\n\tupdateable:false,\n\tupsertable:false,\n\tkeys:['RelationshipID'],\n\tmapColumn(\n\t\tRelationshipID,\n\t\tTermXID = XTermID,\n\t\tTermYID = YTermID,\n\t\tKindID = DimKindID\n\t)) ~> DeleteRelationship"
+					"name": "DeleteSink",
+					"script": "MarkForDeletion sink(input(\n\t\tRelationshipID as integer,\n\t\tTermXID as integer,\n\t\tTermYID as integer,\n\t\tKindID as integer,\n\t\tDescription as string\n\t),\n\tallowSchemaDrift: false,\n\tvalidateSchema: false,\n\tformat: 'table',\n\tdeletable:true,\n\tinsertable:false,\n\tupdateable:false,\n\tupsertable:false,\n\tkeys:['RelationshipID'],\n\tmapColumn(\n\t\tRelationshipID,\n\t\tTermXID = XTermID,\n\t\tTermYID = YTermID,\n\t\tKindID = DimKindID\n\t)) ~> DeleteSink"
 				}
 			],
 			"transformations": [
@@ -54,15 +54,15 @@
 				},
 				{
 					"name": "ConditionalSplit",
-					"script": "MergeJoin split(isNull(XTermID),\n\tisNull(XDimID),\n\tdisjoint: true) ~> ConditionalSplit@(Insert, Delete, UpdateDoNothing)"
+					"script": "MergeJoin split(isNull(XTermID),\n\tisNull(XDimID),\n\tdisjoint: false) ~> ConditionalSplit@(Insert, Delete, UpdateDoNothing)"
 				},
 				{
 					"name": "Select1",
-					"script": "LookupXTerm select(mapColumn(\n\t\tXDimID,\n\t\tYDimID,\n\t\tDimKindID,\n\t\tRelationshipID,\n\t\tXTermDimID,\n\t\tYTermID,\n\t\tYTermDimID,\n\t\tTermKindID,\n\t\tXTermID = TermID\n\t))~> Select1"
+					"script": "LookupXTerm select(mapColumn(\n\t\tYDimID,\n\t\tDimKindID,\n\t\tRelationshipID,\n\t\tXTermID = TermID,\n\t\tYTermID\n\t))~> Select1"
 				},
 				{
 					"name": "Select2",
-					"script": "LookupYTerm select(mapColumn(\n\t\tXDimID,\n\t\tYDimID,\n\t\tDimKindID,\n\t\tRelationshipID,\n\t\tXTermDimID,\n\t\tYTermDimID,\n\t\tTermKindID,\n\t\tXTermID,\n\t\tYTermID = TermID\n\t))~> Select2"
+					"script": "LookupYTerm select(mapColumn(\n\t\tDimKindID,\n\t\tXTermID,\n\t\tYTermID = TermID\n\t))~> Select2"
 				},
 				{
 					"name": "LookupXTerm",
@@ -74,7 +74,7 @@
 				},
 				{
 					"name": "MarkForInsertion",
-					"script": "Select2 alterRow(insertIf(true())) ~> MarkForInsertion"
+					"script": "Select2 alterRow(insertIf(DimKindID == 4)) ~> MarkForInsertion"
 				},
 				{
 					"name": "SelectForDeletion",
@@ -83,10 +83,6 @@
 				{
 					"name": "MarkForDeletion",
 					"script": "SelectForDeletion alterRow(deleteIf(isNull(XDimID))) ~> MarkForDeletion"
-				},
-				{
-					"name": "Filter1",
-					"script": "MarkForInsertion filter(not(isNull(YTermID))) ~> Filter1"
 				}
 			]
 		}
