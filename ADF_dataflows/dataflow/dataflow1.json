@@ -66,7 +66,7 @@
 				},
 				{
 					"name": "AlterRow1",
-					"script": "Select2 alterRow(insertIf(TermKindID == 1),\n\tinsertIf(not(isNull(YTermID)))) ~> AlterRow1"
+					"script": "Select2 alterRow(insertIf(not(isNull(YTermID))),\n\tinsertIf(not(isNull(XTermID)))) ~> AlterRow1"
 				},
 				{
 					"name": "Filter1",
