@@ -58,11 +58,11 @@
 				},
 				{
 					"name": "Select1",
-					"script": "LookupXTerm select(mapColumn(\n\t\tYDimID,\n\t\tDimKindID,\n\t\tRelationshipID,\n\t\tXTermID = TermID,\n\t\tYTermID\n\t))~> Select1"
+					"script": "LookupXTerm select(mapColumn(\n\t\tXDimID,\n\t\tYDimID,\n\t\tDimKindID,\n\t\tRelationshipID,\n\t\tXTermDimID,\n\t\tYTermID,\n\t\tYTermDimID,\n\t\tTermKindID,\n\t\tXTermID = TermID\n\t))~> Select1"
 				},
 				{
 					"name": "Select2",
-					"script": "LookupYTerm select(mapColumn(\n\t\tDimKindID,\n\t\tXTermID,\n\t\tYTermID = TermID\n\t))~> Select2"
+					"script": "LookupYTerm select(mapColumn(\n\t\tXDimID,\n\t\tYDimID,\n\t\tDimKindID,\n\t\tRelationshipID,\n\t\tXTermDimID,\n\t\tYTermDimID,\n\t\tTermKindID,\n\t\tXTermID,\n\t\tYTermID = TermID\n\t))~> Select2"
 				},
 				{
 					"name": "LookupXTerm",
