@@ -37,6 +37,10 @@
 				{
 					"name": "ConditionalSplit",
 					"script": "MergeJoin split(isNull(XTermID),\n\tdisjoint: true) ~> ConditionalSplit@(Insert, UpdateDoNothing)"
+				},
+				{
+					"name": "Lookup1",
+					"script": "ConditionalSplit@Insert, LookupTable lookup(XDimID == DimID,\n\tbroadcast: 'none')~> Lookup1"
 				}
 			]
 		}
