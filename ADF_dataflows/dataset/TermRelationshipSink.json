@@ -36,7 +36,7 @@
 			}
 		],
 		"typeProperties": {
-			"tableName": "[dbo].[TermRelationship_DELME]"
+			"tableName": "[dbo].[TermRelationship]"
 		}
 	},
 	"type": "Microsoft.DataFactory/factories/datasets"
