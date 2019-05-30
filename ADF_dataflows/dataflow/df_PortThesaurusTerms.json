@@ -78,7 +78,7 @@
 				},
 				{
 					"name": "SelectForUpdate",
-					"script": "ConditionForUpdate select(mapColumn(\n\t\tTermTypeID,\n\t\tDimTypeName,\n\t\tDimTypeDescription\n\t))~> SelectForUpdate"
+					"script": "Filter1 select(mapColumn(\n\t\tTermTypeID,\n\t\tDimTypeName,\n\t\tDimTypeDescription\n\t))~> SelectForUpdate"
 				},
 				{
 					"name": "ConditionForUpdate",
@@ -103,6 +103,10 @@
 				{
 					"name": "AssignForInsertion",
 					"script": "SelectColumnsToInsert alterRow(insertIf(not(isNull(TermTypeID)))) ~> AssignForInsertion"
+				},
+				{
+					"name": "Filter1",
+					"script": "ConditionForUpdate filter(not(isNull(TermTypeID))) ~> Filter1"
 				}
 			]
 		}
