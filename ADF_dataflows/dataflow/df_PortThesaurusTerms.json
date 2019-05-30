@@ -102,7 +102,7 @@
 				},
 				{
 					"name": "AssignForInsertion",
-					"script": "SelectColumnsToInsert alterRow(insertIf(isNull(TermTypeID))) ~> AssignForInsertion"
+					"script": "SelectColumnsToInsert alterRow(insertIf(not(isNull(TermTypeID)))) ~> AssignForInsertion"
 				}
 			]
 		}
