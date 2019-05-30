@@ -6,7 +6,7 @@
 		"typeProperties": {
 			"connectionString": "integrated security=True;data source=.;initial catalog=taxonomydb",
 			"userName": "NES\\AlistairB",
-			"encryptedCredential": "eyJDcmVkZW50aWFsSWQiOiIwNTQyNDg5YS01ZjY3LTQ4MGUtYmYzMS1mNzI3ZDQ2NWFjN2IiLCJWZXJzaW9uIjoiMi4wIiwiQ2xhc3NUeXBlIjoiTWljcm9zb2Z0LkRhdGFQcm94eS5Db3JlLkludGVyU2VydmljZURhdGFDb250cmFjdC5DcmVkZW50aWFsU1UwNkNZMTQifQ=="
+			"encryptedCredential": "eyJDcmVkZW50aWFsSWQiOiI0MTk1MGRkOC0yMzE2LTQwYWMtYjJmYi1kM2IyYjYzYWYxOGMiLCJWZXJzaW9uIjoiMi4wIiwiQ2xhc3NUeXBlIjoiTWljcm9zb2Z0LkRhdGFQcm94eS5Db3JlLkludGVyU2VydmljZURhdGFDb250cmFjdC5DcmVkZW50aWFsU1UwNkNZMTQifQ=="
 		},
 		"connectVia": {
 			"referenceName": "integrationRuntimeLocal",
