@@ -59,11 +59,11 @@
 			"transformations": [
 				{
 					"name": "MergeJoin",
-					"script": "SelectFromLookup, TaxonomyTerms join(SelectFromLookup@DimID == TermDimID,\n\tjoinType:'outer',\n\tbroadcast: 'none')~> MergeJoin"
+					"script": "SelectFromLookup, TaxonomyTerms join(DimID == TermDimID,\n\tjoinType:'outer',\n\tbroadcast: 'none')~> MergeJoin"
 				},
 				{
 					"name": "ConditionalSplit",
-					"script": "MergeJoin split(isNull(TermID),\n\tisNull(SelectFromLookup@DimID),\n\tdisjoint: false) ~> ConditionalSplit@(Insert, Delete, Update)"
+					"script": "MergeJoin split(isNull(TermID),\n\tisNull(DimID),\n\tdisjoint: false) ~> ConditionalSplit@(Insert, Delete, Update)"
 				},
 				{
 					"name": "SetAvailable",
