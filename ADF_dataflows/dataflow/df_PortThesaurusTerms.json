@@ -106,7 +106,7 @@
 				},
 				{
 					"name": "Filter1",
-					"script": "ConditionForUpdate filter(not(isNull(TermTypeID))) ~> Filter1"
+					"script": "ConditionForUpdate filter(not(isNull(TermTypeID)) && not(isNull(TypeName))) ~> Filter1"
 				}
 			]
 		}
