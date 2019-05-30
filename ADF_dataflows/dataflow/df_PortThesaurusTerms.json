@@ -82,7 +82,7 @@
 				},
 				{
 					"name": "ConditionForUpdate",
-					"script": "ConvertNameAndDesc alterRow(updateIf(not(isNull(TermTypeID)))) ~> ConditionForUpdate"
+					"script": "ConvertNameAndDesc alterRow(updateIf(not(isNull(TermTypeID)) && not(isNull(DimName)))) ~> ConditionForUpdate"
 				},
 				{
 					"name": "ConditionForDelete",
