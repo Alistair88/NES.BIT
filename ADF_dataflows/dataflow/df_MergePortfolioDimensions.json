@@ -74,7 +74,7 @@
 				},
 				{
 					"name": "SelectForInsertion",
-					"script": "Filter1 select(mapColumn(\n\t\tDimID,\n\t\tDimCode,\n\t\tDimName,\n\t\tDimDescription,\n\t\tDimActive,\n\t\tTermID,\n\t\tPreferred,\n\t\tTermTypeID = LookupType@TermTypeID\n\t))~> SelectForInsertion"
+					"script": "Lookup1 select(mapColumn(\n\t\tDimID,\n\t\tDimCode,\n\t\tDimName,\n\t\tDimDescription,\n\t\tDimActive,\n\t\tTermID,\n\t\tPreferred,\n\t\tTermTypeID = LookupType@TermTypeID\n\t))~> SelectForInsertion"
 				},
 				{
 					"name": "SelectForDeletion",
@@ -91,10 +91,6 @@
 				{
 					"name": "AlterRow1",
 					"script": "SelectForInsertion alterRow(insertIf(isNull(TermID))) ~> AlterRow1"
-				},
-				{
-					"name": "Filter1",
-					"script": "Lookup1 filter(not(isNull(DimTable))) ~> Filter1"
 				},
 				{
 					"name": "Filter2",
