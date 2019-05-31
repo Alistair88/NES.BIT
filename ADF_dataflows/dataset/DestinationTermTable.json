@@ -10,50 +10,37 @@
 			{
 				"name": "TermID",
 				"type": "int",
-				"precision": 10,
-				"scale": 255
+				"precision": 10
 			},
 			{
 				"name": "DimID",
 				"type": "int",
-				"precision": 10,
-				"scale": 255
+				"precision": 10
 			},
 			{
 				"name": "TermCode",
-				"type": "nvarchar",
-				"precision": 255,
-				"scale": 255
+				"type": "nvarchar"
 			},
 			{
 				"name": "TermName",
-				"type": "nvarchar",
-				"precision": 255,
-				"scale": 255
+				"type": "nvarchar"
 			},
 			{
 				"name": "Description",
-				"type": "nvarchar",
-				"precision": 255,
-				"scale": 255
+				"type": "nvarchar"
 			},
 			{
 				"name": "Preferred",
-				"type": "bit",
-				"precision": 255,
-				"scale": 255
+				"type": "bit"
 			},
 			{
 				"name": "Available",
-				"type": "bit",
-				"precision": 255,
-				"scale": 255
+				"type": "bit"
 			},
 			{
 				"name": "TermTypeID",
 				"type": "smallint",
-				"precision": 5,
-				"scale": 255
+				"precision": 5
 			}
 		],
 		"typeProperties": {
