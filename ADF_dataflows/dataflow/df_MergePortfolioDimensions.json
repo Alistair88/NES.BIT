@@ -52,7 +52,7 @@
 						"type": "DatasetReference"
 					},
 					"name": "UpdateSink",
-					"script": "Filter2 sink(input(\n\t\tTermID as integer,\n\t\tDimID as integer,\n\t\tTermCode as string,\n\t\tTermName as string,\n\t\tDescription as string,\n\t\tPreferred as boolean,\n\t\tAvailable as boolean,\n\t\tTermTypeID as integer\n\t),\n\tallowSchemaDrift: false,\n\tvalidateSchema: false,\n\tformat: 'table',\n\tdeletable:false,\n\tinsertable:false,\n\tupdateable:true,\n\tupsertable:false,\n\tkeys:['TermID'],\n\tmapColumn(\n\t\tTermID,\n\t\tDimID,\n\t\tTermCode = DimCode,\n\t\tTermName = DimName,\n\t\tDescription = DimDescription,\n\t\tPreferred,\n\t\tAvailable = DimActive,\n\t\tTermTypeID\n\t)) ~> UpdateSink"
+					"script": "Filter2 sink(input(\n\t\tTermID as integer,\n\t\tDimID as integer,\n\t\tTermCode as string,\n\t\tTermName as string,\n\t\tDescription as string,\n\t\tPreferred as boolean,\n\t\tAvailable as boolean,\n\t\tTermTypeID as integer\n\t),\n\tallowSchemaDrift: false,\n\tvalidateSchema: false,\n\tformat: 'table',\n\tdeletable:false,\n\tinsertable:false,\n\tupdateable:true,\n\tupsertable:false,\n\tkeys:['TermID'],\n\tmapColumn(\n\t\tTermID,\n\t\tTermCode = DimCode,\n\t\tTermName = DimName,\n\t\tDescription = DimDescription,\n\t\tAvailable = DimActive\n\t)) ~> UpdateSink"
 				}
 			],
 			"transformations": [
@@ -86,7 +86,7 @@
 				},
 				{
 					"name": "SelectForUpdate",
-					"script": "ConditionalSplit@Update select(mapColumn(\n\t\tDimCode,\n\t\tDimDescription,\n\t\tDimActive,\n\t\tDimName,\n\t\tDimID,\n\t\tTermID,\n\t\tPreferred = TermPreferred,\n\t\tTermTypeID\n\t))~> SelectForUpdate"
+					"script": "ConditionalSplit@Update select(mapColumn(\n\t\tDimCode,\n\t\tDimDescription,\n\t\tDimActive,\n\t\tDimName,\n\t\tTermID\n\t))~> SelectForUpdate"
 				},
 				{
 					"name": "AlterRow1",
@@ -94,7 +94,7 @@
 				},
 				{
 					"name": "Filter2",
-					"script": "SelectForUpdate filter(not(isNull(DimName)) && not(isNull(TermTypeID))) ~> Filter2"
+					"script": "SelectForUpdate filter(not(isNull(TermID)) && not(isNull(DimName))) ~> Filter2"
 				},
 				{
 					"name": "Filter3",
