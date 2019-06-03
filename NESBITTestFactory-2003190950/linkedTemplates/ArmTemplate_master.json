@@ -123,8 +123,17 @@
 					"LocalhostSqlServer_password": {
 						"value": "[parameters('LocalhostSqlServer_password')]"
 					},
+					"LocalhostTermType_connectionString": {
+						"value": "[parameters('LocalhostTermType_connectionString')]"
+					},
+					"LocalhostTermType_password": {
+						"value": "[parameters('LocalhostTermType_password')]"
+					},
 					"LocalhostSqlServer_properties_typeProperties_userName": {
 						"value": "[parameters('LocalhostSqlServer_properties_typeProperties_userName')]"
+					},
+					"LocalhostTermType_properties_typeProperties_userName": {
+						"value": "[parameters('LocalhostTermType_properties_typeProperties_userName')]"
 					}
 				}
 			},
@@ -145,15 +154,6 @@
 				"parameters": {
 					"factoryName": {
 						"value": "[parameters('factoryName')]"
-					},
-					"LocalhostTermType_connectionString": {
-						"value": "[parameters('LocalhostTermType_connectionString')]"
-					},
-					"LocalhostTermType_password": {
-						"value": "[parameters('LocalhostTermType_password')]"
-					},
-					"LocalhostTermType_properties_typeProperties_userName": {
-						"value": "[parameters('LocalhostTermType_properties_typeProperties_userName')]"
 					}
 				}
 			},

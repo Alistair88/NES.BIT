@@ -15,7 +15,19 @@
 			"type": "secureString",
 			"metadata": "Secure string for 'password' of 'LocalhostSqlServer'"
 		},
+		"LocalhostTermType_connectionString": {
+			"type": "secureString",
+			"metadata": "Secure string for 'connectionString' of 'LocalhostTermType'"
+		},
+		"LocalhostTermType_password": {
+			"type": "secureString",
+			"metadata": "Secure string for 'password' of 'LocalhostTermType'"
+		},
 		"LocalhostSqlServer_properties_typeProperties_userName": {
+			"type": "string",
+			"defaultValue": "NES\\AlistairB"
+		},
+		"LocalhostTermType_properties_typeProperties_userName": {
 			"type": "string",
 			"defaultValue": "NES\\AlistairB"
 		}
@@ -25,66 +37,12 @@
 	},
 	"resources": [
 		{
-			"name": "[concat(parameters('factoryName'), '/TaxonomyTerms')]",
-			"type": "Microsoft.DataFactory/factories/datasets",
-			"apiVersion": "2018-06-01",
-			"properties": {
-				"linkedServiceName": {
-					"referenceName": "WarehouseAlphaTest",
-					"type": "LinkedServiceReference"
-				},
-				"annotations": [],
-				"type": "AzureSqlTable",
-				"schema": [
-					{
-						"name": "TermID",
-						"type": "int",
-						"precision": 10
-					},
-					{
-						"name": "TermDimID",
-						"type": "int",
-						"precision": 10
-					},
-					{
-						"name": "TermCode",
-						"type": "nvarchar"
-					},
-					{
-						"name": "TermName",
-						"type": "nvarchar"
-					},
-					{
-						"name": "TermDescription",
-						"type": "nvarchar"
-					},
-					{
-						"name": "TermPreferred",
-						"type": "bit"
-					},
-					{
-						"name": "Available",
-						"type": "bit"
-					},
-					{
-						"name": "TermTypeID",
-						"type": "smallint",
-						"precision": 5
-					}
-				],
-				"typeProperties": {
-					"tableName": "[[dbo].[TaxonomyTerms]"
-				}
-			},
-			"dependsOn": []
-		},
-		{
 			"name": "[concat(parameters('factoryName'), '/TaxonomyTermsFromTaxonomy')]",
 			"type": "Microsoft.DataFactory/factories/datasets",
 			"apiVersion": "2018-06-01",
 			"properties": {
 				"linkedServiceName": {
-					"referenceName": "WarehouseAlphaTest",
+					"referenceName": "PortThesaurusDB",
 					"type": "LinkedServiceReference"
 				},
 				"folder": {
@@ -130,7 +88,65 @@
 					}
 				],
 				"typeProperties": {
-					"tableName": "[[Taxonomy].[Term]"
+					"tableName": "[[dbo].[IntermediateTerm]"
+				}
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/TaxonomyTermsInsert')]",
+			"type": "Microsoft.DataFactory/factories/datasets",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"description": "Sink table for the insert branch of  the dataflow",
+				"linkedServiceName": {
+					"referenceName": "PortThesaurusDB",
+					"type": "LinkedServiceReference"
+				},
+				"folder": {
+					"name": "CreateTerms"
+				},
+				"annotations": [],
+				"type": "AzureSqlTable",
+				"schema": [
+					{
+						"name": "TermID",
+						"type": "int",
+						"precision": 10
+					},
+					{
+						"name": "DimID",
+						"type": "int",
+						"precision": 10
+					},
+					{
+						"name": "TermCode",
+						"type": "nvarchar"
+					},
+					{
+						"name": "TermName",
+						"type": "nvarchar"
+					},
+					{
+						"name": "Description",
+						"type": "nvarchar"
+					},
+					{
+						"name": "Preferred",
+						"type": "bit"
+					},
+					{
+						"name": "Available",
+						"type": "bit"
+					},
+					{
+						"name": "TermTypeID",
+						"type": "smallint",
+						"precision": 5
+					}
+				],
+				"typeProperties": {
+					"tableName": "[[dbo].[IntermediateTerm]"
 				}
 			},
 			"dependsOn": []
@@ -275,7 +291,7 @@
 			"apiVersion": "2018-06-01",
 			"properties": {
 				"linkedServiceName": {
-					"referenceName": "WarehouseAlphaTest",
+					"referenceName": "PortThesaurusDB",
 					"type": "LinkedServiceReference"
 				},
 				"folder": {
@@ -310,7 +326,7 @@
 					}
 				],
 				"typeProperties": {
-					"tableName": "[[Taxonomy].[TermRelationship]"
+					"tableName": "[[dbo].[TermRelationship]"
 				}
 			},
 			"dependsOn": []
@@ -388,7 +404,7 @@
 				"type": "AzureSqlTable",
 				"schema": [
 					{
-						"name": "DimId",
+						"name": "DimID",
 						"type": "int",
 						"precision": 10
 					},
@@ -458,7 +474,7 @@
 			"apiVersion": "2018-06-01",
 			"properties": {
 				"linkedServiceName": {
-					"referenceName": "WarehouseAlphaTest",
+					"referenceName": "PortThesaurusDB",
 					"type": "LinkedServiceReference"
 				},
 				"folder": {
@@ -495,7 +511,7 @@
 					}
 				],
 				"typeProperties": {
-					"tableName": "[[Taxonomy].[TermTypeSINK]"
+					"tableName": "[[dbo].[IntermediateTermType]"
 				}
 			},
 			"dependsOn": []
@@ -584,65 +600,7 @@
 					}
 				],
 				"typeProperties": {
-					"tableName": "[[dbo].[ThesaurusTerms]"
-				}
-			},
-			"dependsOn": []
-		},
-		{
-			"name": "[concat(parameters('factoryName'), '/ThesaurusTermsInsert')]",
-			"type": "Microsoft.DataFactory/factories/datasets",
-			"apiVersion": "2018-06-01",
-			"properties": {
-				"description": "Sink table for the insert branch of  the dataflow",
-				"linkedServiceName": {
-					"referenceName": "WarehouseAlphaTest",
-					"type": "LinkedServiceReference"
-				},
-				"folder": {
-					"name": "CreateTerms"
-				},
-				"annotations": [],
-				"type": "AzureSqlTable",
-				"schema": [
-					{
-						"name": "TermID",
-						"type": "int",
-						"precision": 10
-					},
-					{
-						"name": "DimID",
-						"type": "int",
-						"precision": 10
-					},
-					{
-						"name": "TermCode",
-						"type": "nvarchar"
-					},
-					{
-						"name": "TermName",
-						"type": "nvarchar"
-					},
-					{
-						"name": "Description",
-						"type": "nvarchar"
-					},
-					{
-						"name": "Preferred",
-						"type": "bit"
-					},
-					{
-						"name": "Available",
-						"type": "bit"
-					},
-					{
-						"name": "TermTypeID",
-						"type": "smallint",
-						"precision": 5
-					}
-				],
-				"typeProperties": {
-					"tableName": "[[dbo].[TermInsert]"
+					"tableName": "[[dbo].[ThesaurusTerms_Dim_Source]"
 				}
 			},
 			"dependsOn": []
@@ -854,7 +812,7 @@
 			"properties": {
 				"description": "Created: 09-05-19",
 				"linkedServiceName": {
-					"referenceName": "WarehouseAlphaTest",
+					"referenceName": "PortThesaurusDB",
 					"type": "LinkedServiceReference"
 				},
 				"folder": {
@@ -872,10 +830,35 @@
 						"name": "DimID",
 						"type": "int",
 						"precision": 10
+					},
+					{
+						"name": "TermCode",
+						"type": "nvarchar"
+					},
+					{
+						"name": "TermName",
+						"type": "nvarchar"
+					},
+					{
+						"name": "Description",
+						"type": "nvarchar"
+					},
+					{
+						"name": "Preferred",
+						"type": "bit"
+					},
+					{
+						"name": "Available",
+						"type": "bit"
+					},
+					{
+						"name": "TermTypeID",
+						"type": "smallint",
+						"precision": 5
 					}
 				],
 				"typeProperties": {
-					"tableName": "[[Taxonomy].[CreateRelsLookup]"
+					"tableName": "[[dbo].[IntermediateTerm]"
 				}
 			},
 			"dependsOn": []
@@ -906,7 +889,9 @@
 						"scale": 255
 					}
 				],
-				"typeProperties": {}
+				"typeProperties": {
+					"tableName": "[[dbo].[TaxonomyTerms]"
+				}
 			},
 			"dependsOn": []
 		},
@@ -923,6 +908,28 @@
 					"password": {
 						"type": "SecureString",
 						"value": "[parameters('LocalhostSqlServer_password')]"
+					}
+				},
+				"connectVia": {
+					"referenceName": "integrationRuntimeLocal",
+					"type": "IntegrationRuntimeReference"
+				}
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/LocalhostTermType')]",
+			"type": "Microsoft.DataFactory/factories/linkedServices",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"annotations": [],
+				"type": "SqlServer",
+				"typeProperties": {
+					"connectionString": "[parameters('LocalhostTermType_connectionString')]",
+					"userName": "[parameters('LocalhostTermType_properties_typeProperties_userName')]",
+					"password": {
+						"type": "SecureString",
+						"value": "[parameters('LocalhostTermType_password')]"
 					}
 				},
 				"connectVia": {

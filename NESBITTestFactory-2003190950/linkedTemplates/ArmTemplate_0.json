@@ -66,17 +66,6 @@
 			"dependsOn": []
 		},
 		{
-			"name": "[concat(parameters('factoryName'), '/LocalhostIntegrationRuntime')]",
-			"type": "Microsoft.DataFactory/factories/integrationRuntimes",
-			"apiVersion": "2018-06-01",
-			"properties": {
-				"type": "SelfHosted",
-				"description": "Localhost is wplp0777\\sqlexpress",
-				"typeProperties": {}
-			},
-			"dependsOn": []
-		},
-		{
 			"name": "[concat(parameters('factoryName'), '/integrationRuntimeLocal')]",
 			"type": "Microsoft.DataFactory/factories/integrationRuntimes",
 			"apiVersion": "2018-06-01",
@@ -185,7 +174,7 @@
 			"type": "Microsoft.DataFactory/factories/datasets",
 			"apiVersion": "2018-06-01",
 			"properties": {
-				"description": "Term table used as a sink for Thesaurus data",
+				"description": "Term table used as a sink for Thesaurus data.",
 				"linkedServiceName": {
 					"referenceName": "WarehouseAlphaTest",
 					"type": "LinkedServiceReference"
@@ -194,7 +183,7 @@
 				"type": "AzureSqlTable",
 				"structure": [
 					{
-						"name": "DimId",
+						"name": "DimID",
 						"type": "Int32"
 					},
 					{
@@ -207,7 +196,7 @@
 					}
 				],
 				"typeProperties": {
-					"tableName": "[[dbo].[Term]"
+					"tableName": "[[dbo].[TermSOURCE]"
 				}
 			},
 			"dependsOn": [
@@ -782,6 +771,62 @@
 			},
 			"dependsOn": [
 				"[concat(variables('factoryId'), '/linkedServices/WarehouseAlphaTest')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/DestinationTermTable')]",
+			"type": "Microsoft.DataFactory/factories/datasets",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"linkedServiceName": {
+					"referenceName": "PortThesaurusDB",
+					"type": "LinkedServiceReference"
+				},
+				"annotations": [],
+				"type": "AzureSqlTable",
+				"schema": [
+					{
+						"name": "TermID",
+						"type": "int",
+						"precision": 10
+					},
+					{
+						"name": "DimID",
+						"type": "int",
+						"precision": 10
+					},
+					{
+						"name": "TermCode",
+						"type": "nvarchar"
+					},
+					{
+						"name": "TermName",
+						"type": "nvarchar"
+					},
+					{
+						"name": "Description",
+						"type": "nvarchar"
+					},
+					{
+						"name": "Preferred",
+						"type": "bit"
+					},
+					{
+						"name": "Available",
+						"type": "bit"
+					},
+					{
+						"name": "TermTypeID",
+						"type": "smallint",
+						"precision": 5
+					}
+				],
+				"typeProperties": {
+					"tableName": "Term"
+				}
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/linkedServices/PortThesaurusDB')]"
 			]
 		}
 	]
