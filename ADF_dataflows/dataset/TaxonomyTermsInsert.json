@@ -1,9 +1,9 @@
 {
-	"name": "ThesaurusTermsInsert",
+	"name": "TaxonomyTermsInsert",
 	"properties": {
 		"description": "Sink table for the insert branch of  the dataflow",
 		"linkedServiceName": {
-			"referenceName": "WarehouseAlphaTest",
+			"referenceName": "PortThesaurusDB",
 			"type": "LinkedServiceReference"
 		},
 		"folder": {
@@ -48,7 +48,7 @@
 			}
 		],
 		"typeProperties": {
-			"tableName": "[dbo].[TermInsert]"
+			"tableName": "[dbo].[IntermediateTerm]"
 		}
 	},
 	"type": "Microsoft.DataFactory/factories/datasets"

@@ -23,7 +23,7 @@
 				"typeProperties": {
 					"source": {
 						"type": "AzureSqlSource",
-						"sqlReaderQuery": "SELECT Term.TermID,\n       Term.DimID TermDimID,\n       Term.TermCode,\n       Term.TermName,\n       Term.Description TermDescription,\n       Term.Preferred AS TermPreferred,\n       Term.TermTypeID\nFROM [Taxonomy].[Term] Term\n    LEFT OUTER JOIN Taxonomy.TermTypeSINK TermType\n        ON TermType.TermTypeID = Term.TermTypeID\nWHERE (TermType.SourceID = 2)\nORDER BY Term.DimID;"
+						"sqlReaderQuery": "SELECT        \n\tTerm.TermID,\n\tTerm.DimID TermDimID, \n\tTerm.TermCode, \n\tTerm.TermName, \n\tTerm.Description TermDescription, \n\tTerm.Preferred AS TermPreferred, \n\tTerm.TermTypeID\nFROM            \n\tIntermediateTerm Term LEFT OUTER JOIN IntermediateTermType TermType \n\tON \n\t\tTermType.TermTypeID = Term.TermTypeID\nWHERE        \n\t(TermType.SourceID = 2)\nORDER BY \n\tTerm.DimID"
 					},
 					"sink": {
 						"type": "AzureSqlSink",

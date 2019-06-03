@@ -33,15 +33,15 @@
 			"sinks": [
 				{
 					"dataset": {
-						"referenceName": "ThesaurusTermsInsert",
+						"referenceName": "TaxonomyTermsInsert",
 						"type": "DatasetReference"
 					},
-					"name": "ThesaurusTermsInsert",
-					"script": "SelectForInsertion sink(input(\n\t\tTermID as integer,\n\t\tDimID as integer,\n\t\tTermCode as string,\n\t\tTermName as string,\n\t\tDescription as string,\n\t\tPreferred as boolean,\n\t\tAvailable as boolean,\n\t\tTermTypeID as integer\n\t),\n\tallowSchemaDrift: false,\n\tvalidateSchema: false,\n\tformat: 'table',\n\tdeletable:false,\n\tinsertable:true,\n\tupdateable:false,\n\tupsertable:false,\n\tmapColumn(\n\t\tDimID,\n\t\tTermName,\n\t\tPreferred = DimPreferred,\n\t\tAvailable,\n\t\tTermTypeID\n\t)) ~> ThesaurusTermsInsert"
+					"name": "TaxonomyTermsInsert",
+					"script": "Filter1 sink(input(\n\t\tTermID as integer,\n\t\tDimID as integer,\n\t\tTermCode as string,\n\t\tTermName as string,\n\t\tDescription as string,\n\t\tPreferred as boolean,\n\t\tAvailable as boolean,\n\t\tTermTypeID as integer\n\t),\n\tallowSchemaDrift: false,\n\tvalidateSchema: false,\n\tformat: 'table',\n\tdeletable:false,\n\tinsertable:true,\n\tupdateable:false,\n\tupsertable:false,\n\tmapColumn(\n\t\tDimID,\n\t\tTermName,\n\t\tAvailable,\n\t\tTermTypeID\n\t)) ~> TaxonomyTermsInsert"
 				},
 				{
 					"dataset": {
-						"referenceName": "ThesaurusTermsInsert",
+						"referenceName": "TaxonomyTermsInsert",
 						"type": "DatasetReference"
 					},
 					"name": "UpdateTerm",
@@ -49,7 +49,7 @@
 				},
 				{
 					"dataset": {
-						"referenceName": "ThesaurusTermsInsert",
+						"referenceName": "TaxonomyTermsInsert",
 						"type": "DatasetReference"
 					},
 					"name": "DeleteSink",
@@ -120,6 +120,10 @@
 				{
 					"name": "SelectUpdate",
 					"script": "ConvertNameAndDesc select(mapColumn(\n\t\tDimName,\n\t\tDimPreferred,\n\t\tDimDescription,\n\t\tTermID\n\t))~> SelectUpdate"
+				},
+				{
+					"name": "Filter1",
+					"script": "SelectForInsertion filter(ERROR_FUNCTION('')) ~> Filter1"
 				}
 			]
 		}

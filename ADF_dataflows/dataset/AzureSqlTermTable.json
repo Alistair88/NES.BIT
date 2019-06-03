@@ -9,7 +9,7 @@
 		"type": "AzureSqlTable",
 		"structure": [
 			{
-				"name": "DimId",
+				"name": "DimID",
 				"type": "Int32"
 			},
 			{
@@ -22,7 +22,7 @@
 			}
 		],
 		"typeProperties": {
-			"tableName": "[dbo].[Term]"
+			"tableName": "[dbo].[TermSOURCE]"
 		}
 	},
 	"type": "Microsoft.DataFactory/factories/datasets"
