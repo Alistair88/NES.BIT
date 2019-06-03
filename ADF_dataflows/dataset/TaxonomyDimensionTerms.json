@@ -2,7 +2,7 @@
 	"name": "TaxonomyDimensionTerms",
 	"properties": {
 		"linkedServiceName": {
-			"referenceName": "WarehouseAlphaTest",
+			"referenceName": "PortThesaurusDB",
 			"type": "LinkedServiceReference"
 		},
 		"folder": {
