@@ -305,7 +305,7 @@
 					}
 				],
 				"typeProperties": {
-					"tableName": "[[dbo].[IntermediateTerm]"
+					"tableName": "[[dbo].[IntermediateTerm-DELME]"
 				}
 			},
 			"dependsOn": []
