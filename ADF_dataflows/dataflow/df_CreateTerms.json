@@ -37,7 +37,7 @@
 						"type": "DatasetReference"
 					},
 					"name": "TaxonomyTermsInsert",
-					"script": "SelectForInsertion sink(input(\n\t\tTermID as integer,\n\t\tDimID as integer,\n\t\tTermCode as string,\n\t\tTermName as string,\n\t\tDescription as string,\n\t\tPreferred as boolean,\n\t\tAvailable as boolean,\n\t\tTermTypeID as integer\n\t),\n\tallowSchemaDrift: false,\n\tvalidateSchema: false,\n\tformat: 'table',\n\tdeletable:false,\n\tinsertable:true,\n\tupdateable:false,\n\tupsertable:false,\n\tmapColumn(\n\t\tDimID,\n\t\tTermName,\n\t\tAvailable,\n\t\tTermTypeID\n\t)) ~> TaxonomyTermsInsert"
+					"script": "SelectForInsertion sink(input(\n\t\tTermID as integer,\n\t\tDimID as integer,\n\t\tTermCode as string,\n\t\tTermName as string,\n\t\tDescription as string,\n\t\tPreferred as boolean,\n\t\tAvailable as boolean,\n\t\tTermTypeID as integer\n\t),\n\tallowSchemaDrift: false,\n\tvalidateSchema: false,\n\tformat: 'table',\n\tdeletable:false,\n\tinsertable:true,\n\tupdateable:false,\n\tupsertable:false,\n\tmapColumn(\n\t\tDimID,\n\t\tTermName,\n\t\tAvailable = SelectForInsertion@Available,\n\t\tTermTypeID\n\t)) ~> TaxonomyTermsInsert"
 				},
 				{
 					"dataset": {
@@ -83,11 +83,11 @@
 				},
 				{
 					"name": "ConditionsForInsertion",
-					"script": "LookupTypeWithRootID alterRow(insertIf(not(isNull(ConditionalSplit@Insert@TermTypeID)))) ~> ConditionsForInsertion"
+					"script": "LookupTypeWithRootID alterRow(insertIf(not(isNull(ConditionalSplit@Update@TermTypeID)))) ~> ConditionsForInsertion"
 				},
 				{
 					"name": "SelectForInsertion",
-					"script": "ConditionsForInsertion select(mapColumn(\n\t\tDimID,\n\t\tDimPreferred,\n\t\tTermName = DimName,\n\t\tTermTypeID = RootTypeID,\n\t\tAvailable = SetAvailable@Available\n\t))~> SelectForInsertion"
+					"script": "ConditionsForInsertion select(mapColumn(\n\t\tDimID,\n\t\tDimPreferred,\n\t\tTermName = DimName,\n\t\tTermID,\n\t\tTermCode,\n\t\tTermTypeID = RootTypeID,\n\t\tDescription,\n\t\tAvailable = TermTypes@Available\n\t))~> SelectForInsertion"
 				},
 				{
 					"name": "ConditionsForDelete",
