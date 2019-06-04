@@ -86,7 +86,7 @@
 				},
 				{
 					"name": "ConditionForDelete",
-					"script": "ConditionalSplit1@delete alterRow(updateIf(isNull(DimID))) ~> ConditionForDelete"
+					"script": "ConditionalSplit1@delete alterRow(updateIf(not(isNull(TermTypeID)))) ~> ConditionForDelete"
 				},
 				{
 					"name": "TermTypeSoftDelete",
