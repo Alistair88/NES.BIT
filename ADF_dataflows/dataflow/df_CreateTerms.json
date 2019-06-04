@@ -83,7 +83,7 @@
 				},
 				{
 					"name": "ConditionsForInsertion",
-					"script": "RemoveNullDimNames alterRow(insertIf(DimID==582)) ~> ConditionsForInsertion"
+					"script": "RemoveNullDimNames alterRow(insertIf(not(isNull(ConditionalSplit@Insert@TermTypeID)))) ~> ConditionsForInsertion"
 				},
 				{
 					"name": "SelectForInsertion",
