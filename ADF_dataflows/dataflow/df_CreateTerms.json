@@ -118,12 +118,12 @@
 					"script": "Filter1 alterRow(updateIf(not(isNull(TermID)))) ~> ConditionsForUpdate"
 				},
 				{
-					"name": "SelectUpdate",
-					"script": "ConvertNameAndDesc select(mapColumn(\n\t\tDimName = DimTypeName,\n\t\tDimPreferred,\n\t\tDimDescription = DimTypeDescription,\n\t\tTermID\n\t))~> SelectUpdate"
+					"name": "SelectForUpdate",
+					"script": "ConvertNameAndDesc select(mapColumn(\n\t\tDimName = DimTypeName,\n\t\tDimPreferred,\n\t\tDimDescription = DimTypeDescription,\n\t\tTermID\n\t))~> SelectForUpdate"
 				},
 				{
 					"name": "Filter1",
-					"script": "SelectUpdate filter(not(isNull(DimName))) ~> Filter1"
+					"script": "SelectForUpdate filter(not(isNull(DimName))) ~> Filter1"
 				}
 			]
 		}
