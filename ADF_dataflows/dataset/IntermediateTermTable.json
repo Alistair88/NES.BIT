@@ -44,7 +44,7 @@
 			}
 		],
 		"typeProperties": {
-			"tableName": "[dbo].[IntermediateTerm-DELME]"
+			"tableName": "[dbo].[IntermediateTerm]"
 		}
 	},
 	"type": "Microsoft.DataFactory/factories/datasets"
