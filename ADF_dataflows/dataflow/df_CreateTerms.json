@@ -83,7 +83,7 @@
 				},
 				{
 					"name": "ConditionsForInsertion",
-					"script": "RemoveNullDimNames alterRow(insertIf(not(isNull(ConditionalSplit@Insert@TermTypeID)))) ~> ConditionsForInsertion"
+					"script": "LookupTypeWithRootID alterRow(insertIf(not(isNull(ConditionalSplit@Insert@TermTypeID)))) ~> ConditionsForInsertion"
 				},
 				{
 					"name": "SelectForInsertion",
@@ -124,10 +124,6 @@
 				{
 					"name": "Filter1",
 					"script": "SelectForUpdate filter(not(isNull(DimName))) ~> Filter1"
-				},
-				{
-					"name": "RemoveNullDimNames",
-					"script": "LookupTypeWithRootID filter(not(isNull(DimName))) ~> RemoveNullDimNames"
 				}
 			]
 		}
