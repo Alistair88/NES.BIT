@@ -37,7 +37,7 @@
 						"type": "DatasetReference"
 					},
 					"name": "sink1",
-					"script": "SelectForInsertion sink(input(\n\t\tTermID as integer,\n\t\tDimID as integer,\n\t\tTermCode as string,\n\t\tTermName as string,\n\t\tDescription as string,\n\t\tPreferred as boolean,\n\t\tAvailable as boolean,\n\t\tTermTypeID as integer\n\t),\n\tallowSchemaDrift: true,\n\tvalidateSchema: false,\n\tformat: 'table',\n\tdeletable:false,\n\tinsertable:true,\n\tupdateable:false,\n\tupsertable:false,\n\tmapColumn(\n\t\tDimID,\n\t\tTermName,\n\t\tPreferred = DimPreferred,\n\t\tAvailable,\n\t\tTermTypeID = RootTypeID\n\t)) ~> sink1"
+					"script": "SelectForInsertion sink(input(\n\t\tTermID as integer,\n\t\tDimID as integer,\n\t\tTermCode as string,\n\t\tTermName as string,\n\t\tDescription as string,\n\t\tPreferred as boolean,\n\t\tAvailable as boolean,\n\t\tTermTypeID as integer\n\t),\n\tallowSchemaDrift: false,\n\tvalidateSchema: false,\n\tformat: 'table',\n\tdeletable:false,\n\tinsertable:true,\n\tupdateable:false,\n\tupsertable:false,\n\tmapColumn(\n\t\tDimID,\n\t\tTermName,\n\t\tPreferred = DimPreferred,\n\t\tAvailable,\n\t\tTermTypeID = RootTypeID\n\t)) ~> sink1"
 				}
 			],
 			"transformations": [
@@ -83,7 +83,7 @@
 				},
 				{
 					"name": "SelectForInsertion",
-					"script": "Filter1 select(mapColumn(\n\t\tDimID,\n\t\tDimPreferred,\n\t\tTermID,\n\t\tTermName,\n\t\tRootTypeID,\n\t\tAvailable = TermTypes@Available\n\t))~> SelectForInsertion"
+					"script": "Filter1 select(mapColumn(\n\t\tDimID,\n\t\tDimPreferred,\n\t\tTermName,\n\t\tRootTypeID,\n\t\tAvailable = TermTypes@Available\n\t))~> SelectForInsertion"
 				},
 				{
 					"name": "DerivedColumn1",
