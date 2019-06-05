@@ -5,7 +5,7 @@
 		"factoryName": {
 			"type": "string",
 			"metadata": "Data Factory Name",
-			"defaultValue": "nesbittestfactory-2003190950"
+			"defaultValue": "NESBITTestFactory-2003190950"
 		},
 		"LocalhostSqlServer_connectionString": {
 			"type": "secureString",
@@ -146,7 +146,7 @@
 					}
 				],
 				"typeProperties": {
-					"tableName": "[[dbo].[IntermediateTerm]"
+					"tableName": "[[dbo].[IntermediateTerm_inc_idendity]"
 				}
 			},
 			"dependsOn": []

@@ -3,7 +3,7 @@
 	"contentVersion": "1.0.0.0",
 	"parameters": {
 		"factoryName": {
-			"value": "nesbittestfactory-2003190950"
+			"value": "NESBITTestFactory-2003190950"
 		},
 		"LocalhostSqlServer_connectionString": {
 			"value": ""

@@ -5,7 +5,7 @@
 		"factoryName": {
 			"type": "string",
 			"metadata": "Data Factory Name",
-			"defaultValue": "nesbittestfactory-2003190950"
+			"defaultValue": "NESBITTestFactory-2003190950"
 		}
 	},
 	"variables": {
@@ -305,7 +305,7 @@
 					}
 				],
 				"typeProperties": {
-					"tableName": "[[dbo].[IntermediateTerm-DELME]"
+					"tableName": "[[dbo].[IntermediateTerm]"
 				}
 			},
 			"dependsOn": []

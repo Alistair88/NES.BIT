@@ -5,7 +5,7 @@
 		"factoryName": {
 			"type": "string",
 			"metadata": "Data Factory Name",
-			"defaultValue": "nesbittestfactory-2003190950"
+			"defaultValue": "NESBITTestFactory-2003190950"
 		},
 		"LocalhostSqlServer_connectionString": {
 			"type": "secureString",
@@ -1528,16 +1528,14 @@
 						"userProperties": [],
 						"typeProperties": {
 							"dataflow": {
-								"referenceName": "df_CreateTerms",
+								"referenceName": "dataflow1",
 								"type": "DataFlowReference",
 								"parameters": {},
 								"datasetParameters": {
 									"ThesaurusTerms": {},
 									"TaxonomyTerms": {},
 									"TermTypes": {},
-									"TaxonomyTermsInsert": {},
-									"UpdateTerm": {},
-									"DeleteSink": {}
+									"sink1": {}
 								}
 							},
 							"staging": {}
@@ -1550,7 +1548,7 @@
 				"annotations": []
 			},
 			"dependsOn": [
-				"[concat(variables('factoryId'), '/dataflows/df_CreateTerms')]"
+				"[concat(variables('factoryId'), '/dataflows/dataflow1')]"
 			]
 		},
 		{
@@ -3725,7 +3723,7 @@
 					}
 				],
 				"typeProperties": {
-					"tableName": "[[dbo].[IntermediateTerm-DELME]"
+					"tableName": "[[dbo].[IntermediateTerm]"
 				}
 			},
 			"dependsOn": [
@@ -4741,7 +4739,7 @@
 					}
 				],
 				"typeProperties": {
-					"tableName": "[[dbo].[IntermediateTerm]"
+					"tableName": "[[dbo].[IntermediateTerm_inc_idendity]"
 				}
 			},
 			"dependsOn": [
@@ -5860,11 +5858,11 @@
 						},
 						{
 							"name": "ConditionsForInsertion",
-							"script": "Lookup2 alterRow(insertIf(isNull(TermID))) ~> ConditionsForInsertion"
+							"script": "LookupTypeWithRootID alterRow(insertIf(not(isNull(TermTypes@TermTypeID)))) ~> ConditionsForInsertion"
 						},
 						{
 							"name": "SelectForInsertion",
-							"script": "ConditionsForInsertion select(mapColumn(\n\t\tDimID,\n\t\tDimPreferred,\n\t\tTermName = DimName,\n\t\tTermTypeID = RootTypeID,\n\t\tAvailable = SetAvailable@Available\n\t))~> SelectForInsertion"
+							"script": "Filter2 select(mapColumn(\n\t\tDimID,\n\t\tDimPreferred,\n\t\tTermName = DimName,\n\t\tTermTypeID = RootTypeID,\n\t\tAvailable = SetAvailable@Available\n\t))~> SelectForInsertion"
 						},
 						{
 							"name": "ConditionsForDelete",
@@ -5879,24 +5877,32 @@
 							"script": "DerivedColumn1 select(mapColumn(\n\t\tTermID,\n\t\tAvailable\n\t))~> SelectForDelete"
 						},
 						{
-							"name": "Lookup1",
-							"script": "ConvertDimIDToTypeID, TermTypes lookup(DimName == TypeName\n\t&& DimSourceID == SourceID\n\t&& PossibleTypeID == TermTypeID,\n\tbroadcast: 'none')~> Lookup1"
+							"name": "LookupTypesWithDimID",
+							"script": "ConvertDimIDToTypeID, TermTypes lookup(DimName == TypeName\n\t&& DimSourceID == SourceID\n\t&& PossibleTypeID == TermTypeID,\n\tbroadcast: 'none')~> LookupTypesWithDimID"
 						},
 						{
 							"name": "SelectFromLookup",
-							"script": "Lookup1 select(mapColumn(\n\t\tDimID,\n\t\tRootID,\n\t\tDimPreferred,\n\t\tDimDescription,\n\t\tPossibleTypeID,\n\t\tDimName = TypeName,\n\t\tDimSourceID = SourceID\n\t))~> SelectFromLookup"
+							"script": "LookupTypesWithDimID select(mapColumn(\n\t\tDimID,\n\t\tDimName,\n\t\tRootID,\n\t\tDimPreferred,\n\t\tDimSourceID,\n\t\tDimDescription,\n\t\tPossibleTypeID\n\t))~> SelectFromLookup"
 						},
 						{
-							"name": "Lookup2",
-							"script": "ConvertRootToTypeID, TermTypes lookup(PossibleTypeID == TermTypes@TermTypeID,\n\tbroadcast: 'none')~> Lookup2"
+							"name": "LookupTypeWithRootID",
+							"script": "ConvertRootToTypeID, TermTypes lookup(RootTypeID == TermTypes@TermTypeID,\n\tbroadcast: 'none')~> LookupTypeWithRootID"
 						},
 						{
 							"name": "ConditionsForUpdate",
-							"script": "SelectUpdate alterRow(updateIf(not(isNull(TermID)))) ~> ConditionsForUpdate"
+							"script": "Filter1 alterRow(updateIf(not(isNull(TermID)))) ~> ConditionsForUpdate"
 						},
 						{
-							"name": "SelectUpdate",
-							"script": "ConvertNameAndDesc select(mapColumn(\n\t\tDimName,\n\t\tDimPreferred,\n\t\tDimDescription,\n\t\tTermID\n\t))~> SelectUpdate"
+							"name": "SelectForUpdate",
+							"script": "ConvertNameAndDesc select(mapColumn(\n\t\tDimName = DimTypeName,\n\t\tDimPreferred,\n\t\tDimDescription = DimTypeDescription,\n\t\tTermID\n\t))~> SelectForUpdate"
+						},
+						{
+							"name": "Filter1",
+							"script": "SelectForUpdate filter(not(isNull(DimName))) ~> Filter1"
+						},
+						{
+							"name": "Filter2",
+							"script": "ConditionsForInsertion filter(not(isNull(DimName))) ~> Filter2"
 						}
 					]
 				}
@@ -5950,6 +5956,127 @@
 			},
 			"dependsOn": [
 				"[concat(variables('factoryId'), '/datasets/TermRelationshipSink')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/df_MergePortfolioDimensions')]",
+			"type": "Microsoft.DataFactory/factories/dataflows",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"type": "MappingDataFlow",
+				"typeProperties": {
+					"sources": [
+						{
+							"dataset": {
+								"referenceName": "PortfolioDimensionTables",
+								"type": "DatasetReference"
+							},
+							"name": "PortfolioDimensionTables",
+							"script": "source(output(\n\t\tDimTableName as string,\n\t\tDimID as integer,\n\t\tDimCode as string,\n\t\tDimName as string,\n\t\tDimDescription as string,\n\t\tDimActive as boolean\n\t),\n\tallowSchemaDrift: true,\n\tvalidateSchema: false,\n\tformat: 'table') ~> PortfolioDimensionTables",
+							"typeProperties": {}
+						},
+						{
+							"dataset": {
+								"referenceName": "TaxonomyDimensionTerms",
+								"type": "DatasetReference"
+							},
+							"name": "TaxonomyDimensionTerms",
+							"script": "source(output(\n\t\tTermDimTable as string,\n\t\tTermID as integer,\n\t\tTermDimID as long,\n\t\tTermCode as string,\n\t\tTermName as string,\n\t\tTermDescription as string,\n\t\tTermPreferred as boolean,\n\t\tTermAvailable as boolean,\n\t\tTermTypeID as integer\n\t),\n\tallowSchemaDrift: true,\n\tvalidateSchema: false,\n\tformat: 'table') ~> TaxonomyDimensionTerms",
+							"typeProperties": {}
+						},
+						{
+							"dataset": {
+								"referenceName": "CreateTurasDimsLookup",
+								"type": "DatasetReference"
+							},
+							"name": "LookupType",
+							"script": "source(output(\n\t\tTermTypeID as integer,\n\t\tDimTable as string\n\t),\n\tallowSchemaDrift: false,\n\tvalidateSchema: false,\n\tformat: 'table') ~> LookupType",
+							"typeProperties": {}
+						}
+					],
+					"sinks": [
+						{
+							"dataset": {
+								"referenceName": "IntermediateTermTable",
+								"type": "DatasetReference"
+							},
+							"name": "SinkIntoTermTaxonomy",
+							"script": "Filter4 sink(input(\n\t\tTermID as integer,\n\t\tDimID as integer,\n\t\tTermCode as string,\n\t\tTermName as string,\n\t\tDescription as string,\n\t\tPreferred as boolean,\n\t\tAvailable as boolean,\n\t\tTermTypeID as integer\n\t),\n\tallowSchemaDrift: false,\n\tvalidateSchema: false,\n\tformat: 'table',\n\tdeletable:false,\n\tinsertable:true,\n\tupdateable:false,\n\tupsertable:false,\n\tmapColumn(\n\t\tTermID,\n\t\tDimID,\n\t\tTermCode = DimCode,\n\t\tTermName = DimName,\n\t\tDescription = DimDescription,\n\t\tPreferred,\n\t\tAvailable = DimActive,\n\t\tTermTypeID\n\t)) ~> SinkIntoTermTaxonomy"
+						},
+						{
+							"dataset": {
+								"referenceName": "IntermediateTermTable",
+								"type": "DatasetReference"
+							},
+							"name": "DeleteTerm",
+							"script": "MarkForDeletion sink(input(\n\t\tTermID as integer,\n\t\tDimID as integer,\n\t\tTermCode as string,\n\t\tTermName as string,\n\t\tDescription as string,\n\t\tPreferred as boolean,\n\t\tAvailable as boolean,\n\t\tTermTypeID as integer\n\t),\n\tallowSchemaDrift: false,\n\tvalidateSchema: false,\n\tformat: 'table',\n\tdeletable:true,\n\tinsertable:false,\n\tupdateable:false,\n\tupsertable:false,\n\tkeys:['TermID']) ~> DeleteTerm"
+						},
+						{
+							"dataset": {
+								"referenceName": "IntermediateTermTable",
+								"type": "DatasetReference"
+							},
+							"name": "UpdateSink",
+							"script": "Filter2 sink(input(\n\t\tTermID as integer,\n\t\tDimID as integer,\n\t\tTermCode as string,\n\t\tTermName as string,\n\t\tDescription as string,\n\t\tPreferred as boolean,\n\t\tAvailable as boolean,\n\t\tTermTypeID as integer\n\t),\n\tallowSchemaDrift: true,\n\tvalidateSchema: false,\n\tformat: 'table',\n\tdeletable:false,\n\tinsertable:false,\n\tupdateable:true,\n\tupsertable:false,\n\tkeys:['TermID'],\n\tmapColumn(\n\t\tTermID,\n\t\tTermCode = DimCode,\n\t\tTermName = DimName,\n\t\tDescription = DimDescription,\n\t\tAvailable = DimActive\n\t)) ~> UpdateSink"
+						}
+					],
+					"transformations": [
+						{
+							"name": "MergeJoin",
+							"script": "PortfolioDimensionTables, TaxonomyDimensionTerms join(DimID == TermDimID\n\t&& DimTableName == TermDimTable,\n\tjoinType:'outer',\n\tbroadcast: 'none')~> MergeJoin"
+						},
+						{
+							"name": "ConditionalSplit",
+							"script": "MergeJoin split(isNull(TermID),\n\tisNull(DimID),\n\tdisjoint: true) ~> ConditionalSplit@(Insert, Delete, Update)"
+						},
+						{
+							"name": "DerivedColumn",
+							"script": "ConditionalSplit@Insert derive(Preferred = true()) ~> DerivedColumn"
+						},
+						{
+							"name": "Lookup1",
+							"script": "DerivedColumn, LookupType lookup(DimTableName == DimTable,\n\tbroadcast: 'none')~> Lookup1"
+						},
+						{
+							"name": "SelectForInsertion",
+							"script": "Filter3 select(mapColumn(\n\t\tDimID,\n\t\tDimCode,\n\t\tDimName,\n\t\tDimDescription,\n\t\tDimActive,\n\t\tTermID,\n\t\tPreferred,\n\t\tTermTypeID = LookupType@TermTypeID\n\t))~> SelectForInsertion"
+						},
+						{
+							"name": "SelectForDeletion",
+							"script": "ConditionalSplit@Delete select(mapColumn(\n\t\tDimID,\n\t\tTermID,\n\t\tTermCode,\n\t\tTermName\n\t))~> SelectForDeletion"
+						},
+						{
+							"name": "MarkForDeletion",
+							"script": "SelectForDeletion alterRow(deleteIf(isNull(DimID))) ~> MarkForDeletion"
+						},
+						{
+							"name": "SelectForUpdate",
+							"script": "ConditionalSplit@Update select(mapColumn(\n\t\tDimCode,\n\t\tDimName,\n\t\tDimDescription,\n\t\tDimActive,\n\t\tTermID\n\t))~> SelectForUpdate"
+						},
+						{
+							"name": "AlterRow1",
+							"script": "SelectForInsertion alterRow(insertIf(isNull(TermID))) ~> AlterRow1"
+						},
+						{
+							"name": "Filter2",
+							"script": "SelectForUpdate filter(not(isNull(DimName))) ~> Filter2"
+						},
+						{
+							"name": "Filter3",
+							"script": "Lookup1 filter(not(isNull(DimTable))) ~> Filter3"
+						},
+						{
+							"name": "Filter4",
+							"script": "AlterRow1 filter(not(isNull(DimName))) ~> Filter4"
+						}
+					]
+				}
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/datasets/PortfolioDimensionTables')]",
+				"[concat(variables('factoryId'), '/datasets/TaxonomyDimensionTerms')]",
+				"[concat(variables('factoryId'), '/datasets/CreateTurasDimsLookup')]",
+				"[concat(variables('factoryId'), '/datasets/IntermediateTermTable')]"
 			]
 		},
 		{
@@ -6157,7 +6284,7 @@
 						},
 						{
 							"name": "ConditionForDelete",
-							"script": "ConditionalSplit1@delete alterRow(updateIf(isNull(DimID))) ~> ConditionForDelete"
+							"script": "ConditionalSplit1@delete alterRow(updateIf(not(isNull(TermTypeID)))) ~> ConditionForDelete"
 						},
 						{
 							"name": "TermTypeSoftDelete",
@@ -6194,124 +6321,109 @@
 			]
 		},
 		{
-			"name": "[concat(parameters('factoryName'), '/df_MergePortfolioDimensions')]",
+			"name": "[concat(parameters('factoryName'), '/dataflow1')]",
 			"type": "Microsoft.DataFactory/factories/dataflows",
 			"apiVersion": "2018-06-01",
 			"properties": {
+				"description": "This is the Create Terms dataflow and include lookups to the TermTypeTable in the Taxonomy db.",
 				"type": "MappingDataFlow",
 				"typeProperties": {
 					"sources": [
 						{
 							"dataset": {
-								"referenceName": "PortfolioDimensionTables",
+								"referenceName": "ThesaurusTerms",
 								"type": "DatasetReference"
 							},
-							"name": "PortfolioDimensionTables",
-							"script": "source(output(\n\t\tDimTableName as string,\n\t\tDimID as integer,\n\t\tDimCode as string,\n\t\tDimName as string,\n\t\tDimDescription as string,\n\t\tDimActive as boolean\n\t),\n\tallowSchemaDrift: true,\n\tvalidateSchema: false,\n\tformat: 'table') ~> PortfolioDimensionTables",
+							"name": "ThesaurusTerms",
+							"script": "source(output(\n\t\tDimID as integer,\n\t\tDimName as string,\n\t\tRootID as integer,\n\t\tDimPreferred as boolean,\n\t\tDimSourceID as integer,\n\t\tDimDescription as string\n\t),\n\tallowSchemaDrift: false,\n\tvalidateSchema: false,\n\tformat: 'table') ~> ThesaurusTerms",
 							"typeProperties": {}
 						},
 						{
 							"dataset": {
-								"referenceName": "TaxonomyDimensionTerms",
+								"referenceName": "DestTaxonomyTermsSOURCE",
 								"type": "DatasetReference"
 							},
-							"name": "TaxonomyDimensionTerms",
-							"script": "source(output(\n\t\tTermDimTable as string,\n\t\tTermID as integer,\n\t\tTermDimID as long,\n\t\tTermCode as string,\n\t\tTermName as string,\n\t\tTermDescription as string,\n\t\tTermPreferred as boolean,\n\t\tTermAvailable as boolean,\n\t\tTermTypeID as integer\n\t),\n\tallowSchemaDrift: true,\n\tvalidateSchema: false,\n\tformat: 'table') ~> TaxonomyDimensionTerms",
+							"name": "TaxonomyTerms",
+							"script": "source(output(\n\t\tTermID as integer,\n\t\tTermDimID as integer,\n\t\tTermCode as string,\n\t\tTermName as string,\n\t\tTermDescription as string,\n\t\tTermPreferred as boolean,\n\t\tTermTypeID as integer\n\t),\n\tallowSchemaDrift: false,\n\tvalidateSchema: false,\n\tformat: 'table') ~> TaxonomyTerms",
 							"typeProperties": {}
 						},
 						{
 							"dataset": {
-								"referenceName": "CreateTurasDimsLookup",
+								"referenceName": "TermTypeSink",
 								"type": "DatasetReference"
 							},
-							"name": "LookupType",
-							"script": "source(output(\n\t\tTermTypeID as integer,\n\t\tDimTable as string\n\t),\n\tallowSchemaDrift: false,\n\tvalidateSchema: false,\n\tformat: 'table') ~> LookupType",
+							"name": "TermTypes",
+							"script": "source(output(\n\t\tTermTypeID as integer,\n\t\tTypeName as string,\n\t\tDescription as string,\n\t\tAvailable as boolean,\n\t\tDimTable as string,\n\t\tSourceID as integer\n\t),\n\tallowSchemaDrift: false,\n\tvalidateSchema: false,\n\tformat: 'table') ~> TermTypes",
 							"typeProperties": {}
 						}
 					],
 					"sinks": [
 						{
 							"dataset": {
-								"referenceName": "IntermediateTermTable",
+								"referenceName": "TaxonomyTermsInsert",
 								"type": "DatasetReference"
 							},
-							"name": "SinkIntoTermTaxonomy",
-							"script": "Filter4 sink(input(\n\t\tTermID as integer,\n\t\tDimID as integer,\n\t\tTermCode as string,\n\t\tTermName as string,\n\t\tDescription as string,\n\t\tPreferred as boolean,\n\t\tAvailable as boolean,\n\t\tTermTypeID as integer\n\t),\n\tallowSchemaDrift: false,\n\tvalidateSchema: false,\n\tformat: 'table',\n\tdeletable:false,\n\tinsertable:true,\n\tupdateable:false,\n\tupsertable:false,\n\tmapColumn(\n\t\tTermID,\n\t\tDimID,\n\t\tTermCode = DimCode,\n\t\tTermName = DimName,\n\t\tDescription = DimDescription,\n\t\tPreferred,\n\t\tAvailable = DimActive,\n\t\tTermTypeID\n\t)) ~> SinkIntoTermTaxonomy"
-						},
-						{
-							"dataset": {
-								"referenceName": "IntermediateTermTable",
-								"type": "DatasetReference"
-							},
-							"name": "DeleteTerm",
-							"script": "MarkForDeletion sink(input(\n\t\tTermID as integer,\n\t\tDimID as integer,\n\t\tTermCode as string,\n\t\tTermName as string,\n\t\tDescription as string,\n\t\tPreferred as boolean,\n\t\tAvailable as boolean,\n\t\tTermTypeID as integer\n\t),\n\tallowSchemaDrift: false,\n\tvalidateSchema: false,\n\tformat: 'table',\n\tdeletable:true,\n\tinsertable:false,\n\tupdateable:false,\n\tupsertable:false,\n\tkeys:['TermID']) ~> DeleteTerm"
-						},
-						{
-							"dataset": {
-								"referenceName": "IntermediateTermTable",
-								"type": "DatasetReference"
-							},
-							"name": "UpdateSink",
-							"script": "Filter2 sink(input(\n\t\tTermID as integer,\n\t\tDimID as integer,\n\t\tTermCode as string,\n\t\tTermName as string,\n\t\tDescription as string,\n\t\tPreferred as boolean,\n\t\tAvailable as boolean,\n\t\tTermTypeID as integer\n\t),\n\tallowSchemaDrift: true,\n\tvalidateSchema: false,\n\tformat: 'table',\n\tdeletable:false,\n\tinsertable:false,\n\tupdateable:true,\n\tupsertable:false,\n\tkeys:['TermID'],\n\tmapColumn(\n\t\tTermID,\n\t\tTermCode = DimCode,\n\t\tTermName = DimName,\n\t\tDescription = DimDescription,\n\t\tAvailable = DimActive\n\t)) ~> UpdateSink"
+							"name": "sink1",
+							"script": "SelectForInsertion sink(input(\n\t\tTermID as integer,\n\t\tDimID as integer,\n\t\tTermCode as string,\n\t\tTermName as string,\n\t\tDescription as string,\n\t\tPreferred as boolean,\n\t\tAvailable as boolean,\n\t\tTermTypeID as integer\n\t),\n\tallowSchemaDrift: false,\n\tvalidateSchema: false,\n\tformat: 'table',\n\tdeletable:false,\n\tinsertable:true,\n\tupdateable:false,\n\tupsertable:false,\n\tmapColumn(\n\t\tDimID,\n\t\tTermName,\n\t\tPreferred = DimPreferred,\n\t\tAvailable,\n\t\tTermTypeID = RootTypeID\n\t)) ~> sink1"
 						}
 					],
 					"transformations": [
 						{
+							"name": "ConvertDimIDToTypeID",
+							"script": "ThesaurusTerms derive(PossibleTypeID = toShort(DimID)) ~> ConvertDimIDToTypeID"
+						},
+						{
+							"name": "LookupTypesWithDimID",
+							"script": "ConvertDimIDToTypeID, TermTypes join(DimName == TypeName\n\t&& DimSourceID == SourceID\n\t&& PossibleTypeID == TermTypeID,\n\tjoinType:'inner',\n\tbroadcast: 'none')~> LookupTypesWithDimID"
+						},
+						{
 							"name": "MergeJoin",
-							"script": "PortfolioDimensionTables, TaxonomyDimensionTerms join(DimID == TermDimID\n\t&& DimTableName == TermDimTable,\n\tjoinType:'outer',\n\tbroadcast: 'none')~> MergeJoin"
+							"script": "Select1, TaxonomyTerms join(DimID == TermDimID,\n\tjoinType:'outer',\n\tbroadcast: 'none')~> MergeJoin"
 						},
 						{
-							"name": "ConditionalSplit",
-							"script": "MergeJoin split(isNull(TermID),\n\tisNull(DimID),\n\tdisjoint: true) ~> ConditionalSplit@(Insert, Delete, Update)"
+							"name": "ConditionalSplit1",
+							"script": "MergeJoin split(isNull(TermID),\n\tdisjoint: false) ~> ConditionalSplit1@(Insert, Default)"
 						},
 						{
-							"name": "DerivedColumn",
-							"script": "ConditionalSplit@Insert derive(Preferred = true()) ~> DerivedColumn"
+							"name": "SetAvailable",
+							"script": "ConditionalSplit1@Insert derive(Available = true()) ~> SetAvailable"
 						},
 						{
-							"name": "Lookup1",
-							"script": "DerivedColumn, LookupType lookup(DimTableName == DimTable,\n\tbroadcast: 'none')~> Lookup1"
+							"name": "ConvertRootToTypeID",
+							"script": "SetAvailable derive(RootTypeID = toShort(RootID)) ~> ConvertRootToTypeID"
+						},
+						{
+							"name": "Join3",
+							"script": "DerivedColumn1, TermTypes join(RootID == TermTypes@TermTypeID,\n\tjoinType:'inner',\n\tbroadcast: 'none')~> Join3"
+						},
+						{
+							"name": "Select1",
+							"script": "LookupTypesWithDimID select(mapColumn(\n\t\tDimID,\n\t\tRootID,\n\t\tDimPreferred,\n\t\tDimDescription,\n\t\tTermTypeID = PossibleTypeID,\n\t\tTypeName,\n\t\tSourceID\n\t))~> Select1"
+						},
+						{
+							"name": "ConditionsForInsertion",
+							"script": "Join3 alterRow(insertIf(not(isNull(RootTypeID)))) ~> ConditionsForInsertion"
+						},
+						{
+							"name": "Filter1",
+							"script": "ConditionsForInsertion filter(isNull(TermPreferred)) ~> Filter1"
 						},
 						{
 							"name": "SelectForInsertion",
-							"script": "Filter3 select(mapColumn(\n\t\tDimID,\n\t\tDimCode,\n\t\tDimName,\n\t\tDimDescription,\n\t\tDimActive,\n\t\tTermID,\n\t\tPreferred,\n\t\tTermTypeID = LookupType@TermTypeID\n\t))~> SelectForInsertion"
+							"script": "Filter1 select(mapColumn(\n\t\tDimID,\n\t\tDimPreferred,\n\t\tTermName,\n\t\tRootTypeID,\n\t\tAvailable = TermTypes@Available\n\t))~> SelectForInsertion"
 						},
 						{
-							"name": "SelectForDeletion",
-							"script": "ConditionalSplit@Delete select(mapColumn(\n\t\tDimID,\n\t\tTermID,\n\t\tTermCode,\n\t\tTermName\n\t))~> SelectForDeletion"
-						},
-						{
-							"name": "MarkForDeletion",
-							"script": "SelectForDeletion alterRow(deleteIf(isNull(DimID))) ~> MarkForDeletion"
-						},
-						{
-							"name": "SelectForUpdate",
-							"script": "ConditionalSplit@Update select(mapColumn(\n\t\tDimCode,\n\t\tDimName,\n\t\tDimDescription,\n\t\tDimActive,\n\t\tTermID\n\t))~> SelectForUpdate"
-						},
-						{
-							"name": "AlterRow1",
-							"script": "SelectForInsertion alterRow(insertIf(isNull(TermID))) ~> AlterRow1"
-						},
-						{
-							"name": "Filter2",
-							"script": "SelectForUpdate filter(not(isNull(DimName))) ~> Filter2"
-						},
-						{
-							"name": "Filter3",
-							"script": "Lookup1 filter(not(isNull(DimTable))) ~> Filter3"
-						},
-						{
-							"name": "Filter4",
-							"script": "AlterRow1 filter(not(isNull(DimName))) ~> Filter4"
+							"name": "DerivedColumn1",
+							"script": "ConvertRootToTypeID derive(TermID = 9999) ~> DerivedColumn1"
 						}
 					]
 				}
 			},
 			"dependsOn": [
-				"[concat(variables('factoryId'), '/datasets/PortfolioDimensionTables')]",
-				"[concat(variables('factoryId'), '/datasets/TaxonomyDimensionTerms')]",
-				"[concat(variables('factoryId'), '/datasets/CreateTurasDimsLookup')]",
-				"[concat(variables('factoryId'), '/datasets/IntermediateTermTable')]"
+				"[concat(variables('factoryId'), '/datasets/ThesaurusTerms')]",
+				"[concat(variables('factoryId'), '/datasets/DestTaxonomyTermsSOURCE')]",
+				"[concat(variables('factoryId'), '/datasets/TermTypeSink')]",
+				"[concat(variables('factoryId'), '/datasets/TaxonomyTermsInsert')]"
 			]
 		}
 	]
