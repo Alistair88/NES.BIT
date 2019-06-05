@@ -55,7 +55,7 @@
 				},
 				{
 					"name": "ConditionalSplit1",
-					"script": "MergeJoin split(isNull(TermID),\n\tdisjoint: false) ~> ConditionalSplit1@(Insert, Default)"
+					"script": "MergeJoin split(isNull(TypeName),\n\tdisjoint: false) ~> ConditionalSplit1@(Insert, Default)"
 				},
 				{
 					"name": "SetAvailable",
@@ -75,11 +75,11 @@
 				},
 				{
 					"name": "ConditionsForInsertion",
-					"script": "Join3 alterRow(insertIf(not(isNull(RootTypeID)))) ~> ConditionsForInsertion"
+					"script": "Join3 alterRow(insertIf(not(isNull(TermID)))) ~> ConditionsForInsertion"
 				},
 				{
 					"name": "Filter1",
-					"script": "ConditionsForInsertion filter(not(isNull(TermName))) ~> Filter1"
+					"script": "ConditionsForInsertion filter(isNull(TermPreferred)) ~> Filter1"
 				},
 				{
 					"name": "SelectForInsertion",
