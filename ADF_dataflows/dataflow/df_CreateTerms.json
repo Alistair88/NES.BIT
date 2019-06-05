@@ -83,7 +83,7 @@
 				},
 				{
 					"name": "ConditionsForInsertion",
-					"script": "LookupTypeWithRootID alterRow(insertIf(not(isNull(ConditionalSplit@Insert@TermTypeID)))) ~> ConditionsForInsertion"
+					"script": "LookupTypeWithRootID alterRow(insertIf(not(isNull(TermTypes@TermTypeID)))) ~> ConditionsForInsertion"
 				},
 				{
 					"name": "SelectForInsertion",
@@ -107,7 +107,7 @@
 				},
 				{
 					"name": "SelectFromLookup",
-					"script": "LookupTypesWithDimID select(mapColumn(\n\t\tDimID,\n\t\tRootID,\n\t\tDimPreferred,\n\t\tDimDescription,\n\t\tPossibleTypeID,\n\t\tDimName = TypeName,\n\t\tDimSourceID = SourceID\n\t))~> SelectFromLookup"
+					"script": "LookupTypesWithDimID select(mapColumn(\n\t\tDimID,\n\t\tDimName,\n\t\tRootID,\n\t\tDimPreferred,\n\t\tDimSourceID,\n\t\tDimDescription,\n\t\tPossibleTypeID\n\t))~> SelectFromLookup"
 				},
 				{
 					"name": "LookupTypeWithRootID",
