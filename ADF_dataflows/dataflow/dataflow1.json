@@ -37,7 +37,7 @@
 						"type": "DatasetReference"
 					},
 					"name": "sink1",
-					"script": "SelectForInsertion sink(input(\n\t\tTermID as integer,\n\t\tDimID as integer,\n\t\tTermCode as string,\n\t\tTermName as string,\n\t\tDescription as string,\n\t\tPreferred as boolean,\n\t\tAvailable as boolean,\n\t\tTermTypeID as integer\n\t),\n\tallowSchemaDrift: true,\n\tvalidateSchema: false,\n\tformat: 'table',\n\tdeletable:false,\n\tinsertable:true,\n\tupdateable:false,\n\tupsertable:false,\n\tmapColumn(\n\t\tDimID,\n\t\tTermName,\n\t\tPreferred = DimPreferred,\n\t\tAvailable,\n\t\tTermTypeID = RootTypeID\n\t)) ~> sink1"
+					"script": "SelectForInsertion sink(input(\n\t\tTermID as integer,\n\t\tDimID as integer,\n\t\tTermCode as string,\n\t\tTermName as string,\n\t\tDescription as string,\n\t\tPreferred as boolean,\n\t\tAvailable as boolean,\n\t\tTermTypeID as integer\n\t),\n\tallowSchemaDrift: true,\n\tvalidateSchema: false,\n\tformat: 'table',\n\tdeletable:false,\n\tinsertable:true,\n\tupdateable:false,\n\tupsertable:false,\n\tmapColumn(\n\t\tDimID,\n\t\tTermName,\n\t\tPreferred = DimPreferred,\n\t\tAvailable = SelectForInsertion@Available,\n\t\tTermTypeID = RootTypeID\n\t)) ~> sink1"
 				}
 			],
 			"transformations": [
@@ -67,7 +67,7 @@
 				},
 				{
 					"name": "Join3",
-					"script": "ConvertRootToTypeID, TermTypes join(RootID == TermTypes@TermTypeID,\n\tjoinType:'inner',\n\tbroadcast: 'none')~> Join3"
+					"script": "DerivedColumn1, TermTypes join(RootID == TermTypes@TermTypeID,\n\tjoinType:'inner',\n\tbroadcast: 'none')~> Join3"
 				},
 				{
 					"name": "Select1",
@@ -75,7 +75,7 @@
 				},
 				{
 					"name": "ConditionsForInsertion",
-					"script": "Join3 alterRow(insertIf(not(isNull(TermTypes@TermTypeID)))) ~> ConditionsForInsertion"
+					"script": "Join3 alterRow(insertIf(not(isNull(RootTypeID)))) ~> ConditionsForInsertion"
 				},
 				{
 					"name": "Filter1",
@@ -83,7 +83,11 @@
 				},
 				{
 					"name": "SelectForInsertion",
-					"script": "Filter1 select(mapColumn(\n\t\tDimID,\n\t\tDimPreferred,\n\t\tTermName,\n\t\tRootTypeID,\n\t\tAvailable = TermTypes@Available\n\t))~> SelectForInsertion"
+					"script": "Filter1 select(mapColumn(\n\t\tDimID,\n\t\tDimPreferred,\n\t\tTermID,\n\t\tTermName,\n\t\tRootTypeID,\n\t\tAvailable = TermTypes@Available\n\t))~> SelectForInsertion"
+				},
+				{
+					"name": "DerivedColumn1",
+					"script": "ConvertRootToTypeID derive(TermID = 9999) ~> DerivedColumn1"
 				}
 			]
 		}
