@@ -71,7 +71,7 @@
 				},
 				{
 					"name": "AlterRow2",
-					"script": "ConvertNameAndDesc alterRow(updateIf(TermName == 'Cisterna Magna')) ~> AlterRow2"
+					"script": "ConvertNameAndDesc alterRow(updateIf(TermName=='Cisterna Magna')) ~> AlterRow2"
 				}
 			]
 		}
