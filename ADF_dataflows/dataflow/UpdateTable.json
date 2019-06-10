@@ -37,7 +37,7 @@
 						"type": "DatasetReference"
 					},
 					"name": "sink1",
-					"script": "SelectForInsertion sink(input(\n\t\tTermID as integer,\n\t\tDimID as integer,\n\t\tTermCode as string,\n\t\tTermName as string,\n\t\tDescription as string,\n\t\tPreferred as boolean,\n\t\tAvailable as boolean,\n\t\tTermTypeID as integer\n\t),\n\tallowSchemaDrift: false,\n\tvalidateSchema: false,\n\tformat: 'table',\n\tdeletable:false,\n\tinsertable:true,\n\tupdateable:false,\n\tupsertable:false,\n\tmapColumn(\n\t\tDimID = SelectForInsertion@DimName,\n\t\tTermName,\n\t\tPreferred = DimPreferred,\n\t\tAvailable = SelectForInsertion@DimName,\n\t\tTermTypeID = RootTypeID\n\t)) ~> sink1"
+					"script": "SelectForInsertion sink(input(\n\t\tTermID as integer,\n\t\tDimID as integer,\n\t\tTermCode as string,\n\t\tTermName as string,\n\t\tDescription as string,\n\t\tPreferred as boolean,\n\t\tAvailable as boolean,\n\t\tTermTypeID as integer\n\t),\n\tallowSchemaDrift: false,\n\tvalidateSchema: false,\n\tformat: 'table',\n\tdeletable:false,\n\tinsertable:true,\n\tupdateable:false,\n\tupsertable:false,\n\tmapColumn(\n\t\tTermName,\n\t\tDescription = DimDescription,\n\t\tPreferred = DimPreferred\n\t)) ~> sink1"
 				}
 			],
 			"transformations": [
@@ -67,11 +67,11 @@
 				},
 				{
 					"name": "ConditionsForUpdate",
-					"script": "ConvertNameAndDesc alterRow(updateIf(not(isNull(DimDescription)))) ~> ConditionsForUpdate"
+					"script": "ConvertNameAndDesc alterRow(updateIf(not(isNull(TermCode)))) ~> ConditionsForUpdate"
 				},
 				{
 					"name": "SelectForInsertion",
-					"script": "ConditionsForUpdate select(mapColumn(\n\t\tDimPreferred,\n\t\tDimDescription = DimTypeDescription,\n\t\tDimName = DimTypeName,\n\t\tTermID\n\t))~> SelectForInsertion"
+					"script": "ConditionsForUpdate select(mapColumn(\n\t\tDimPreferred,\n\t\tDimDescription = DimTypeDescription,\n\t\tTermName = DimTypeName,\n\t\tTermID\n\t))~> SelectForInsertion"
 				}
 			]
 		}
