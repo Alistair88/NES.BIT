@@ -1,6 +1,7 @@
 {
-	"name": "SourceDataset_TaxTermType",
+	"name": "TermType",
 	"properties": {
+		"description": "TermType table form PortThesaurusDB",
 		"linkedServiceName": {
 			"referenceName": "PortThesaurusDB",
 			"type": "LinkedServiceReference"
