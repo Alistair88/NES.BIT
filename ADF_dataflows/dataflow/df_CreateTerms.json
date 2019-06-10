@@ -1,5 +1,5 @@
 {
-	"name": "dataflow1",
+	"name": "df_CreateTerms",
 	"properties": {
 		"description": "This is the Create Terms dataflow and include lookups to the TermTypeTable in the Taxonomy db.",
 		"type": "MappingDataFlow",
@@ -36,8 +36,8 @@
 						"referenceName": "TaxonomyTermsInsert",
 						"type": "DatasetReference"
 					},
-					"name": "sink1",
-					"script": "SelectForInsertion sink(input(\n\t\tTermID as integer,\n\t\tDimID as integer,\n\t\tTermCode as string,\n\t\tTermName as string,\n\t\tDescription as string,\n\t\tPreferred as boolean,\n\t\tAvailable as boolean,\n\t\tTermTypeID as integer\n\t),\n\tallowSchemaDrift: false,\n\tvalidateSchema: false,\n\tformat: 'table',\n\tdeletable:false,\n\tinsertable:true,\n\tupdateable:false,\n\tupsertable:false,\n\tmapColumn(\n\t\tDimID,\n\t\tTermName,\n\t\tPreferred = DimPreferred,\n\t\tAvailable,\n\t\tTermTypeID = RootTypeID\n\t)) ~> sink1"
+					"name": "TaxonomyTermsInsert",
+					"script": "SelectForInsertion sink(input(\n\t\tTermID as integer,\n\t\tDimID as integer,\n\t\tTermCode as string,\n\t\tTermName as string,\n\t\tDescription as string,\n\t\tPreferred as boolean,\n\t\tAvailable as boolean,\n\t\tTermTypeID as integer\n\t),\n\tallowSchemaDrift: false,\n\tvalidateSchema: false,\n\tformat: 'table',\n\tdeletable:false,\n\tinsertable:true,\n\tupdateable:false,\n\tupsertable:false,\n\tmapColumn(\n\t\tDimID,\n\t\tTermName,\n\t\tPreferred = DimPreferred,\n\t\tAvailable,\n\t\tTermTypeID = RootTypeID\n\t)) ~> TaxonomyTermsInsert"
 				}
 			],
 			"transformations": [
@@ -51,7 +51,7 @@
 				},
 				{
 					"name": "MergeJoin",
-					"script": "Select1, TaxonomyTerms join(DimID == TermDimID,\n\tjoinType:'outer',\n\tbroadcast: 'none')~> MergeJoin"
+					"script": "SelectFromLookup, TaxonomyTerms join(DimID == TermDimID,\n\tjoinType:'outer',\n\tbroadcast: 'none')~> MergeJoin"
 				},
 				{
 					"name": "ConditionalSplit1",
@@ -66,16 +66,16 @@
 					"script": "SetAvailable derive(RootTypeID = toShort(RootID)) ~> ConvertRootToTypeID"
 				},
 				{
-					"name": "Join3",
-					"script": "DerivedColumn1, TermTypes join(RootID == TermTypes@TermTypeID,\n\tjoinType:'inner',\n\tbroadcast: 'none')~> Join3"
+					"name": "LookupTypeWithRootID",
+					"script": "DerivedColumn1, TermTypes join(RootID == TermTypes@TermTypeID,\n\tjoinType:'inner',\n\tbroadcast: 'none')~> LookupTypeWithRootID"
 				},
 				{
-					"name": "Select1",
-					"script": "LookupTypesWithDimID select(mapColumn(\n\t\tDimID,\n\t\tRootID,\n\t\tDimPreferred,\n\t\tDimDescription,\n\t\tTermTypeID = PossibleTypeID,\n\t\tTypeName,\n\t\tSourceID\n\t))~> Select1"
+					"name": "SelectFromLookup",
+					"script": "LookupTypesWithDimID select(mapColumn(\n\t\tDimID,\n\t\tRootID,\n\t\tDimPreferred,\n\t\tDimDescription,\n\t\tTermTypeID = PossibleTypeID,\n\t\tTypeName,\n\t\tSourceID\n\t))~> SelectFromLookup"
 				},
 				{
 					"name": "ConditionsForInsertion",
-					"script": "Join3 alterRow(insertIf(not(isNull(RootTypeID)))) ~> ConditionsForInsertion"
+					"script": "LookupTypeWithRootID alterRow(insertIf(not(isNull(RootTypeID)))) ~> ConditionsForInsertion"
 				},
 				{
 					"name": "Filter1",
