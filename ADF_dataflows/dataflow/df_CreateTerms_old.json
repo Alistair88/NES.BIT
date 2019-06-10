@@ -1,5 +1,5 @@
 {
-	"name": "df_CreateTerms",
+	"name": "df_CreateTerms_old",
 	"properties": {
 		"description": "This is the Create Terms dataflow and include lookups to the TermTypeTable in the Taxonomy db.",
 		"type": "MappingDataFlow",
