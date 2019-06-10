@@ -14,7 +14,7 @@
 				},
 				"typeProperties": {
 					"dataflow": {
-						"referenceName": "df_CreateTerms",
+						"referenceName": "dataflow3",
 						"type": "DataFlowReference"
 					}
 				}
