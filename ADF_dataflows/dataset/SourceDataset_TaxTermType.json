@@ -2,7 +2,7 @@
 	"name": "SourceDataset_TaxTermType",
 	"properties": {
 		"linkedServiceName": {
-			"referenceName": "WarehouseAlphaTest",
+			"referenceName": "PortThesaurusDB",
 			"type": "LinkedServiceReference"
 		},
 		"type": "AzureSqlTable",
@@ -45,7 +45,7 @@
 			}
 		],
 		"typeProperties": {
-			"tableName": "[Taxonomy].[TermType]"
+			"tableName": "[dbo].[TermType]"
 		}
 	},
 	"type": "Microsoft.DataFactory/factories/datasets"
