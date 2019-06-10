@@ -38,6 +38,14 @@
 					},
 					"name": "TaxonomyTermsInsert",
 					"script": "SelectForInsertion sink(input(\n\t\tTermID as integer,\n\t\tDimID as integer,\n\t\tTermCode as string,\n\t\tTermName as string,\n\t\tDescription as string,\n\t\tPreferred as boolean,\n\t\tAvailable as boolean,\n\t\tTermTypeID as integer\n\t),\n\tallowSchemaDrift: false,\n\tvalidateSchema: false,\n\tformat: 'table',\n\tdeletable:false,\n\tinsertable:true,\n\tupdateable:false,\n\tupsertable:false,\n\tmapColumn(\n\t\tDimID,\n\t\tTermName,\n\t\tPreferred = DimPreferred,\n\t\tAvailable,\n\t\tTermTypeID = RootTypeID\n\t)) ~> TaxonomyTermsInsert"
+				},
+				{
+					"dataset": {
+						"referenceName": "TaxonomyTermsInsert",
+						"type": "DatasetReference"
+					},
+					"name": "DeleteSink",
+					"script": "SelectForDelete sink(input(\n\t\tTermID as integer,\n\t\tDimID as integer,\n\t\tTermCode as string,\n\t\tTermName as string,\n\t\tDescription as string,\n\t\tPreferred as boolean,\n\t\tAvailable as boolean,\n\t\tTermTypeID as integer\n\t),\n\tallowSchemaDrift: false,\n\tvalidateSchema: false,\n\tformat: 'table',\n\tdeletable:false,\n\tinsertable:true,\n\tupdateable:false,\n\tupsertable:false) ~> DeleteSink"
 				}
 			],
 			"transformations": [
@@ -55,7 +63,7 @@
 				},
 				{
 					"name": "ConditionalSplit1",
-					"script": "MergeJoin split(isNull(TermID),\n\tdisjoint: false) ~> ConditionalSplit1@(Insert, Default)"
+					"script": "MergeJoin split(isNull(TermID),\n\tisNull(DimID),\n\tdisjoint: false) ~> ConditionalSplit1@(Insert, Delete, Default)"
 				},
 				{
 					"name": "SetAvailable",
@@ -84,6 +92,18 @@
 				{
 					"name": "SelectForInsertion",
 					"script": "Filter1 select(mapColumn(\n\t\tDimID,\n\t\tDimPreferred,\n\t\tTermName,\n\t\tRootTypeID,\n\t\tAvailable = TermTypes@Available\n\t))~> SelectForInsertion"
+				},
+				{
+					"name": "ConditionsForDelete",
+					"script": "ConditionalSplit1@Delete alterRow(updateIf(isNull(DimID))) ~> ConditionsForDelete"
+				},
+				{
+					"name": "DerivedColumn1",
+					"script": "ConditionsForDelete derive(Available = false()) ~> DerivedColumn1"
+				},
+				{
+					"name": "SelectForDelete",
+					"script": "DerivedColumn1 select(mapColumn(\n\t\tTermID,\n\t\tAvailable\n\t))~> SelectForDelete"
 				}
 			]
 		}
