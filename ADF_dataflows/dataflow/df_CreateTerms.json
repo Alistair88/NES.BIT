@@ -67,7 +67,7 @@
 				},
 				{
 					"name": "LookupTypeWithRootID",
-					"script": "DerivedColumn1, TermTypes join(RootID == TermTypes@TermTypeID,\n\tjoinType:'inner',\n\tbroadcast: 'none')~> LookupTypeWithRootID"
+					"script": "ConvertRootToTypeID, TermTypes join(RootID == TermTypes@TermTypeID,\n\tjoinType:'inner',\n\tbroadcast: 'none')~> LookupTypeWithRootID"
 				},
 				{
 					"name": "SelectFromLookup",
@@ -84,10 +84,6 @@
 				{
 					"name": "SelectForInsertion",
 					"script": "Filter1 select(mapColumn(\n\t\tDimID,\n\t\tDimPreferred,\n\t\tTermName,\n\t\tRootTypeID,\n\t\tAvailable = TermTypes@Available\n\t))~> SelectForInsertion"
-				},
-				{
-					"name": "DerivedColumn1",
-					"script": "ConvertRootToTypeID derive(TermID = 9999) ~> DerivedColumn1"
 				}
 			]
 		}
