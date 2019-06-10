@@ -1,5 +1,5 @@
 {
-	"name": "dataflow3",
+	"name": "UpdateTable",
 	"properties": {
 		"description": "This is the Create Terms dataflow and include lookups to the TermTypeTable in the Taxonomy db.",
 		"type": "MappingDataFlow",
@@ -55,11 +55,11 @@
 				},
 				{
 					"name": "ConditionalSplit1",
-					"script": "MergeJoin split(not(isNull(TermID)),\n\tdisjoint: false) ~> ConditionalSplit1@(Insert1, Default)"
+					"script": "MergeJoin split(not(isNull(TermID)),\n\tdisjoint: false) ~> ConditionalSplit1@(Update, Default)"
 				},
 				{
 					"name": "SetAvailable",
-					"script": "ConditionalSplit1@Insert1 derive(Available = true()) ~> SetAvailable"
+					"script": "ConditionalSplit1@Update derive(Available = true()) ~> SetAvailable"
 				},
 				{
 					"name": "ConvertRootToTypeID",
@@ -67,27 +67,23 @@
 				},
 				{
 					"name": "Join3",
-					"script": "DerivedColumn1, TermTypes join(RootTypeID == TermTypes@TermTypeID,\n\tjoinType:'inner',\n\tbroadcast: 'none')~> Join3"
+					"script": "ConvertRootToTypeID, TermTypes join(TermID == TermTypes@TermTypeID,\n\tjoinType:'outer',\n\tbroadcast: 'none')~> Join3"
 				},
 				{
 					"name": "Select1",
 					"script": "LookupTypesWithDimID select(mapColumn(\n\t\tDimID,\n\t\tRootID,\n\t\tDimPreferred,\n\t\tDimDescription,\n\t\tTermTypeID = PossibleTypeID,\n\t\tTypeName,\n\t\tSourceID\n\t))~> Select1"
 				},
 				{
-					"name": "ConditionsForInsertion",
-					"script": "Join3 alterRow(insertIf(not(isNull(RootTypeID)))) ~> ConditionsForInsertion"
+					"name": "ConditionsForUpdate",
+					"script": "Join3 alterRow(updateIf(not(isNull(DimDescription)))) ~> ConditionsForUpdate"
 				},
 				{
 					"name": "Filter1",
-					"script": "ConditionsForInsertion filter(isNull(TermPreferred)) ~> Filter1"
+					"script": "ConditionsForUpdate filter(isNull(TermPreferred)) ~> Filter1"
 				},
 				{
 					"name": "SelectForInsertion",
 					"script": "Filter1 select(mapColumn(\n\t\tDimID,\n\t\tDimPreferred,\n\t\tTermName,\n\t\tRootTypeID,\n\t\tAvailable = TermTypes@Available\n\t))~> SelectForInsertion"
-				},
-				{
-					"name": "DerivedColumn1",
-					"script": "ConvertRootToTypeID derive(TermID = 9999) ~> DerivedColumn1"
 				}
 			]
 		}
