@@ -14,7 +14,7 @@
 				},
 				"typeProperties": {
 					"dataflow": {
-						"referenceName": "UpdateTable",
+						"referenceName": "UpdateTableTesting",
 						"type": "DataFlowReference"
 					}
 				}

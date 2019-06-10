@@ -99,7 +99,7 @@
 				},
 				"inputs": [
 					{
-						"referenceName": "SourceDataset_TaxTermType",
+						"referenceName": "TermType",
 						"type": "DatasetReference"
 					}
 				],
