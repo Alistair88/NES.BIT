@@ -67,7 +67,7 @@
 				},
 				{
 					"name": "SelectForInsertion",
-					"script": "AlterRow2 select(mapColumn(\n\t\tDimPreferred,\n\t\tTermDescription,\n\t\tTermName,\n\t\tTermID,\n\t\tTermCode\n\t))~> SelectForInsertion"
+					"script": "AlterRow2 select(mapColumn(\n\t\tDimPreferred,\n\t\tTermDescription,\n\t\tTermName,\n\t\tTermID,\n\t\tTermCode,\n\t\tDimID,\n\t\tAvailable,\n\t\tTermTypeID\n\t))~> SelectForInsertion"
 				},
 				{
 					"name": "AlterRow2",
