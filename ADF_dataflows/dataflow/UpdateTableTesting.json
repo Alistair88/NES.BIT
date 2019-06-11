@@ -55,7 +55,7 @@
 				},
 				{
 					"name": "ConditionalSplit1",
-					"script": "MergeJoin split(not(isNull(TermID)),\n\tdisjoint: false) ~> ConditionalSplit1@(Update, Default)"
+					"script": "Filter1 split(not(isNull(TermID)),\n\tdisjoint: false) ~> ConditionalSplit1@(Update, Default)"
 				},
 				{
 					"name": "ConvertNameAndDesc",
@@ -71,7 +71,11 @@
 				},
 				{
 					"name": "AlterRow2",
-					"script": "ConvertNameAndDesc alterRow(updateIf(TermName=='Cisterna Magna')) ~> AlterRow2"
+					"script": "ConvertNameAndDesc alterRow(updateIf(not(isNull(TermID)))) ~> AlterRow2"
+				},
+				{
+					"name": "Filter1",
+					"script": "MergeJoin filter(TermID == 286337) ~> Filter1"
 				}
 			]
 		}
