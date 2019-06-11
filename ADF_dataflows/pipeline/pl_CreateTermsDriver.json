@@ -14,7 +14,7 @@
 				},
 				"typeProperties": {
 					"dataflow": {
-						"referenceName": "UpdateTableTesting",
+						"referenceName": "df_CreateTerms",
 						"type": "DataFlowReference"
 					}
 				}
