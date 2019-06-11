@@ -48,7 +48,7 @@
 			}
 		],
 		"typeProperties": {
-			"tableName": "[dbo].[IntermediateTerm_inc_idendity]"
+			"tableName": "[dbo].[IntermediateTerm_null]"
 		}
 	},
 	"type": "Microsoft.DataFactory/factories/datasets"
