@@ -45,7 +45,15 @@
 						"type": "DatasetReference"
 					},
 					"name": "sink2",
-					"script": "DerivedColumn1 sink(input(\n\t\tTermID as integer,\n\t\tDimID as integer,\n\t\tTermCode as string,\n\t\tTermName as string,\n\t\tDescription as string,\n\t\tPreferred as boolean,\n\t\tAvailable as boolean,\n\t\tTermTypeID as integer\n\t),\n\tallowSchemaDrift: true,\n\tvalidateSchema: false,\n\tformat: 'table',\n\tdeletable:false,\n\tinsertable:true,\n\tupdateable:false,\n\tupsertable:false,\n\tmapColumn(\n\t\tTermID,\n\t\tDimID,\n\t\tTermCode,\n\t\tTermName,\n\t\tDescription = DimDescription,\n\t\tPreferred = DimPreferred,\n\t\tAvailable,\n\t\tTermTypeID\n\t)) ~> sink2"
+					"script": "Filter2 sink(input(\n\t\tTermID as integer,\n\t\tDimID as integer,\n\t\tTermCode as string,\n\t\tTermName as string,\n\t\tDescription as string,\n\t\tPreferred as boolean,\n\t\tAvailable as boolean,\n\t\tTermTypeID as integer\n\t),\n\tallowSchemaDrift: true,\n\tvalidateSchema: false,\n\tformat: 'table',\n\tdeletable:false,\n\tinsertable:true,\n\tupdateable:false,\n\tupsertable:false,\n\tmapColumn(\n\t\tTermID,\n\t\tDimID,\n\t\tTermCode,\n\t\tTermName,\n\t\tDescription = DimDescription,\n\t\tPreferred = DimPreferred,\n\t\tAvailable,\n\t\tTermTypeID\n\t)) ~> sink2"
+				},
+				{
+					"dataset": {
+						"referenceName": "TaxonomyTermsInsert",
+						"type": "DatasetReference"
+					},
+					"name": "sink3",
+					"script": "AlterRow4 sink(input(\n\t\tTermID as integer,\n\t\tDimID as integer,\n\t\tTermCode as string,\n\t\tTermName as string,\n\t\tDescription as string,\n\t\tPreferred as boolean,\n\t\tAvailable as boolean,\n\t\tTermTypeID as integer\n\t),\n\tallowSchemaDrift: true,\n\tvalidateSchema: false,\n\tformat: 'table',\n\tdeletable:false,\n\tinsertable:true,\n\tupdateable:false,\n\tupsertable:false,\n\tmapColumn(\n\t\tDimID,\n\t\tTermCode,\n\t\tTermName,\n\t\tDescription,\n\t\tPreferred = DimPreferred,\n\t\tAvailable = SetAvailable@Available,\n\t\tTermTypeID = TaxonomyTerms@TermTypeID\n\t)) ~> sink3"
 				}
 			],
 			"transformations": [
@@ -100,6 +108,22 @@
 				{
 					"name": "UpdateColumns",
 					"script": "AlterRow3 derive(TermName = 'Term_name_test',\n\t\tDimDescription = 'description_test',\n\t\tDimPreferred = 'Preferred_test') ~> UpdateColumns"
+				},
+				{
+					"name": "Filter2",
+					"script": "DerivedColumn1 filter(isNull(DimID)) ~> Filter2"
+				},
+				{
+					"name": "SetAvailable",
+					"script": "InsertBranch derive(Available = true(),\n\t\tRootTypeID = toShort(RootID)) ~> SetAvailable"
+				},
+				{
+					"name": "Join1",
+					"script": "SetAvailable, TermTypes join(RootTypeID == TermTypes@TermTypeID,\n\tjoinType:'inner',\n\tbroadcast: 'none')~> Join1"
+				},
+				{
+					"name": "AlterRow4",
+					"script": "Join1 alterRow(insertIf(isNull(TermID))) ~> AlterRow4"
 				}
 			]
 		}
