@@ -67,7 +67,7 @@
 				},
 				{
 					"name": "SelectForInsertion",
-					"script": "UpdateColumns select(mapColumn(\n\t\tDimPreferred = UpdateColumns@DimPreferred,\n\t\tTermDescription,\n\t\tTermName,\n\t\tTermID,\n\t\tTermCode,\n\t\tDimID,\n\t\tAvailable,\n\t\tTermTypeID\n\t))~> SelectForInsertion"
+					"script": "UpdateColumns select(mapColumn(\n\t\tDimPreferred = SelectForInsertion@{UpdateColumns@DimPreferred},\n\t\tTermDescription,\n\t\tTermName,\n\t\tTermID,\n\t\tTermCode,\n\t\tDimID,\n\t\tAvailable,\n\t\tTermTypeID\n\t))~> SelectForInsertion"
 				},
 				{
 					"name": "Filter1",
