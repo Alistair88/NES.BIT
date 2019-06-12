@@ -36,24 +36,24 @@
 						"referenceName": "TaxonomyTermsInsert",
 						"type": "DatasetReference"
 					},
-					"name": "sink1",
-					"script": "SelectForInsertion sink(input(\n\t\tTermID as integer,\n\t\tDimID as integer,\n\t\tTermCode as string,\n\t\tTermName as string,\n\t\tDescription as string,\n\t\tPreferred as boolean,\n\t\tAvailable as boolean,\n\t\tTermTypeID as integer\n\t),\n\tallowSchemaDrift: false,\n\tvalidateSchema: false,\n\tformat: 'table',\n\tdeletable:false,\n\tinsertable:false,\n\tupdateable:true,\n\tupsertable:false,\n\tkeys:['TermID'],\n\tmapColumn(\n\t\tTermID,\n\t\tTermCode,\n\t\tTermName,\n\t\tDescription = TermDescription,\n\t\tPreferred = DimPreferred\n\t)) ~> sink1"
+					"name": "UpdateSink",
+					"script": "SelectForUpdate sink(input(\n\t\tTermID as integer,\n\t\tDimID as integer,\n\t\tTermCode as string,\n\t\tTermName as string,\n\t\tDescription as string,\n\t\tPreferred as boolean,\n\t\tAvailable as boolean,\n\t\tTermTypeID as integer\n\t),\n\tallowSchemaDrift: false,\n\tvalidateSchema: false,\n\tformat: 'table',\n\tdeletable:false,\n\tinsertable:false,\n\tupdateable:true,\n\tupsertable:false,\n\tkeys:['TermID'],\n\tmapColumn(\n\t\tTermID,\n\t\tTermCode,\n\t\tTermName,\n\t\tDescription = TermDescription,\n\t\tPreferred = DimPreferred\n\t)) ~> UpdateSink"
 				},
 				{
 					"dataset": {
 						"referenceName": "TaxonomyTermsInsert",
 						"type": "DatasetReference"
 					},
-					"name": "sink2",
-					"script": "Filter2 sink(input(\n\t\tTermID as integer,\n\t\tDimID as integer,\n\t\tTermCode as string,\n\t\tTermName as string,\n\t\tDescription as string,\n\t\tPreferred as boolean,\n\t\tAvailable as boolean,\n\t\tTermTypeID as integer\n\t),\n\tallowSchemaDrift: true,\n\tvalidateSchema: false,\n\tformat: 'table',\n\tdeletable:false,\n\tinsertable:true,\n\tupdateable:false,\n\tupsertable:false,\n\tmapColumn(\n\t\tTermID,\n\t\tDimID,\n\t\tTermCode,\n\t\tTermName,\n\t\tDescription = DimDescription,\n\t\tPreferred = DimPreferred,\n\t\tAvailable,\n\t\tTermTypeID\n\t)) ~> sink2"
+					"name": "DeleteSink",
+					"script": "Filter2 sink(input(\n\t\tTermID as integer,\n\t\tDimID as integer,\n\t\tTermCode as string,\n\t\tTermName as string,\n\t\tDescription as string,\n\t\tPreferred as boolean,\n\t\tAvailable as boolean,\n\t\tTermTypeID as integer\n\t),\n\tallowSchemaDrift: true,\n\tvalidateSchema: false,\n\tformat: 'table',\n\tdeletable:false,\n\tinsertable:true,\n\tupdateable:false,\n\tupsertable:false,\n\tmapColumn(\n\t\tTermID,\n\t\tDimID,\n\t\tTermCode,\n\t\tTermName,\n\t\tDescription = DimDescription,\n\t\tPreferred = DimPreferred,\n\t\tAvailable,\n\t\tTermTypeID\n\t)) ~> DeleteSink"
 				},
 				{
 					"dataset": {
 						"referenceName": "TaxonomyTermsInsert",
 						"type": "DatasetReference"
 					},
-					"name": "sink3",
-					"script": "AlterRow4 sink(input(\n\t\tTermID as integer,\n\t\tDimID as integer,\n\t\tTermCode as string,\n\t\tTermName as string,\n\t\tDescription as string,\n\t\tPreferred as boolean,\n\t\tAvailable as boolean,\n\t\tTermTypeID as integer\n\t),\n\tallowSchemaDrift: true,\n\tvalidateSchema: false,\n\tformat: 'table',\n\tdeletable:false,\n\tinsertable:true,\n\tupdateable:false,\n\tupsertable:false,\n\tmapColumn(\n\t\tDimID,\n\t\tTermCode,\n\t\tTermName,\n\t\tDescription,\n\t\tPreferred = DimPreferred,\n\t\tAvailable = SetAvailable@Available,\n\t\tTermTypeID = TaxonomyTerms@TermTypeID\n\t)) ~> sink3"
+					"name": "InsertSink",
+					"script": "AlterRow4 sink(input(\n\t\tTermID as integer,\n\t\tDimID as integer,\n\t\tTermCode as string,\n\t\tTermName as string,\n\t\tDescription as string,\n\t\tPreferred as boolean,\n\t\tAvailable as boolean,\n\t\tTermTypeID as integer\n\t),\n\tallowSchemaDrift: true,\n\tvalidateSchema: false,\n\tformat: 'table',\n\tdeletable:false,\n\tinsertable:true,\n\tupdateable:false,\n\tupsertable:false,\n\tmapColumn(\n\t\tDimID,\n\t\tTermCode,\n\t\tTermName,\n\t\tDescription,\n\t\tPreferred = DimPreferred,\n\t\tAvailable = SetAvailable@Available,\n\t\tTermTypeID = TaxonomyTerms@TermTypeID\n\t)) ~> InsertSink"
 				}
 			],
 			"transformations": [
@@ -74,8 +74,8 @@
 					"script": "LookupTypesWithDimID select(mapColumn(\n\t\tDimID,\n\t\tRootID,\n\t\tDimPreferred,\n\t\tDimDescription,\n\t\tPossibleTypeID,\n\t\tDimName,\n\t\tDimSourceID\n\t))~> Select1"
 				},
 				{
-					"name": "SelectForInsertion",
-					"script": "UpdateColumns select(mapColumn(\n\t\tDimPreferred = SelectForInsertion@{UpdateColumns@DimPreferred},\n\t\tTermDescription,\n\t\tTermName,\n\t\tTermID,\n\t\tTermCode,\n\t\tDimID,\n\t\tAvailable,\n\t\tTermTypeID\n\t))~> SelectForInsertion"
+					"name": "SelectForUpdate",
+					"script": "UpdateColumns select(mapColumn(\n\t\tDimPreferred,\n\t\tTermDescription,\n\t\tTermName,\n\t\tTermID,\n\t\tTermCode,\n\t\tDimID,\n\t\tAvailable,\n\t\tTermTypeID\n\t))~> SelectForUpdate"
 				},
 				{
 					"name": "Filter1",
