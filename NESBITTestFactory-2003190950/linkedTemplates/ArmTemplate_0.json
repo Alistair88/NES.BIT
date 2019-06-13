@@ -66,6 +66,16 @@
 			"dependsOn": []
 		},
 		{
+			"name": "[concat(parameters('factoryName'), '/LocalintegrationRuntime')]",
+			"type": "Microsoft.DataFactory/factories/integrationRuntimes",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"type": "SelfHosted",
+				"typeProperties": {}
+			},
+			"dependsOn": []
+		},
+		{
 			"name": "[concat(parameters('factoryName'), '/integrationRuntimeLocal')]",
 			"type": "Microsoft.DataFactory/factories/integrationRuntimes",
 			"apiVersion": "2018-06-01",
@@ -771,62 +781,6 @@
 			},
 			"dependsOn": [
 				"[concat(variables('factoryId'), '/linkedServices/WarehouseAlphaTest')]"
-			]
-		},
-		{
-			"name": "[concat(parameters('factoryName'), '/DestinationTermTable')]",
-			"type": "Microsoft.DataFactory/factories/datasets",
-			"apiVersion": "2018-06-01",
-			"properties": {
-				"linkedServiceName": {
-					"referenceName": "PortThesaurusDB",
-					"type": "LinkedServiceReference"
-				},
-				"annotations": [],
-				"type": "AzureSqlTable",
-				"schema": [
-					{
-						"name": "TermID",
-						"type": "int",
-						"precision": 10
-					},
-					{
-						"name": "DimID",
-						"type": "int",
-						"precision": 10
-					},
-					{
-						"name": "TermCode",
-						"type": "nvarchar"
-					},
-					{
-						"name": "TermName",
-						"type": "nvarchar"
-					},
-					{
-						"name": "Description",
-						"type": "nvarchar"
-					},
-					{
-						"name": "Preferred",
-						"type": "bit"
-					},
-					{
-						"name": "Available",
-						"type": "bit"
-					},
-					{
-						"name": "TermTypeID",
-						"type": "smallint",
-						"precision": 5
-					}
-				],
-				"typeProperties": {
-					"tableName": "Term"
-				}
-			},
-			"dependsOn": [
-				"[concat(variables('factoryId'), '/linkedServices/PortThesaurusDB')]"
 			]
 		}
 	]

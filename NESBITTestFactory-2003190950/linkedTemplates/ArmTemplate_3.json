@@ -6,12 +6,46 @@
 			"type": "string",
 			"metadata": "Data Factory Name",
 			"defaultValue": "NESBITTestFactory-2003190950"
+		},
+		"LocalhostTermType_connectionString": {
+			"type": "secureString",
+			"metadata": "Secure string for 'connectionString' of 'LocalhostTermType'"
+		},
+		"LocalhostTermType_password": {
+			"type": "secureString",
+			"metadata": "Secure string for 'password' of 'LocalhostTermType'"
+		},
+		"LocalhostTermType_properties_typeProperties_userName": {
+			"type": "string",
+			"defaultValue": "NES\\AlistairB"
 		}
 	},
 	"variables": {
 		"factoryId": "[concat('Microsoft.DataFactory/factories/', parameters('factoryName'))]"
 	},
 	"resources": [
+		{
+			"name": "[concat(parameters('factoryName'), '/LocalhostTermType')]",
+			"type": "Microsoft.DataFactory/factories/linkedServices",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"annotations": [],
+				"type": "SqlServer",
+				"typeProperties": {
+					"connectionString": "[parameters('LocalhostTermType_connectionString')]",
+					"userName": "[parameters('LocalhostTermType_properties_typeProperties_userName')]",
+					"password": {
+						"type": "SecureString",
+						"value": "[parameters('LocalhostTermType_password')]"
+					}
+				},
+				"connectVia": {
+					"referenceName": "LocalintegrationRuntime",
+					"type": "IntegrationRuntimeReference"
+				}
+			},
+			"dependsOn": []
+		},
 		{
 			"name": "[concat(parameters('factoryName'), '/CopyToPortThesaurusDB')]",
 			"type": "Microsoft.DataFactory/factories/pipelines",
@@ -116,7 +150,7 @@
 						},
 						"inputs": [
 							{
-								"referenceName": "SourceDataset_TaxTermType",
+								"referenceName": "TermType",
 								"type": "DatasetReference",
 								"parameters": {}
 							}
@@ -1263,7 +1297,9 @@
 					"tableName": "[[dbo].[TermRelationship]"
 				}
 			},
-			"dependsOn": []
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/linkedServices/LocalhostTermType')]"
+			]
 		},
 		{
 			"name": "[concat(parameters('factoryName'), '/LocalTermsTableOnThesaurus')]",
@@ -1388,7 +1424,9 @@
 				],
 				"typeProperties": {}
 			},
-			"dependsOn": []
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/linkedServices/LocalhostTermType')]"
+			]
 		},
 		{
 			"name": "[concat(parameters('factoryName'), '/SourceRelationFromLocal')]",
@@ -1456,7 +1494,9 @@
 					"tableName": "[[dbo].[TermType]"
 				}
 			},
-			"dependsOn": []
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/linkedServices/LocalhostTermType')]"
+			]
 		},
 		{
 			"name": "[concat(parameters('factoryName'), '/Taxonomy_tst')]",
@@ -1495,107 +1535,9 @@
 					"tableName": "[[dbo].[TermType]"
 				}
 			},
-			"dependsOn": []
-		},
-		{
-			"name": "[concat(parameters('factoryName'), '/df_CreateRelationships')]",
-			"type": "Microsoft.DataFactory/factories/dataflows",
-			"apiVersion": "2018-06-01",
-			"properties": {
-				"type": "MappingDataFlow",
-				"typeProperties": {
-					"sources": [
-						{
-							"dataset": {
-								"referenceName": "GetDimRelationship",
-								"type": "DatasetReference"
-							},
-							"name": "GetDimRelationship",
-							"script": "source(output(\n\t\tXDimID as integer,\n\t\tYDimID as integer,\n\t\tDimKindID as integer\n\t),\n\tallowSchemaDrift: false,\n\tvalidateSchema: false,\n\tformat: 'table') ~> GetDimRelationship",
-							"typeProperties": {}
-						},
-						{
-							"dataset": {
-								"referenceName": "TermRelationship",
-								"type": "DatasetReference"
-							},
-							"name": "TermRelationships",
-							"script": "source(output(\n\t\tRelationshipID as integer,\n\t\tXTermID as integer,\n\t\tXTermDimID as integer,\n\t\tYTermID as integer,\n\t\tYTermDimID as integer,\n\t\tTermKindID as integer\n\t),\n\tallowSchemaDrift: false,\n\tvalidateSchema: false,\n\tformat: 'table') ~> TermRelationships",
-							"typeProperties": {}
-						},
-						{
-							"dataset": {
-								"referenceName": "ds_CreateLookupTable",
-								"type": "DatasetReference"
-							},
-							"name": "LookupTable",
-							"script": "source(output(\n\t\tTermID as integer,\n\t\tDimID as integer\n\t),\n\tallowSchemaDrift: true,\n\tvalidateSchema: false,\n\tquery: 'SELECT Term.TermID, Term.DimID FROM dbo.intermediateTerm Term',\n\tformat: 'query') ~> LookupTable",
-							"typeProperties": {}
-						}
-					],
-					"sinks": [
-						{
-							"dataset": {
-								"referenceName": "TermRelationshipSink",
-								"type": "DatasetReference"
-							},
-							"name": "InsertRelationship",
-							"script": "Filter2 sink(input(\n\t\tRelationshipID as integer,\n\t\tTermXID as integer,\n\t\tTermYID as integer,\n\t\tKindID as integer,\n\t\tDescription as string\n\t),\n\tallowSchemaDrift: false,\n\tvalidateSchema: false,\n\tformat: 'table',\n\tdeletable:false,\n\tinsertable:true,\n\tupdateable:false,\n\tupsertable:false,\n\tmapColumn(\n\t\tTermXID = XTermID,\n\t\tTermYID = YTermID,\n\t\tKindID = DimKindID\n\t)) ~> InsertRelationship"
-						},
-						{
-							"dataset": {
-								"referenceName": "TermRelationshipSink",
-								"type": "DatasetReference"
-							},
-							"name": "DeleteRelationship",
-							"script": "MarkForDeletion sink(input(\n\t\tRelationshipID as integer,\n\t\tTermXID as integer,\n\t\tTermYID as integer,\n\t\tKindID as integer,\n\t\tDescription as string\n\t),\n\tallowSchemaDrift: false,\n\tvalidateSchema: false,\n\tformat: 'table',\n\tdeletable:true,\n\tinsertable:false,\n\tupdateable:false,\n\tupsertable:false,\n\tkeys:['RelationshipID'],\n\tmapColumn(\n\t\tRelationshipID,\n\t\tTermXID = XTermID,\n\t\tTermYID = YTermID,\n\t\tKindID = DimKindID\n\t)) ~> DeleteRelationship"
-						}
-					],
-					"transformations": [
-						{
-							"name": "MergeJoin",
-							"script": "GetDimRelationship, TermRelationships join(XDimID == XTermDimID\n\t&& YDimID == YTermDimID\n\t&& DimKindID == TermKindID,\n\tjoinType:'outer',\n\tbroadcast: 'none')~> MergeJoin"
-						},
-						{
-							"name": "ConditionalSplit",
-							"script": "MergeJoin split(isNull(XTermID),\n\tisNull(XDimID),\n\tdisjoint: true) ~> ConditionalSplit@(Insert, Delete, UpdateDoNothing)"
-						},
-						{
-							"name": "Select1",
-							"script": "LookupXTerm select(mapColumn(\n\t\tYDimID,\n\t\tDimKindID,\n\t\tRelationshipID,\n\t\tXTermID = TermID,\n\t\tYTermID\n\t))~> Select1"
-						},
-						{
-							"name": "Select2",
-							"script": "LookupYTerm select(mapColumn(\n\t\tDimKindID,\n\t\tXTermID,\n\t\tYTermID = TermID\n\t))~> Select2"
-						},
-						{
-							"name": "LookupXTerm",
-							"script": "ConditionalSplit@Insert, LookupTable join(XDimID == DimID,\n\tjoinType:'inner',\n\tbroadcast: 'none')~> LookupXTerm"
-						},
-						{
-							"name": "LookupYTerm",
-							"script": "Select1, LookupTable join(YDimID == DimID,\n\tjoinType:'inner',\n\tbroadcast: 'none')~> LookupYTerm"
-						},
-						{
-							"name": "MarkForInsertion",
-							"script": "Select2 alterRow(insertIf(not(isNull(XTermID)))) ~> MarkForInsertion"
-						},
-						{
-							"name": "SelectForDeletion",
-							"script": "ConditionalSplit@Delete select(mapColumn(\n\t\tXDimID,\n\t\tDimKindID,\n\t\tRelationshipID,\n\t\tXTermID,\n\t\tYTermID\n\t))~> SelectForDeletion"
-						},
-						{
-							"name": "MarkForDeletion",
-							"script": "SelectForDeletion alterRow(deleteIf(isNull(XDimID))) ~> MarkForDeletion"
-						},
-						{
-							"name": "Filter2",
-							"script": "MarkForInsertion filter(not(isNull(YTermID)) && not(isNull(XTermID))) ~> Filter2"
-						}
-					]
-				}
-			},
-			"dependsOn": []
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/linkedServices/LocalhostTermType')]"
+			]
 		}
 	]
 }

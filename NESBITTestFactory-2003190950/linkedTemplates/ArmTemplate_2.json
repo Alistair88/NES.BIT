@@ -15,19 +15,7 @@
 			"type": "secureString",
 			"metadata": "Secure string for 'password' of 'LocalhostSqlServer'"
 		},
-		"LocalhostTermType_connectionString": {
-			"type": "secureString",
-			"metadata": "Secure string for 'connectionString' of 'LocalhostTermType'"
-		},
-		"LocalhostTermType_password": {
-			"type": "secureString",
-			"metadata": "Secure string for 'password' of 'LocalhostTermType'"
-		},
 		"LocalhostSqlServer_properties_typeProperties_userName": {
-			"type": "string",
-			"defaultValue": "NES\\AlistairB"
-		},
-		"LocalhostTermType_properties_typeProperties_userName": {
 			"type": "string",
 			"defaultValue": "NES\\AlistairB"
 		}
@@ -419,6 +407,62 @@
 				],
 				"typeProperties": {
 					"tableName": "[[dbo].[TermSOURCE]"
+				}
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/TermType')]",
+			"type": "Microsoft.DataFactory/factories/datasets",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"description": "TermType table form PortThesaurusDB",
+				"linkedServiceName": {
+					"referenceName": "PortThesaurusDB",
+					"type": "LinkedServiceReference"
+				},
+				"annotations": [],
+				"type": "AzureSqlTable",
+				"schema": [
+					{
+						"name": "TermTypeID",
+						"type": "smallint",
+						"precision": 5,
+						"scale": 255
+					},
+					{
+						"name": "TypeName",
+						"type": "nvarchar",
+						"precision": 255,
+						"scale": 255
+					},
+					{
+						"name": "Description",
+						"type": "nvarchar",
+						"precision": 255,
+						"scale": 255
+					},
+					{
+						"name": "Available",
+						"type": "bit",
+						"precision": 255,
+						"scale": 255
+					},
+					{
+						"name": "DimTable",
+						"type": "nvarchar",
+						"precision": 255,
+						"scale": 255
+					},
+					{
+						"name": "SourceID",
+						"type": "smallint",
+						"precision": 5,
+						"scale": 255
+					}
+				],
+				"typeProperties": {
+					"tableName": "[[dbo].[TermType]"
 				}
 			},
 			"dependsOn": []
@@ -911,29 +955,7 @@
 					}
 				},
 				"connectVia": {
-					"referenceName": "integrationRuntimeLocal",
-					"type": "IntegrationRuntimeReference"
-				}
-			},
-			"dependsOn": []
-		},
-		{
-			"name": "[concat(parameters('factoryName'), '/LocalhostTermType')]",
-			"type": "Microsoft.DataFactory/factories/linkedServices",
-			"apiVersion": "2018-06-01",
-			"properties": {
-				"annotations": [],
-				"type": "SqlServer",
-				"typeProperties": {
-					"connectionString": "[parameters('LocalhostTermType_connectionString')]",
-					"userName": "[parameters('LocalhostTermType_properties_typeProperties_userName')]",
-					"password": {
-						"type": "SecureString",
-						"value": "[parameters('LocalhostTermType_password')]"
-					}
-				},
-				"connectVia": {
-					"referenceName": "integrationRuntimeLocal",
+					"referenceName": "LocalintegrationRuntime",
 					"type": "IntegrationRuntimeReference"
 				}
 			},

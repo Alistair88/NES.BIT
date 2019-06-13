@@ -123,17 +123,8 @@
 					"LocalhostSqlServer_password": {
 						"value": "[parameters('LocalhostSqlServer_password')]"
 					},
-					"LocalhostTermType_connectionString": {
-						"value": "[parameters('LocalhostTermType_connectionString')]"
-					},
-					"LocalhostTermType_password": {
-						"value": "[parameters('LocalhostTermType_password')]"
-					},
 					"LocalhostSqlServer_properties_typeProperties_userName": {
 						"value": "[parameters('LocalhostSqlServer_properties_typeProperties_userName')]"
-					},
-					"LocalhostTermType_properties_typeProperties_userName": {
-						"value": "[parameters('LocalhostTermType_properties_typeProperties_userName')]"
 					}
 				}
 			},
@@ -154,6 +145,15 @@
 				"parameters": {
 					"factoryName": {
 						"value": "[parameters('factoryName')]"
+					},
+					"LocalhostTermType_connectionString": {
+						"value": "[parameters('LocalhostTermType_connectionString')]"
+					},
+					"LocalhostTermType_password": {
+						"value": "[parameters('LocalhostTermType_password')]"
+					},
+					"LocalhostTermType_properties_typeProperties_userName": {
+						"value": "[parameters('LocalhostTermType_properties_typeProperties_userName')]"
 					}
 				}
 			},
@@ -179,6 +179,26 @@
 			},
 			"dependsOn": [
 				"[resourceId('Microsoft.Resources/deployments', 'ArmTemplate_3')]"
+			]
+		},
+		{
+			"name": "ArmTemplate_5",
+			"type": "Microsoft.Resources/deployments",
+			"apiVersion": "2018-02-01",
+			"properties": {
+				"mode": "incremental",
+				"templateLink": {
+					"uri": "[concat(parameters('containerUri'), '/ArmTemplate_5.json', parameters('containerSasToken'))]",
+					"contentVersion": "1.0.0.0"
+				},
+				"parameters": {
+					"factoryName": {
+						"value": "[parameters('factoryName')]"
+					}
+				}
+			},
+			"dependsOn": [
+				"[resourceId('Microsoft.Resources/deployments', 'ArmTemplate_4')]"
 			]
 		}
 	]

@@ -1,0 +1,678 @@
+{
+	"$schema": "http://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+	"contentVersion": "1.0.0.0",
+	"parameters": {
+		"factoryName": {
+			"type": "string",
+			"metadata": "Data Factory Name",
+			"defaultValue": "NESBITTestFactory-2003190950"
+		}
+	},
+	"variables": {
+		"factoryId": "[concat('Microsoft.DataFactory/factories/', parameters('factoryName'))]"
+	},
+	"resources": [
+		{
+			"name": "[concat(parameters('factoryName'), '/pl_LocalToTaxonomySchema')]",
+			"type": "Microsoft.DataFactory/factories/pipelines",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"description": "Copy tables from the local db to the Taxonomy schema in MySampleDatabase on Azure",
+				"activities": [
+					{
+						"name": "LocalToTaxonomySchema",
+						"type": "Copy",
+						"dependsOn": [],
+						"policy": {
+							"timeout": "7.00:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [
+							{
+								"name": "Source",
+								"value": "[[dbo].[Term]"
+							},
+							{
+								"name": "Destination",
+								"value": "[[Taxonomy].[Term]"
+							}
+						],
+						"typeProperties": {
+							"source": {
+								"type": "SqlServerSource"
+							},
+							"sink": {
+								"type": "AzureSqlSink",
+								"writeBatchSize": 10000
+							},
+							"enableStaging": false,
+							"translator": {
+								"type": "TabularTranslator",
+								"mappings": [
+									{
+										"source": {
+											"name": "RelationshipID",
+											"type": "Int32"
+										},
+										"sink": {
+											"name": "RelationshipID",
+											"type": "Int32"
+										}
+									},
+									{
+										"source": {
+											"name": "TermXID",
+											"type": "Int32"
+										},
+										"sink": {
+											"name": "TermXID",
+											"type": "Int32"
+										}
+									},
+									{
+										"source": {
+											"name": "TermYID",
+											"type": "Int32"
+										},
+										"sink": {
+											"name": "TermYID",
+											"type": "Int32"
+										}
+									},
+									{
+										"source": {
+											"name": "KindID",
+											"type": "Int16"
+										},
+										"sink": {
+											"name": "KindID",
+											"type": "Int16"
+										}
+									},
+									{
+										"source": {
+											"name": "Description",
+											"type": "String"
+										},
+										"sink": {
+											"name": "Description",
+											"type": "String"
+										}
+									}
+								]
+							}
+						},
+						"inputs": [
+							{
+								"referenceName": "LocalTaxonomySchema",
+								"type": "DatasetReference",
+								"parameters": {}
+							}
+						],
+						"outputs": [
+							{
+								"referenceName": "AzureTaxonomySchema",
+								"type": "DatasetReference",
+								"parameters": {}
+							}
+						]
+					}
+				],
+				"annotations": []
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/pl_LocalToThesaurusNESSchema')]",
+			"type": "Microsoft.DataFactory/factories/pipelines",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"description": "Copy from local copy of ThesaurusNES to ThesaurusNES schema in MySampleDatabase on Azure",
+				"activities": [
+					{
+						"name": "LocalToThesaurusNESSchema",
+						"description": "Create the Relation table in the ThesaurusNES schema.",
+						"type": "Copy",
+						"dependsOn": [],
+						"policy": {
+							"timeout": "7.00:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [
+							{
+								"name": "Source",
+								"value": "[[dbo].[Term]"
+							},
+							{
+								"name": "Destination",
+								"value": "[[ThesaurusNES].[Term]"
+							}
+						],
+						"typeProperties": {
+							"source": {
+								"type": "SqlServerSource"
+							},
+							"sink": {
+								"type": "AzureSqlSink",
+								"writeBatchSize": 10000
+							},
+							"enableStaging": false,
+							"translator": {
+								"type": "TabularTranslator",
+								"mappings": [
+									{
+										"source": {
+											"name": "id",
+											"type": "Int32"
+										},
+										"sink": {
+											"name": "id",
+											"type": "Int32"
+										}
+									},
+									{
+										"source": {
+											"name": "maintermid",
+											"type": "Int32"
+										},
+										"sink": {
+											"name": "maintermid",
+											"type": "Int32"
+										}
+									},
+									{
+										"source": {
+											"name": "relatedtermid",
+											"type": "Int32"
+										},
+										"sink": {
+											"name": "relatedtermid",
+											"type": "Int32"
+										}
+									},
+									{
+										"source": {
+											"name": "relationship",
+											"type": "Int32"
+										},
+										"sink": {
+											"name": "relationship",
+											"type": "Int32"
+										}
+									}
+								]
+							}
+						},
+						"inputs": [
+							{
+								"referenceName": "LocalThesaurusNESTerm",
+								"type": "DatasetReference",
+								"parameters": {}
+							}
+						],
+						"outputs": [
+							{
+								"referenceName": "ThesaurusNESOnAzure",
+								"type": "DatasetReference",
+								"parameters": {}
+							}
+						]
+					}
+				],
+				"annotations": []
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/pl_RunAllDataflows')]",
+			"type": "Microsoft.DataFactory/factories/pipelines",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"description": "Run all PortThesaurus dataflows",
+				"activities": [
+					{
+						"name": "df_PortThesaurusTerms",
+						"type": "ExecuteDataFlow",
+						"dependsOn": [
+							{
+								"activity": "LocalToDboTermType",
+								"dependencyConditions": [
+									"Succeeded"
+								]
+							},
+							{
+								"activity": "CreateTermTable",
+								"dependencyConditions": [
+									"Succeeded"
+								]
+							}
+						],
+						"policy": {
+							"timeout": "7.00:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"dataflow": {
+								"referenceName": "df_PortThesaurusTerms",
+								"type": "DataFlowReference",
+								"parameters": {},
+								"datasetParameters": {
+									"GetThesaurusTypes": {},
+									"GetTaxonomyTermTypes": {},
+									"InsertSink": {},
+									"UpdateSink": {},
+									"DeleteSink": {},
+									"MarkTermsOfThisTypeAlsoUnavailable": {}
+								}
+							},
+							"staging": {}
+						}
+					},
+					{
+						"name": "df_CreateTerms",
+						"type": "ExecuteDataFlow",
+						"dependsOn": [
+							{
+								"activity": "ExecuteCreateTaxonomyTermsSource",
+								"dependencyConditions": [
+									"Succeeded"
+								]
+							},
+							{
+								"activity": "ExecuteCreateThesaurus_Dim_Source",
+								"dependencyConditions": [
+									"Succeeded"
+								]
+							}
+						],
+						"policy": {
+							"timeout": "7.00:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"dataflow": {
+								"referenceName": "df_CreateTerms_old",
+								"type": "DataFlowReference",
+								"parameters": {},
+								"datasetParameters": {
+									"ThesaurusTerms": {},
+									"TaxonomyTerms": {},
+									"TermTypes": {},
+									"TaxonomyTermsInsert": {},
+									"UpdateTerm": {},
+									"DeleteSink": {}
+								}
+							},
+							"staging": {}
+						}
+					},
+					{
+						"name": "df_CreateRelationships",
+						"type": "ExecuteDataFlow",
+						"dependsOn": [
+							{
+								"activity": "Executepl_CreateTermRelationshipsSource",
+								"dependencyConditions": [
+									"Succeeded"
+								]
+							},
+							{
+								"activity": "ExecutePl_CopyFromLocalToRelation",
+								"dependencyConditions": [
+									"Succeeded"
+								]
+							}
+						],
+						"policy": {
+							"timeout": "7.00:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"dataflow": {
+								"referenceName": "df_CreateRelationships",
+								"type": "DataFlowReference",
+								"parameters": {},
+								"datasetParameters": {
+									"GetDimRelationship": {},
+									"TermRelationships": {},
+									"LookupTable": {},
+									"InsertRelationship": {},
+									"DeleteRelationship": {}
+								}
+							},
+							"staging": {}
+						}
+					},
+					{
+						"name": "df_MergeTurasDimensions",
+						"type": "ExecuteDataFlow",
+						"dependsOn": [
+							{
+								"activity": "ExecutePl_CreateTurasDimensionTables",
+								"dependencyConditions": [
+									"Succeeded"
+								]
+							},
+							{
+								"activity": "ExecutePl_CreateTaxonomyDimensionTerms",
+								"dependencyConditions": [
+									"Succeeded"
+								]
+							}
+						],
+						"policy": {
+							"timeout": "7.00:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"dataflow": {
+								"referenceName": "df_MergeTurasDimensions",
+								"type": "DataFlowReference",
+								"parameters": {},
+								"datasetParameters": {
+									"TurasDimensionTables": {},
+									"TaxonomyDimensionTerms": {},
+									"LookupType": {},
+									"SinkIntoTermTaxonomy": {},
+									"DeleteTerm": {},
+									"UpdateSink": {}
+								}
+							},
+							"staging": {}
+						}
+					},
+					{
+						"name": "df_MergePortfolioDimensions",
+						"type": "ExecuteDataFlow",
+						"dependsOn": [
+							{
+								"activity": "UpdatePortfolioDimensions",
+								"dependencyConditions": [
+									"Succeeded"
+								]
+							},
+							{
+								"activity": "ExecuteCreateTaxonomyDimensionTerms",
+								"dependencyConditions": [
+									"Succeeded"
+								]
+							}
+						],
+						"policy": {
+							"timeout": "7.00:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"dataflow": {
+								"referenceName": "df_MergePortfolioDimensions",
+								"type": "DataFlowReference",
+								"parameters": {},
+								"datasetParameters": {
+									"PortfolioDimensionTables": {},
+									"TaxonomyDimensionTerms": {},
+									"LookupType": {},
+									"SinkIntoTermTaxonomy": {},
+									"DeleteTerm": {},
+									"UpdateSink": {}
+								}
+							},
+							"staging": {}
+						}
+					},
+					{
+						"name": "ExecuteCreateTaxonomyTermsSource",
+						"description": "Create the Taxonomy terms source tab using a query.",
+						"type": "ExecutePipeline",
+						"dependsOn": [
+							{
+								"activity": "df_PortThesaurusTerms",
+								"dependencyConditions": [
+									"Succeeded"
+								]
+							}
+						],
+						"userProperties": [],
+						"typeProperties": {
+							"pipeline": {
+								"referenceName": "pl_CreateTaxonomyTermsSource",
+								"type": "PipelineReference"
+							},
+							"waitOnCompletion": true,
+							"parameters": {}
+						}
+					},
+					{
+						"name": "UpdatePortfolioDimensions",
+						"description": "Update the Portfolio Dimensions table",
+						"type": "ExecutePipeline",
+						"dependsOn": [
+							{
+								"activity": "df_MergeTurasDimensions",
+								"dependencyConditions": [
+									"Succeeded"
+								]
+							}
+						],
+						"userProperties": [],
+						"typeProperties": {
+							"pipeline": {
+								"referenceName": "pl_GetDataFromPortfolioDimensionTables",
+								"type": "PipelineReference"
+							},
+							"waitOnCompletion": true,
+							"parameters": {}
+						}
+					},
+					{
+						"name": "LocalToDboTermType",
+						"description": "Create the TermType table on the Azure DB using a query.",
+						"type": "ExecutePipeline",
+						"dependsOn": [],
+						"userProperties": [],
+						"typeProperties": {
+							"pipeline": {
+								"referenceName": "pl_CopyLocalToTermTypeSource",
+								"type": "PipelineReference"
+							},
+							"waitOnCompletion": true,
+							"parameters": {}
+						}
+					},
+					{
+						"name": "CreateTermTable",
+						"description": "Create the term table using a query.",
+						"type": "ExecutePipeline",
+						"dependsOn": [],
+						"userProperties": [],
+						"typeProperties": {
+							"pipeline": {
+								"referenceName": "pl_LocalToAzureDB",
+								"type": "PipelineReference"
+							},
+							"waitOnCompletion": true,
+							"parameters": {}
+						}
+					},
+					{
+						"name": "Executepl_CreateTermRelationshipsSource",
+						"type": "ExecutePipeline",
+						"dependsOn": [
+							{
+								"activity": "df_CreateTerms",
+								"dependencyConditions": [
+									"Succeeded"
+								]
+							}
+						],
+						"userProperties": [],
+						"typeProperties": {
+							"pipeline": {
+								"referenceName": "pl_CreateTermRelationshipsSource",
+								"type": "PipelineReference"
+							},
+							"waitOnCompletion": true,
+							"parameters": {}
+						}
+					},
+					{
+						"name": "ExecutePl_CreateTurasDimensionTables",
+						"type": "ExecutePipeline",
+						"dependsOn": [
+							{
+								"activity": "df_CreateRelationships",
+								"dependencyConditions": [
+									"Succeeded"
+								]
+							}
+						],
+						"userProperties": [],
+						"typeProperties": {
+							"pipeline": {
+								"referenceName": "pl_CreateTurasDimensionTables",
+								"type": "PipelineReference"
+							},
+							"waitOnCompletion": true,
+							"parameters": {}
+						}
+					},
+					{
+						"name": "ExecutePl_CreateTaxonomyDimensionTerms",
+						"type": "ExecutePipeline",
+						"dependsOn": [
+							{
+								"activity": "df_CreateRelationships",
+								"dependencyConditions": [
+									"Succeeded"
+								]
+							}
+						],
+						"userProperties": [],
+						"typeProperties": {
+							"pipeline": {
+								"referenceName": "pl_CreateTaxonomyDimensionTerms",
+								"type": "PipelineReference"
+							},
+							"waitOnCompletion": true,
+							"parameters": {}
+						}
+					},
+					{
+						"name": "ExecuteRunMergePortfolioDimensions",
+						"type": "ExecutePipeline",
+						"dependsOn": [
+							{
+								"activity": "df_MergePortfolioDimensions",
+								"dependencyConditions": [
+									"Succeeded"
+								]
+							}
+						],
+						"userProperties": [],
+						"typeProperties": {
+							"pipeline": {
+								"referenceName": "RunMergePortfolioDimensions",
+								"type": "PipelineReference"
+							},
+							"waitOnCompletion": true,
+							"parameters": {}
+						}
+					},
+					{
+						"name": "ExecuteCreateTaxonomyDimensionTerms",
+						"type": "ExecutePipeline",
+						"dependsOn": [
+							{
+								"activity": "df_MergeTurasDimensions",
+								"dependencyConditions": [
+									"Succeeded"
+								]
+							}
+						],
+						"userProperties": [],
+						"typeProperties": {
+							"pipeline": {
+								"referenceName": "pl_CreateTaxonomyDimensionTerms",
+								"type": "PipelineReference"
+							},
+							"waitOnCompletion": true,
+							"parameters": {}
+						}
+					},
+					{
+						"name": "ExecuteCreateThesaurus_Dim_Source",
+						"type": "ExecutePipeline",
+						"dependsOn": [
+							{
+								"activity": "df_PortThesaurusTerms",
+								"dependencyConditions": [
+									"Succeeded"
+								]
+							}
+						],
+						"userProperties": [],
+						"typeProperties": {
+							"pipeline": {
+								"referenceName": "CreateThesaurusTerms_Dim_Source",
+								"type": "PipelineReference"
+							},
+							"waitOnCompletion": true,
+							"parameters": {}
+						}
+					},
+					{
+						"name": "ExecutePl_CopyFromLocalToRelation",
+						"type": "ExecutePipeline",
+						"dependsOn": [
+							{
+								"activity": "df_CreateTerms",
+								"dependencyConditions": [
+									"Succeeded"
+								]
+							}
+						],
+						"userProperties": [],
+						"typeProperties": {
+							"pipeline": {
+								"referenceName": "pl_CopyFromLocalToRelation",
+								"type": "PipelineReference"
+							},
+							"waitOnCompletion": true,
+							"parameters": {}
+						}
+					}
+				],
+				"folder": {
+					"name": "RunAllDataflows"
+				},
+				"annotations": []
+			},
+			"dependsOn": []
+		}
+	]
+}
