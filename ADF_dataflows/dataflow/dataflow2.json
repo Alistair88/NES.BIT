@@ -37,7 +37,7 @@
 						"type": "DatasetReference"
 					},
 					"name": "InsertSink",
-					"script": "Select2 sink(input(\n\t\tTermID as integer,\n\t\tDimID as integer,\n\t\tTermCode as string,\n\t\tTermName as string,\n\t\tDescription as string,\n\t\tPreferred as boolean,\n\t\tAvailable as boolean,\n\t\tTermTypeID as integer\n\t),\n\tallowSchemaDrift: false,\n\tvalidateSchema: false,\n\tformat: 'table',\n\tdeletable:false,\n\tinsertable:true,\n\tupdateable:false,\n\tupsertable:false,\n\tmapColumn(\n\t\tDimID = TermTypeID,\n\t\tTermCode,\n\t\tTermName,\n\t\tDescription = TermDescription,\n\t\tPreferred = TermPreferred,\n\t\tAvailable = Select2@Available,\n\t\tTermTypeID\n\t)) ~> InsertSink"
+					"script": "Select2 sink(input(\n\t\tTermID as integer,\n\t\tDimID as integer,\n\t\tTermCode as string,\n\t\tTermName as string,\n\t\tDescription as string,\n\t\tPreferred as boolean,\n\t\tAvailable as boolean,\n\t\tTermTypeID as integer\n\t),\n\tallowSchemaDrift: false,\n\tvalidateSchema: false,\n\tformat: 'table',\n\tdeletable:false,\n\tinsertable:true,\n\tupdateable:false,\n\tupsertable:false,\n\tmapColumn(\n\t\tDimID = TermTypeID,\n\t\tTermCode,\n\t\tTermName,\n\t\tDescription = TermDescription,\n\t\tPreferred = TermPreferred,\n\t\tAvailable,\n\t\tTermTypeID\n\t)) ~> InsertSink"
 				}
 			],
 			"transformations": [
@@ -75,7 +75,7 @@
 				},
 				{
 					"name": "AlterRow1",
-					"script": "DerivedColumn1 alterRow(insertIf(DimID == 1)) ~> AlterRow1"
+					"script": "DerivedColumn1 alterRow(insertIf(DimID==2)) ~> AlterRow1"
 				},
 				{
 					"name": "Select2",
