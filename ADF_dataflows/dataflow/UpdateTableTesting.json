@@ -37,7 +37,7 @@
 						"type": "DatasetReference"
 					},
 					"name": "sink1",
-					"script": "SelectForInsertion sink(input(\n\t\tTermID as integer,\n\t\tDimID as integer,\n\t\tTermCode as string,\n\t\tTermName as string,\n\t\tDescription as string,\n\t\tPreferred as boolean,\n\t\tAvailable as boolean,\n\t\tTermTypeID as integer\n\t),\n\tallowSchemaDrift: false,\n\tvalidateSchema: false,\n\tformat: 'table',\n\tdeletable:false,\n\tinsertable:false,\n\tupdateable:true,\n\tupsertable:false,\n\tkeys:['TermID'],\n\tmapColumn(\n\t\tTermCode,\n\t\tTermName,\n\t\tDescription = TermDescription,\n\t\tPreferred = DimPreferred,\n\t\tDimID,\n\t\tAvailable,\n\t\tTermTypeID\n\t)) ~> sink1"
+					"script": "SelectForInsertion sink(input(\n\t\tTermID as integer,\n\t\tDimID as integer,\n\t\tTermCode as string,\n\t\tTermName as string,\n\t\tDescription as string,\n\t\tPreferred as boolean,\n\t\tAvailable as boolean,\n\t\tTermTypeID as integer\n\t),\n\tallowSchemaDrift: false,\n\tvalidateSchema: false,\n\tformat: 'table',\n\tdeletable:false,\n\tinsertable:false,\n\tupdateable:true,\n\tupsertable:false,\n\tkeys:['DimID'],\n\tmapColumn(\n\t\tTermCode,\n\t\tTermName,\n\t\tDescription = TermDescription,\n\t\tPreferred,\n\t\tDimID,\n\t\tAvailable,\n\t\tTermTypeID\n\t)) ~> sink1"
 				}
 			],
 			"transformations": [
@@ -67,11 +67,11 @@
 				},
 				{
 					"name": "SelectForInsertion",
-					"script": "DerivedColumn1 select(mapColumn(\n\t\tDimPreferred,\n\t\tTermDescription,\n\t\tTermName,\n\t\tTermCode,\n\t\tDimID,\n\t\tAvailable,\n\t\tTermTypeID\n\t))~> SelectForInsertion"
+					"script": "DerivedColumn1 select(mapColumn(\n\t\tDimPreferred,\n\t\tTermDescription,\n\t\tTermName,\n\t\tTermCode,\n\t\tDimID = TermDimID,\n\t\tAvailable,\n\t\tTermTypeID,\n\t\tPreferred = TermPreferred\n\t))~> SelectForInsertion"
 				},
 				{
 					"name": "AlterRow2",
-					"script": "ConvertNameAndDesc alterRow(updateIf(not(isNull(TermID)))) ~> AlterRow2"
+					"script": "ConvertNameAndDesc alterRow(updateIf(TermID == 286337)) ~> AlterRow2"
 				},
 				{
 					"name": "Filter1",
@@ -79,7 +79,7 @@
 				},
 				{
 					"name": "DerivedColumn1",
-					"script": "AlterRow2 derive(DimTypeName = DimName,\n\t\tDimTypeDescription = DimDescription,\n\t\tDimPreferred = DimPreferred) ~> DerivedColumn1"
+					"script": "AlterRow2 derive(DimTypeName = TermName,\n\t\tDimTypeDescription = DimDescription,\n\t\tDimPreferred = DimPreferred) ~> DerivedColumn1"
 				}
 			]
 		}
