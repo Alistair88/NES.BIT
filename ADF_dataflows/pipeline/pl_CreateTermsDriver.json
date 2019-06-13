@@ -14,7 +14,7 @@
 				},
 				"typeProperties": {
 					"dataflow": {
-						"referenceName": "InsertToTableTesting",
+						"referenceName": "DeleteFromTableTesting",
 						"type": "DataFlowReference"
 					}
 				}

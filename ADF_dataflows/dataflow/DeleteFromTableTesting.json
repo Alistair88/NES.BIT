@@ -55,11 +55,7 @@
 				},
 				{
 					"name": "ConditionalSplit1",
-					"script": "Filter1 split(not(isNull(TermID)),\n\tdisjoint: false) ~> ConditionalSplit1@(Update, Default)"
-				},
-				{
-					"name": "ConvertNameAndDesc",
-					"script": "ConditionalSplit1@Update derive(DimTypeName = left(DimName, 80),\n\t\tDimTypeDescription = left(DimDescription, 500)) ~> ConvertNameAndDesc"
+					"script": "Filter1 split(isNull(DimID),\n\tdisjoint: false) ~> ConditionalSplit1@(Delete, Default)"
 				},
 				{
 					"name": "Select1",
@@ -71,15 +67,15 @@
 				},
 				{
 					"name": "AlterRow2",
-					"script": "ConvertNameAndDesc alterRow(updateIf(TermID==286337)) ~> AlterRow2"
+					"script": "ConditionalSplit1@Delete alterRow(updateIf(TermID==286337)) ~> AlterRow2"
 				},
 				{
 					"name": "Filter1",
-					"script": "MergeJoin filter(TermID == 286337) ~> Filter1"
+					"script": "MergeJoin filter(\r\nTermID == 286337) ~> Filter1"
 				},
 				{
 					"name": "DerivedColumn1",
-					"script": "AlterRow2 derive(DimTypeName = TermName,\n\t\tDimTypeDescription = DimDescription,\n\t\tDimPreferred = DimPreferred) ~> DerivedColumn1"
+					"script": "AlterRow2 derive(Available = false()) ~> DerivedColumn1"
 				}
 			]
 		}
