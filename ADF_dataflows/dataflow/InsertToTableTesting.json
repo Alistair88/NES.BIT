@@ -75,7 +75,7 @@
 				},
 				{
 					"name": "AlterRow1",
-					"script": "DerivedColumn1 alterRow(insertIf(DimID==2)) ~> AlterRow1"
+					"script": "DerivedColumn1 alterRow(insertIf(not(isNull(DimID)))) ~> AlterRow1"
 				},
 				{
 					"name": "Select2",
