@@ -107,7 +107,7 @@
 				},
 				{
 					"name": "SelectForUpdate",
-					"script": "DerivedColumn2 select(mapColumn(\n\t\tDimPreferred = DerivedColumn2@DimPreferred,\n\t\tTermDimID,\n\t\tTermCode,\n\t\tTermName,\n\t\tTermDescription,\n\t\tTermPreferred,\n\t\tAvailable,\n\t\tTermTypeID,\n\t\tDimTypeName\n\t))~> SelectForUpdate"
+					"script": "DerivedColumn2 select(mapColumn(\n\t\tDimPreferred,\n\t\tTermDimID,\n\t\tTermCode,\n\t\tTermName,\n\t\tTermDescription,\n\t\tTermPreferred,\n\t\tAvailable,\n\t\tTermTypeID\n\t))~> SelectForUpdate"
 				},
 				{
 					"name": "DerivedColumn1",
