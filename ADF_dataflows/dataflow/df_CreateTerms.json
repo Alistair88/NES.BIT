@@ -75,15 +75,11 @@
 				},
 				{
 					"name": "SetAvailable",
-					"script": "ConditionalSplit1@Insert derive(Available = true()) ~> SetAvailable"
-				},
-				{
-					"name": "ConvertRootToTypeID",
-					"script": "SetAvailable derive(RootTypeID = toShort(RootID)) ~> ConvertRootToTypeID"
+					"script": "ConditionalSplit1@Insert derive(Available = true(),\n\t\tRootTypeID = toShort(RootID)) ~> SetAvailable"
 				},
 				{
 					"name": "LookupTypeWithRootID",
-					"script": "ConvertRootToTypeID, TermTypes join(RootID == TermTypes@TermTypeID,\n\tjoinType:'inner',\n\tbroadcast: 'none')~> LookupTypeWithRootID"
+					"script": "SetAvailable, TermTypes join(RootID == TermTypes@TermTypeID,\n\tjoinType:'inner',\n\tbroadcast: 'none')~> LookupTypeWithRootID"
 				},
 				{
 					"name": "SelectFromLookup",
@@ -91,7 +87,7 @@
 				},
 				{
 					"name": "ConditionsForInsertion",
-					"script": "LookupTypeWithRootID alterRow(insertIf(not(isNull(RootTypeID)))) ~> ConditionsForInsertion"
+					"script": "LookupTypeWithRootID alterRow(insertIf(not(isNull(ConvertRootToTypeID@RootTypeID)))) ~> ConditionsForInsertion"
 				},
 				{
 					"name": "Filter1",
@@ -99,7 +95,7 @@
 				},
 				{
 					"name": "SelectForInsertion",
-					"script": "Filter1 select(mapColumn(\n\t\tDimID,\n\t\tDimPreferred,\n\t\tTermName,\n\t\tRootTypeID,\n\t\tAvailable = TermTypes@Available\n\t))~> SelectForInsertion"
+					"script": "Filter1 select(mapColumn(\n\t\tDimID,\n\t\tDimPreferred,\n\t\tTermName,\n\t\tRootTypeID = ConvertRootToTypeID@RootTypeID,\n\t\tAvailable = TermTypes@Available\n\t))~> SelectForInsertion"
 				},
 				{
 					"name": "ConditionsForDelete",
