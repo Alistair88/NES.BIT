@@ -2,6 +2,9 @@
 	"name": "df_CreateTerms",
 	"properties": {
 		"description": "This is the Create Terms dataflow and include lookups to the TermTypeTable in the Taxonomy db.",
+		"folder": {
+			"name": "CreateTerms"
+		},
 		"type": "MappingDataFlow",
 		"typeProperties": {
 			"sources": [
