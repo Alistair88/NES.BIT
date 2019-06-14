@@ -117,12 +117,8 @@
 					"script": "ConvertNameAndDesc alterRow(updateIf(not(isNull(TermID)))) ~> ConditionsForUpdate"
 				},
 				{
-					"name": "DerivedColumn4",
-					"script": "ConditionsForUpdate derive(DimTypeName = TermName,\n\t\tDimTypeDescription = DimDescription,\n\t\tDimPreferred = false()) ~> DerivedColumn4"
-				},
-				{
 					"name": "SelectForUpdate",
-					"script": "DerivedColumn4 select(mapColumn(\n\t\tDimPreferred,\n\t\tDimID = TermDimID,\n\t\tTermCode,\n\t\tTermName,\n\t\tTermDescription,\n\t\tTermPreferred,\n\t\tAvailable,\n\t\tTermTypeID\n\t))~> SelectForUpdate"
+					"script": "ConditionsForUpdate select(mapColumn(\n\t\tDimPreferred,\n\t\tDimID = TermDimID,\n\t\tTermCode,\n\t\tTermName,\n\t\tTermDescription,\n\t\tTermPreferred,\n\t\tAvailable,\n\t\tTermTypeID\n\t))~> SelectForUpdate"
 				}
 			]
 		}
