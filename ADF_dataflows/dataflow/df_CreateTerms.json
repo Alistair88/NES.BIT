@@ -118,7 +118,11 @@
 				},
 				{
 					"name": "SelectForUpdate",
-					"script": "ConditionsForUpdate select(mapColumn(\n\t\tDimPreferred,\n\t\tDimID = TermDimID,\n\t\tTermCode,\n\t\tTermName,\n\t\tTermDescription,\n\t\tTermPreferred,\n\t\tAvailable,\n\t\tTermTypeID,\n\t\tTermID\n\t))~> SelectForUpdate"
+					"script": "DerivedColumn2 select(mapColumn(\n\t\tDimPreferred = DerivedColumn2@DimPreferred,\n\t\tDimID = TermDimID,\n\t\tTermCode,\n\t\tTermName,\n\t\tTermDescription,\n\t\tTermPreferred,\n\t\tAvailable,\n\t\tTermTypeID,\n\t\tTermID\n\t))~> SelectForUpdate"
+				},
+				{
+					"name": "DerivedColumn2",
+					"script": "ConditionsForUpdate derive(DimTypeName = TermName,\n\t\tDimTypeDescription = DimDescription,\n\t\tDimPreferred = DimPreferred) ~> DerivedColumn2"
 				}
 			]
 		}
