@@ -74,7 +74,7 @@
 				},
 				{
 					"name": "ConditionalSplit1",
-					"script": "Filter1 split(isNull(TermID),\n\tisNull(DimID),\n\tTermID == 286337,\n\tdisjoint: true) ~> ConditionalSplit1@(Insert, Delete, Update, Default)"
+					"script": "MergeJoin split(isNull(TermID),\n\tisNull(DimID),\n\tnot(isNull(TermID)),\n\tdisjoint: true) ~> ConditionalSplit1@(Insert, Delete, Update, Default)"
 				},
 				{
 					"name": "SetAvailable",
@@ -114,19 +114,15 @@
 				},
 				{
 					"name": "ConditionsForUpdate",
-					"script": "ConvertNameAndDesc alterRow(updateIf(TermID==286337)) ~> ConditionsForUpdate"
+					"script": "ConvertNameAndDesc alterRow(updateIf(not(isNull(TermID)))) ~> ConditionsForUpdate"
 				},
 				{
 					"name": "DerivedColumn4",
-					"script": "ConditionsForUpdate derive(DimTypeName = TermName,\n\t\tDimTypeDescription = DimDescription,\n\t\tDimPreferred = DimPreferred) ~> DerivedColumn4"
+					"script": "ConditionsForUpdate derive(DimTypeName = TermName,\n\t\tDimTypeDescription = DimDescription,\n\t\tDimPreferred = false()) ~> DerivedColumn4"
 				},
 				{
 					"name": "SelectForUpdate",
 					"script": "DerivedColumn4 select(mapColumn(\n\t\tDimPreferred,\n\t\tDimID = TermDimID,\n\t\tTermCode,\n\t\tTermName,\n\t\tTermDescription,\n\t\tTermPreferred,\n\t\tAvailable,\n\t\tTermTypeID\n\t))~> SelectForUpdate"
-				},
-				{
-					"name": "Filter1",
-					"script": "MergeJoin filter(TermID == 286337) ~> Filter1"
 				}
 			]
 		}
