@@ -39,7 +39,7 @@
 						"type": "DatasetReference"
 					},
 					"name": "UpdateSink",
-					"script": "MarkForUpdate sink(input(\n\t\tTermID as integer,\n\t\tDimID as integer,\n\t\tTermCode as string,\n\t\tTermName as string,\n\t\tDescription as string,\n\t\tPreferred as boolean,\n\t\tAvailable as boolean,\n\t\tTermTypeID as integer\n\t),\n\tallowSchemaDrift: false,\n\tvalidateSchema: false,\n\tformat: 'table',\n\tdeletable:true,\n\tinsertable:false,\n\tupdateable:false,\n\tupsertable:false,\n\tkeys:['TermID']) ~> UpdateSink"
+					"script": "MarkForUpdate sink(input(\n\t\tTermID as integer,\n\t\tDimID as integer,\n\t\tTermCode as string,\n\t\tTermName as string,\n\t\tDescription as string,\n\t\tPreferred as boolean,\n\t\tAvailable as boolean,\n\t\tTermTypeID as integer\n\t),\n\tallowSchemaDrift: false,\n\tvalidateSchema: false,\n\tformat: 'table',\n\tdeletable:true,\n\tinsertable:false,\n\tupdateable:false,\n\tupsertable:false,\n\tkeys:['TermID'],\n\tmapColumn(\n\t\tTermID,\n\t\tDimID,\n\t\tTermCode,\n\t\tTermName,\n\t\tDescription = TermDescription,\n\t\tPreferred = TermPreferred,\n\t\tAvailable = TermAvailable,\n\t\tTermTypeID\n\t)) ~> UpdateSink"
 				}
 			],
 			"transformations": [
@@ -53,11 +53,15 @@
 				},
 				{
 					"name": "SelectForUpdate",
-					"script": "ConditionalSplit@Update select(mapColumn(\n\t\tDimID,\n\t\tTermID,\n\t\tTermCode,\n\t\tTermName,\n\t\tTermID\n\t))~> SelectForUpdate"
+					"script": "ConditionalSplit@Update select(mapColumn(\n\t\tDimID,\n\t\tTermID,\n\t\tTermCode,\n\t\tTermName,\n\t\tTermDescription,\n\t\tTermPreferred,\n\t\tTermAvailable,\n\t\tTermTypeID\n\t))~> SelectForUpdate"
 				},
 				{
 					"name": "MarkForUpdate",
-					"script": "SelectForUpdate alterRow(updateIf(not(isNull(SelectForUpdate@TermID)))) ~> MarkForUpdate"
+					"script": "DerivedColumn1 alterRow(updateIf(not(isNull(TermID)))) ~> MarkForUpdate"
+				},
+				{
+					"name": "DerivedColumn1",
+					"script": "SelectForUpdate derive(TermPreferred = false()) ~> DerivedColumn1"
 				}
 			]
 		}
