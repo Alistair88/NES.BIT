@@ -71,7 +71,7 @@
 				},
 				{
 					"name": "ConditionalSplit1",
-					"script": "MergeJoin split(isNull(TermID),\n\tisNull(DimID),\n\tdisjoint: true) ~> ConditionalSplit1@(Insert, Delete, Update)"
+					"script": "MergeJoin split(isNull(TermID),\n\tisNull(DimID),\n\tdisjoint: false) ~> ConditionalSplit1@(Insert, Delete, Update)"
 				},
 				{
 					"name": "SetAvailable",
@@ -103,7 +103,7 @@
 				},
 				{
 					"name": "ConvertNameAndDesc",
-					"script": "Filter1 derive(DimTypeName = left(DimName, 80),\n\t\tDimTypeDescription = left(DimDescription, 500)) ~> ConvertNameAndDesc"
+					"script": "ConditionalSplit1@Update derive(DimTypeName = left(DimName, 80),\n\t\tDimTypeDescription = left(DimDescription, 500)) ~> ConvertNameAndDesc"
 				},
 				{
 					"name": "SelectForUpdate",
@@ -120,10 +120,6 @@
 				{
 					"name": "DerivedColumn2",
 					"script": "ConditionsForUpdate derive(DimTypeName = TermName,\n\t\tDimTypeDescription = DimDescription,\n\t\tDimPreferred = DimPreferred) ~> DerivedColumn2"
-				},
-				{
-					"name": "Filter1",
-					"script": "ConditionalSplit1@Update filter(not(isNull(TermID))) ~> Filter1"
 				}
 			]
 		}
