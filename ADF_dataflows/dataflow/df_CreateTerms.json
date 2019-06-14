@@ -53,7 +53,7 @@
 						"type": "DatasetReference"
 					},
 					"name": "UpdateTerm",
-					"script": "SelectForUpdate sink(input(\n\t\tTermID as integer,\n\t\tDimID as integer,\n\t\tTermCode as string,\n\t\tTermName as string,\n\t\tDescription as string,\n\t\tPreferred as boolean,\n\t\tAvailable as boolean,\n\t\tTermTypeID as integer\n\t),\n\tallowSchemaDrift: false,\n\tvalidateSchema: false,\n\tformat: 'table',\n\tdeletable:false,\n\tinsertable:false,\n\tupdateable:true,\n\tupsertable:false,\n\tkeys:['TermDimID'],\n\tmapColumn(\n\t\tDimID,\n\t\tTermCode,\n\t\tTermName,\n\t\tDescription = TermDescription,\n\t\tPreferred = DimPreferred,\n\t\tAvailable,\n\t\tTermTypeID\n\t)) ~> UpdateTerm"
+					"script": "SelectForUpdate sink(input(\n\t\tTermID as integer,\n\t\tDimID as integer,\n\t\tTermCode as string,\n\t\tTermName as string,\n\t\tDescription as string,\n\t\tPreferred as boolean,\n\t\tAvailable as boolean,\n\t\tTermTypeID as integer\n\t),\n\tallowSchemaDrift: false,\n\tvalidateSchema: false,\n\tformat: 'table',\n\tdeletable:false,\n\tinsertable:false,\n\tupdateable:true,\n\tupsertable:false,\n\tkeys:['DimID'],\n\tmapColumn(\n\t\tDimID,\n\t\tTermCode,\n\t\tTermName,\n\t\tDescription = TermDescription,\n\t\tPreferred = DimPreferred,\n\t\tAvailable,\n\t\tTermTypeID\n\t)) ~> UpdateTerm"
 				}
 			],
 			"transformations": [
