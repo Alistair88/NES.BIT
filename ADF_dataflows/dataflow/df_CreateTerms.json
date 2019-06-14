@@ -53,7 +53,7 @@
 						"type": "DatasetReference"
 					},
 					"name": "UpdateTerm",
-					"script": "ConditionsForUpdate sink(input(\n\t\tTermID as integer,\n\t\tDimID as integer,\n\t\tTermCode as string,\n\t\tTermName as string,\n\t\tDescription as string,\n\t\tPreferred as boolean,\n\t\tAvailable as boolean,\n\t\tTermTypeID as integer\n\t),\n\tallowSchemaDrift: false,\n\tvalidateSchema: false,\n\tformat: 'table',\n\tdeletable:false,\n\tinsertable:false,\n\tupdateable:true,\n\tupsertable:false,\n\tkeys:['TermID'],\n\tmapColumn(\n\t\tTermID,\n\t\tDimID,\n\t\tTermCode,\n\t\tTermName,\n\t\tDescription = TermDescription,\n\t\tPreferred = DimPreferred\n\t)) ~> UpdateTerm"
+					"script": "SelectForUpdate sink(input(\n\t\tTermID as integer,\n\t\tDimID as integer,\n\t\tTermCode as string,\n\t\tTermName as string,\n\t\tDescription as string,\n\t\tPreferred as boolean,\n\t\tAvailable as boolean,\n\t\tTermTypeID as integer\n\t),\n\tallowSchemaDrift: false,\n\tvalidateSchema: false,\n\tformat: 'table',\n\tdeletable:false,\n\tinsertable:false,\n\tupdateable:true,\n\tupsertable:false,\n\tkeys:['TermID'],\n\tmapColumn(\n\t\tDimID = TermDimID,\n\t\tTermCode,\n\t\tTermName,\n\t\tDescription = TermDescription,\n\t\tPreferred = TermPreferred,\n\t\tAvailable,\n\t\tTermTypeID\n\t)) ~> UpdateTerm"
 				}
 			],
 			"transformations": [
@@ -103,23 +103,27 @@
 				},
 				{
 					"name": "ConvertNameAndDesc",
-					"script": "ConditionalSplit1@Update derive(DimTypeName = left(DimName, 80),\n\t\tDimTypeDescription = left(DimDescription, 500)) ~> ConvertNameAndDesc"
+					"script": "Filter1 derive(DimTypeName = left(DimName, 80),\n\t\tDimTypeDescription = left(DimDescription, 500)) ~> ConvertNameAndDesc"
 				},
 				{
 					"name": "SelectForUpdate",
-					"script": "ConvertNameAndDesc select(mapColumn(\n\t\tDimID,\n\t\tDimPreferred,\n\t\tTermID,\n\t\tTermCode,\n\t\tTermName,\n\t\tTermDescription\n\t))~> SelectForUpdate"
-				},
-				{
-					"name": "Filter2",
-					"script": "SelectForUpdate filter(TermID == 286337) ~> Filter2"
-				},
-				{
-					"name": "ConditionsForUpdate",
-					"script": "Filter2 alterRow(updateIf(not(isNull(TermID)))) ~> ConditionsForUpdate"
+					"script": "DerivedColumn2 select(mapColumn(\n\t\tDimPreferred = DerivedColumn2@DimPreferred,\n\t\tTermDimID,\n\t\tTermCode,\n\t\tTermName,\n\t\tTermDescription,\n\t\tTermPreferred,\n\t\tAvailable,\n\t\tTermTypeID,\n\t\tDimTypeName\n\t))~> SelectForUpdate"
 				},
 				{
 					"name": "DerivedColumn1",
 					"script": "ConditionsForDelete derive(Available = false()) ~> DerivedColumn1"
+				},
+				{
+					"name": "ConditionsForUpdate",
+					"script": "ConvertNameAndDesc alterRow(updateIf(TermID==286337)) ~> ConditionsForUpdate"
+				},
+				{
+					"name": "DerivedColumn2",
+					"script": "ConditionsForUpdate derive(DimTypeName = TermName,\n\t\tDimTypeDescription = DimDescription,\n\t\tDimPreferred = DimPreferred) ~> DerivedColumn2"
+				},
+				{
+					"name": "Filter1",
+					"script": "ConditionalSplit1@Update filter(not(isNull(TermID))) ~> Filter1"
 				}
 			]
 		}
