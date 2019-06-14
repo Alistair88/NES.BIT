@@ -11,15 +11,15 @@
 						"type": "DatasetReference"
 					},
 					"name": "ThesaurusTerms",
-					"script": "source(output(\n\t\tDimID as integer,\n\t\tDimName as string,\n\t\tRootID as integer,\n\t\tDimPreferred as boolean,\n\t\tDimSourceID as integer,\n\t\tDimDescription as string\n\t),\n\tallowSchemaDrift: false,\n\tvalidateSchema: false,\n\tformat: 'table') ~> ThesaurusTerms"
+					"script": "source(output(\n\t\tDimID as integer,\n\t\tDimName as string,\n\t\tRootID as integer,\n\t\tDimPreferred as boolean,\n\t\tDimSourceID as integer,\n\t\tDimDescription as string\n\t),\n\tallowSchemaDrift: false,\n\tvalidateSchema: false,\n\tisolationLevel: 'READ_UNCOMMITTED',\n\tformat: 'table') ~> ThesaurusTerms"
 				},
 				{
 					"dataset": {
-						"referenceName": "DestTaxonomyTermsSOURCE",
+						"referenceName": "TaxonomyTerms",
 						"type": "DatasetReference"
 					},
 					"name": "TaxonomyTerms",
-					"script": "source(output(\n\t\tTermID as integer,\n\t\tTermDimID as integer,\n\t\tTermCode as string,\n\t\tTermName as string,\n\t\tTermDescription as string,\n\t\tTermPreferred as boolean,\n\t\tTermTypeID as integer\n\t),\n\tallowSchemaDrift: false,\n\tvalidateSchema: false,\n\tformat: 'table') ~> TaxonomyTerms"
+					"script": "source(output(\n\t\tTermID as integer,\n\t\tTermDimID as integer,\n\t\tTermCode as string,\n\t\tTermName as string,\n\t\tTermDescription as string,\n\t\tTermPreferred as boolean,\n\t\tAvailable as boolean,\n\t\tTermTypeID as integer\n\t),\n\tallowSchemaDrift: false,\n\tvalidateSchema: false,\n\tisolationLevel: 'READ_UNCOMMITTED',\n\tformat: 'table') ~> TaxonomyTerms"
 				},
 				{
 					"dataset": {
@@ -27,7 +27,7 @@
 						"type": "DatasetReference"
 					},
 					"name": "TermTypes",
-					"script": "source(output(\n\t\tTermTypeID as integer,\n\t\tTypeName as string,\n\t\tDescription as string,\n\t\tAvailable as boolean,\n\t\tDimTable as string,\n\t\tSourceID as integer\n\t),\n\tallowSchemaDrift: false,\n\tvalidateSchema: false,\n\tformat: 'table') ~> TermTypes"
+					"script": "source(output(\n\t\tTermTypeID as integer,\n\t\tTypeName as string,\n\t\tDescription as string,\n\t\tAvailable as boolean,\n\t\tDimTable as string,\n\t\tSourceID as integer\n\t),\n\tallowSchemaDrift: false,\n\tvalidateSchema: false,\n\tisolationLevel: 'READ_UNCOMMITTED',\n\tformat: 'table') ~> TermTypes"
 				}
 			],
 			"sinks": [
@@ -87,7 +87,7 @@
 				},
 				{
 					"name": "SelectFromLookup",
-					"script": "LookupTypesWithDimID select(mapColumn(\n\t\tDimID,\n\t\tRootID,\n\t\tDimPreferred,\n\t\tDimDescription,\n\t\tTermTypeID = PossibleTypeID,\n\t\tDimName,\n\t\tSourceID\n\t))~> SelectFromLookup"
+					"script": "LookupTypesWithDimID select(mapColumn(\n\t\tDimID,\n\t\tRootID,\n\t\tDimPreferred,\n\t\tDimDescription,\n\t\tPossibleTypeID,\n\t\tDimName,\n\t\tDimSourceID\n\t))~> SelectFromLookup"
 				},
 				{
 					"name": "ConditionsForInsertion",
