@@ -13,6 +13,196 @@
 	},
 	"resources": [
 		{
+			"name": "[concat(parameters('factoryName'), '/pl_CreateRelationshipsDriver')]",
+			"type": "Microsoft.DataFactory/factories/pipelines",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"activities": [
+					{
+						"name": "CreateRelationships",
+						"type": "ExecuteDataFlow",
+						"dependsOn": [],
+						"policy": {
+							"timeout": "7.00:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"dataflow": {
+								"referenceName": "df_CreateRelationships",
+								"type": "DataFlowReference",
+								"parameters": {},
+								"datasetParameters": {
+									"GetDimRelationship": {},
+									"TermRelationships": {},
+									"LookupTable": {},
+									"InsertRelationship": {},
+									"DeleteRelationship": {}
+								}
+							},
+							"staging": {}
+						}
+					}
+				],
+				"folder": {
+					"name": "CreateRelationships"
+				},
+				"annotations": []
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/pl_CreateTermsDriver')]",
+			"type": "Microsoft.DataFactory/factories/pipelines",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"activities": [
+					{
+						"name": "CreateTerms",
+						"type": "ExecuteDataFlow",
+						"dependsOn": [],
+						"policy": {
+							"timeout": "7.00:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"dataflow": {
+								"referenceName": "CreateTermsSwappedBranches",
+								"type": "DataFlowReference",
+								"parameters": {},
+								"datasetParameters": {
+									"ThesaurusTerms": {},
+									"TaxonomyTerms": {},
+									"TermTypes": {},
+									"TaxonomyTermsInsert": {},
+									"DeleteSink": {},
+									"UpdateTerm": {}
+								}
+							},
+							"staging": {}
+						}
+					}
+				],
+				"folder": {
+					"name": "CreateTerms"
+				},
+				"annotations": []
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/pl_DataFlowDriver')]",
+			"type": "Microsoft.DataFactory/factories/pipelines",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"activities": [
+					{
+						"name": "PortThesaurusTerms",
+						"type": "ExecuteDataFlow",
+						"dependsOn": [],
+						"policy": {
+							"timeout": "7.00:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"dataflow": {
+								"referenceName": "df_PortThesaurusTerms",
+								"type": "DataFlowReference",
+								"parameters": {},
+								"datasetParameters": {
+									"GetThesaurusTypes": {},
+									"GetTaxonomyTermTypes": {},
+									"InsertSink": {},
+									"UpdateSink": {},
+									"DeleteSink": {},
+									"MarkTermsOfThisTypeAlsoUnavailable": {}
+								}
+							},
+							"staging": {}
+						}
+					}
+				],
+				"folder": {
+					"name": "PortThesaurus"
+				},
+				"annotations": []
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/pl_LocalToAzureDB')]",
+			"type": "Microsoft.DataFactory/factories/pipelines",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"description": "Copy the term table from local host to an Azure DB",
+				"activities": [
+					{
+						"name": "LoadFromTermTable",
+						"description": "Load from local machine to Azure db",
+						"type": "Copy",
+						"dependsOn": [],
+						"policy": {
+							"timeout": "7.00:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"source": {
+								"type": "SqlSource",
+								"sqlReaderQuery": "Select \n\t\tDISTINCT CAST(T.ID AS SMALLINT) DimID, \n\t\tCAST(T.name AS NVARCHAR(200)) DimName, \n\t\tCAST(T.scope + ' ' + T.additionalnotes AS NVARCHAR(2000)) DimDescription \nFROM \n\t\tdbo.Term T\n  LEFT OUTER JOIN \n\t\tdbo.Relation RB on RB.maintermid = T.id AND RB.Relationship =3\n  LEFT OUTER JOIN \n\t\tdbo.Relation RN on RN.maintermid = T.id AND RN.Relationship =4\n  WHERE \n\t\tRB.id IS NULL AND RN.id IS NOT NULL\n  ORDER BY \n\t\tDimID"
+							},
+							"sink": {
+								"type": "SqlSink",
+								"writeBatchSize": 10000
+							},
+							"enableStaging": false,
+							"translator": {
+								"type": "TabularTranslator",
+								"columnMappings": {
+									"DimID": "DimID",
+									"DimName": "DimName",
+									"DimDescription": "DimDescription"
+								}
+							}
+						},
+						"inputs": [
+							{
+								"referenceName": "Localhost",
+								"type": "DatasetReference",
+								"parameters": {}
+							}
+						],
+						"outputs": [
+							{
+								"referenceName": "AzureSqlTermTable",
+								"type": "DatasetReference",
+								"parameters": {}
+							}
+						]
+					}
+				],
+				"folder": {
+					"name": "PortThesaurus"
+				},
+				"annotations": []
+			},
+			"dependsOn": []
+		},
+		{
 			"name": "[concat(parameters('factoryName'), '/pl_LocalToTaxonomySchema')]",
 			"type": "Microsoft.DataFactory/factories/pipelines",
 			"apiVersion": "2018-06-01",
@@ -672,7 +862,9 @@
 				},
 				"annotations": []
 			},
-			"dependsOn": []
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/pipelines/pl_LocalToAzureDB')]"
+			]
 		}
 	]
 }
