@@ -3,7 +3,7 @@
 	"properties": {
 		"description": "Create the TurasTimsLookup table",
 		"linkedServiceName": {
-			"referenceName": "WarehouseAlphaTest",
+			"referenceName": "PortThesaurusDB",
 			"type": "LinkedServiceReference"
 		},
 		"folder": {
@@ -25,7 +25,7 @@
 			}
 		],
 		"typeProperties": {
-			"tableName": "[dbo].[TurasDimsLookup]"
+			"tableName": "[dbo].[PortfolioDimsLookup]"
 		}
 	},
 	"type": "Microsoft.DataFactory/factories/datasets"
