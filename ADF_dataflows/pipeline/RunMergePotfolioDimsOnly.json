@@ -14,7 +14,7 @@
 				},
 				"typeProperties": {
 					"dataflow": {
-						"referenceName": "df_MergePortfolioDimensions",
+						"referenceName": "PortDimsUpdateBranchTesting",
 						"type": "DataFlowReference"
 					}
 				}
