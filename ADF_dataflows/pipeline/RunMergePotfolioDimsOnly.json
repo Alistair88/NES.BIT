@@ -14,7 +14,7 @@
 				},
 				"typeProperties": {
 					"dataflow": {
-						"referenceName": "PortDimsUpdateBranchTesting",
+						"referenceName": "insertBranchTesting",
 						"type": "DataFlowReference"
 					}
 				}
