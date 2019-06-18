@@ -13,45 +13,6 @@
 	},
 	"resources": [
 		{
-			"name": "[concat(parameters('factoryName'), '/Taxonomy_tst')]",
-			"type": "Microsoft.DataFactory/factories/datasets",
-			"apiVersion": "2018-06-01",
-			"properties": {
-				"linkedServiceName": {
-					"referenceName": "LocalhostTermType",
-					"type": "LinkedServiceReference"
-				},
-				"annotations": [],
-				"type": "SqlServerTable",
-				"structure": [
-					{
-						"name": "TermTypeID",
-						"type": "Int16"
-					},
-					{
-						"name": "TypeName",
-						"type": "String"
-					},
-					{
-						"name": "Description",
-						"type": "String"
-					},
-					{
-						"name": "Available",
-						"type": "Boolean"
-					},
-					{
-						"name": "SourceID",
-						"type": "Int16"
-					}
-				],
-				"typeProperties": {
-					"tableName": "[[dbo].[TermType]"
-				}
-			},
-			"dependsOn": []
-		},
-		{
 			"name": "[concat(parameters('factoryName'), '/CreateTermsSwappedBranches')]",
 			"type": "Microsoft.DataFactory/factories/dataflows",
 			"apiVersion": "2018-06-01",
@@ -120,7 +81,7 @@
 					"transformations": [
 						{
 							"name": "ConvertDimIDToTypeID",
-							"script": "ThesaurusTerms derive(PossibleTypeID = toShort(DimID)) ~> ConvertDimIDToTypeID"
+							"script": "Filter1 derive(PossibleTypeID = toShort(DimID)) ~> ConvertDimIDToTypeID"
 						},
 						{
 							"name": "LookupTypesWithDimID",
@@ -132,19 +93,19 @@
 						},
 						{
 							"name": "ConditionalSplit1",
-							"script": "MergeJoin split(isNull(DimID),\n\tnot(isNull(DimID)),\n\tdisjoint: true) ~> ConditionalSplit1@(Delete, Update, Insert)"
-						},
-						{
-							"name": "ConditionsForDelete",
-							"script": "ConditionalSplit1@Delete alterRow(updateIf(TermID==286337)) ~> ConditionsForDelete"
+							"script": "Select1 split(isNull(DimID),\n\tnot(isNull(TermID)) && not(isNull(DimID)),\n\tdisjoint: true) ~> ConditionalSplit1@(Delete, Update, Insert)"
 						},
 						{
 							"name": "SelectForDelete",
-							"script": "DerivedColumn1 select(mapColumn(\n\t\tDimPreferred,\n\t\tDimID = TermDimID,\n\t\tTermCode,\n\t\tTermName,\n\t\tTermDescription,\n\t\tTermPreferred,\n\t\tAvailable,\n\t\tTermTypeID\n\t))~> SelectForDelete"
+							"script": "ConditionsForDelete select(mapColumn(\n\t\tDimPreferred,\n\t\tDimID,\n\t\tTermCode,\n\t\tTermName,\n\t\tTermDescription,\n\t\tTermPreferred,\n\t\tAvailable,\n\t\tTermTypeID\n\t))~> SelectForDelete"
 						},
 						{
-							"name": "DerivedColumn1",
-							"script": "ConditionsForDelete derive(Available = false()) ~> DerivedColumn1"
+							"name": "AddAvailableCol",
+							"script": "ConditionalSplit1@Delete derive(Available = false()) ~> AddAvailableCol"
+						},
+						{
+							"name": "ConditionsForDelete",
+							"script": "AddAvailableCol alterRow(updateIf(isNull(DimID))) ~> ConditionsForDelete"
 						},
 						{
 							"name": "ConvertNameAndDesc",
@@ -152,15 +113,11 @@
 						},
 						{
 							"name": "ConditionsForUpdate",
-							"script": "ConvertNameAndDesc alterRow(updateIf(not(isNull(TermID)))) ~> ConditionsForUpdate"
+							"script": "ConvertNameAndDesc alterRow(updateIf(not(isNull(TermID))&&not(isNull(TermDimID)))) ~> ConditionsForUpdate"
 						},
 						{
 							"name": "SelectForUpdate",
-							"script": "DerivedColumn2 select(mapColumn(\n\t\tDimPreferred,\n\t\tDimID = TermDimID,\n\t\tTermCode,\n\t\tTermName,\n\t\tTermDescription,\n\t\tTermPreferred,\n\t\tAvailable,\n\t\tTermTypeID,\n\t\tTermID\n\t))~> SelectForUpdate"
-						},
-						{
-							"name": "DerivedColumn2",
-							"script": "ConditionsForUpdate derive(DimTypeName = TermName,\n\t\tDimTypeDescription = DimDescription,\n\t\tDimPreferred = DimPreferred) ~> DerivedColumn2"
+							"script": "ConditionsForUpdate select(mapColumn(\n\t\tDimPreferred,\n\t\tDimID,\n\t\tTermCode,\n\t\tTermName = DimName,\n\t\tTermDescription = DimDescription,\n\t\tTermPreferred = DimPreferred,\n\t\tAvailable,\n\t\tTermTypeID = PossibleTypeID,\n\t\tTermID\n\t))~> SelectForUpdate"
 						},
 						{
 							"name": "TermIdIsNull",
@@ -176,7 +133,7 @@
 						},
 						{
 							"name": "SelectFromLookup",
-							"script": "LookupTypesWithDimID select(mapColumn(\n\t\tDimID,\n\t\tRootID,\n\t\tDimPreferred,\n\t\tDimDescription,\n\t\tPossibleTypeID,\n\t\tDimName,\n\t\tDimSourceID\n\t))~> SelectFromLookup"
+							"script": "LookupTypesWithDimID select(mapColumn(\n\t\tDimID,\n\t\tRootID,\n\t\tDimPreferred,\n\t\tDimDescription,\n\t\tPossibleTypeID,\n\t\tDimName,\n\t\tDimSourceID,\n\t\tAvailable\n\t))~> SelectFromLookup"
 						},
 						{
 							"name": "ConditionsForInsertion",
@@ -185,6 +142,14 @@
 						{
 							"name": "SelectForInsertion",
 							"script": "ConditionsForInsertion select(mapColumn(\n\t\tDimPreferred,\n\t\tDimDescription,\n\t\tPossibleTypeID,\n\t\tDimName,\n\t\tTermCode,\n\t\tAvailable = SetAvailable@Available,\n\t\tTermTypeID = PossibleTypeID\n\t))~> SelectForInsertion"
+						},
+						{
+							"name": "Filter1",
+							"script": "ThesaurusTerms filter(DimID == 11949) ~> Filter1"
+						},
+						{
+							"name": "Select1",
+							"script": "MergeJoin select(mapColumn(\n\t\tDimID,\n\t\tRootID,\n\t\tDimPreferred,\n\t\tDimDescription,\n\t\tPossibleTypeID,\n\t\tDimName,\n\t\tDimSourceID,\n\t\tTermID,\n\t\tTermDimID,\n\t\tTermCode,\n\t\tTermName,\n\t\tTermDescription,\n\t\tTermPreferred,\n\t\tAvailable = TaxonomyTerms@Available,\n\t\tTermTypeID\n\t))~> Select1"
 						}
 					]
 				}
@@ -973,6 +938,121 @@
 			"dependsOn": []
 		},
 		{
+			"name": "[concat(parameters('factoryName'), '/df_MergePortfolioDimensions')]",
+			"type": "Microsoft.DataFactory/factories/dataflows",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"folder": {
+					"name": "MergePortfolioDims"
+				},
+				"type": "MappingDataFlow",
+				"typeProperties": {
+					"sources": [
+						{
+							"dataset": {
+								"referenceName": "PortfolioDimensionTables",
+								"type": "DatasetReference"
+							},
+							"name": "PortfolioDimensionTables",
+							"typeProperties": {},
+							"script": "source(output(\n\t\tDimTableName as string,\n\t\tDimID as integer,\n\t\tDimCode as string,\n\t\tDimName as string,\n\t\tDimDescription as string,\n\t\tDimActive as boolean\n\t),\n\tallowSchemaDrift: false,\n\tvalidateSchema: false,\n\tisolationLevel: 'READ_UNCOMMITTED',\n\tformat: 'table') ~> PortfolioDimensionTables"
+						},
+						{
+							"dataset": {
+								"referenceName": "TaxonomyDimensionTerms",
+								"type": "DatasetReference"
+							},
+							"name": "TaxonomyDimensionTerms",
+							"typeProperties": {},
+							"script": "source(output(\n\t\tTermDimTable as string,\n\t\tTermID as integer,\n\t\tTermDimID as long,\n\t\tTermCode as string,\n\t\tTermName as string,\n\t\tTermDescription as string,\n\t\tTermPreferred as boolean,\n\t\tTermAvailable as boolean,\n\t\tTermTypeID as integer\n\t),\n\tallowSchemaDrift: false,\n\tvalidateSchema: false,\n\tisolationLevel: 'READ_UNCOMMITTED',\n\tformat: 'table') ~> TaxonomyDimensionTerms"
+						},
+						{
+							"dataset": {
+								"referenceName": "CreateTurasDimsLookup",
+								"type": "DatasetReference"
+							},
+							"name": "LookupType",
+							"typeProperties": {},
+							"script": "source(output(\n\t\tTermTypeID as integer,\n\t\tDimTable as string\n\t),\n\tallowSchemaDrift: false,\n\tvalidateSchema: false,\n\tisolationLevel: 'READ_UNCOMMITTED',\n\tformat: 'table') ~> LookupType"
+						}
+					],
+					"sinks": [
+						{
+							"dataset": {
+								"referenceName": "IntermediateTermTable",
+								"type": "DatasetReference"
+							},
+							"name": "SinkIntoTermTaxonomy",
+							"script": "RemoveNullTermTypeID sink(input(\n\t\tTermID as integer,\n\t\tDimID as integer,\n\t\tTermCode as string,\n\t\tTermName as string,\n\t\tDescription as string,\n\t\tPreferred as boolean,\n\t\tAvailable as boolean,\n\t\tTermTypeID as integer\n\t),\n\tallowSchemaDrift: false,\n\tvalidateSchema: false,\n\tformat: 'table',\n\tdeletable:false,\n\tinsertable:true,\n\tupdateable:false,\n\tupsertable:false,\n\tmapColumn(\n\t\tDimID,\n\t\tTermCode = DimCode,\n\t\tTermName = DimName,\n\t\tDescription = DimDescription,\n\t\tPreferred,\n\t\tAvailable = DimActive,\n\t\tTermTypeID = TermTypeID_LookUp\n\t)) ~> SinkIntoTermTaxonomy"
+						},
+						{
+							"dataset": {
+								"referenceName": "IntermediateTermTable",
+								"type": "DatasetReference"
+							},
+							"name": "DeleteTerm",
+							"script": "MarkForDeletion sink(input(\n\t\tTermID as integer,\n\t\tDimID as integer,\n\t\tTermCode as string,\n\t\tTermName as string,\n\t\tDescription as string,\n\t\tPreferred as boolean,\n\t\tAvailable as boolean,\n\t\tTermTypeID as integer\n\t),\n\tallowSchemaDrift: false,\n\tvalidateSchema: false,\n\tformat: 'table',\n\tdeletable:true,\n\tinsertable:false,\n\tupdateable:false,\n\tupsertable:false,\n\tkeys:['TermID']) ~> DeleteTerm"
+						},
+						{
+							"dataset": {
+								"referenceName": "IntermediateTermTable",
+								"type": "DatasetReference"
+							},
+							"name": "UpdateSink",
+							"script": "MarkForUpdate sink(input(\n\t\tTermID as integer,\n\t\tDimID as integer,\n\t\tTermCode as string,\n\t\tTermName as string,\n\t\tDescription as string,\n\t\tPreferred as boolean,\n\t\tAvailable as boolean,\n\t\tTermTypeID as integer\n\t),\n\tallowSchemaDrift: false,\n\tvalidateSchema: false,\n\tformat: 'table',\n\tdeletable:false,\n\tinsertable:false,\n\tupdateable:true,\n\tupsertable:false,\n\tkeys:['TermID'],\n\tmapColumn(\n\t\tTermID,\n\t\tTermCode,\n\t\tTermName,\n\t\tDescription = TermDescription,\n\t\tAvailable = TermAvailable,\n\t\tDimID,\n\t\tPreferred = TermPreferred,\n\t\tTermTypeID\n\t)) ~> UpdateSink"
+						}
+					],
+					"transformations": [
+						{
+							"name": "MergeJoin",
+							"script": "PortfolioDimensionTables, TaxonomyDimensionTerms join(DimID == TermDimID\n\t&& DimTableName == TermDimTable,\n\tjoinType:'outer',\n\tbroadcast: 'none')~> MergeJoin"
+						},
+						{
+							"name": "ConditionalSplit",
+							"script": "MergeJoin split(isNull(TermID),\n\tisNull(DimID),\n\tdisjoint: true) ~> ConditionalSplit@(Insert, Delete, Update)"
+						},
+						{
+							"name": "DerivedColumn",
+							"script": "ConditionalSplit@Insert derive(Preferred = true()) ~> DerivedColumn"
+						},
+						{
+							"name": "Lookup1",
+							"script": "DerivedColumn, LookupType lookup(DimTableName == DimTable,\n\tbroadcast: 'none')~> Lookup1"
+						},
+						{
+							"name": "SelectForInsertion",
+							"script": "Lookup1 select(mapColumn(\n\t\tDimID,\n\t\tDimCode,\n\t\tDimName,\n\t\tDimDescription,\n\t\tDimActive,\n\t\tTermID,\n\t\tPreferred,\n\t\tTermTypeID_LookUp = LookupType@TermTypeID\n\t))~> SelectForInsertion"
+						},
+						{
+							"name": "SelectForDeletion",
+							"script": "ConditionalSplit@Delete select(mapColumn(\n\t\tDimID,\n\t\tTermID,\n\t\tTermCode,\n\t\tTermName\n\t))~> SelectForDeletion"
+						},
+						{
+							"name": "MarkForDeletion",
+							"script": "SelectForDeletion alterRow(deleteIf(isNull(DimID))) ~> MarkForDeletion"
+						},
+						{
+							"name": "SelectForUpdate",
+							"script": "ConditionalSplit@Update select(mapColumn(\n\t\tDimID,\n\t\tTermID,\n\t\tTermCode,\n\t\tTermName,\n\t\tTermDescription,\n\t\tTermPreferred,\n\t\tTermAvailable,\n\t\tTermTypeID\n\t))~> SelectForUpdate"
+						},
+						{
+							"name": "MarkForUpdate",
+							"script": "SelectForUpdate alterRow(updateIf(not(isNull(TermID)))) ~> MarkForUpdate"
+						},
+						{
+							"name": "AlterRow1",
+							"script": "SelectForInsertion alterRow(insertIf(not(isNull(TermTypeID_LookUp)))) ~> AlterRow1"
+						},
+						{
+							"name": "RemoveNullTermTypeID",
+							"script": "AlterRow1 filter(not(isNull(TermTypeID_LookUp))) ~> RemoveNullTermTypeID"
+						}
+					]
+				}
+			},
+			"dependsOn": []
+		},
+		{
 			"name": "[concat(parameters('factoryName'), '/df_MergeTurasDimensions')]",
 			"type": "Microsoft.DataFactory/factories/dataflows",
 			"apiVersion": "2018-06-01",
@@ -1015,7 +1095,7 @@
 								"type": "DatasetReference"
 							},
 							"name": "SinkIntoTermTaxonomy",
-							"script": "AlterRow1 sink(input(\n\t\tTermID as integer,\n\t\tDimID as integer,\n\t\tTermCode as string,\n\t\tTermName as string,\n\t\tDescription as string,\n\t\tPreferred as boolean,\n\t\tAvailable as boolean,\n\t\tTermTypeID as integer\n\t),\n\tallowSchemaDrift: false,\n\tvalidateSchema: false,\n\tformat: 'table',\n\tdeletable:false,\n\tinsertable:true,\n\tupdateable:false,\n\tupsertable:false,\n\tmapColumn(\n\t\tTermID,\n\t\tDimID,\n\t\tPreferred\n\t)) ~> SinkIntoTermTaxonomy"
+							"script": "Filter1 sink(input(\n\t\tTermID as integer,\n\t\tDimID as integer,\n\t\tTermCode as string,\n\t\tTermName as string,\n\t\tDescription as string,\n\t\tPreferred as boolean,\n\t\tAvailable as boolean,\n\t\tTermTypeID as integer\n\t),\n\tallowSchemaDrift: false,\n\tvalidateSchema: false,\n\tformat: 'table',\n\tdeletable:false,\n\tinsertable:true,\n\tupdateable:false,\n\tupsertable:false,\n\tmapColumn(\n\t\tTermID,\n\t\tDimID,\n\t\tPreferred,\n\t\tTermCode = DimCode,\n\t\tTermName = DimName,\n\t\tDescription = DimDescription,\n\t\tAvailable = DimActive,\n\t\tTermTypeID\n\t)) ~> SinkIntoTermTaxonomy"
 						},
 						{
 							"dataset": {
@@ -1074,6 +1154,10 @@
 						{
 							"name": "AlterRow1",
 							"script": "SelectForInsertion alterRow(insertIf(isNull(TermID))) ~> AlterRow1"
+						},
+						{
+							"name": "Filter1",
+							"script": "AlterRow1 filter(not(isNull(TermTypeID))) ~> Filter1"
 						}
 					]
 				}
@@ -1287,121 +1371,6 @@
 			"dependsOn": []
 		},
 		{
-			"name": "[concat(parameters('factoryName'), '/df_MergePortfolioDimensions')]",
-			"type": "Microsoft.DataFactory/factories/dataflows",
-			"apiVersion": "2018-06-01",
-			"properties": {
-				"folder": {
-					"name": "MergePortfolioDims"
-				},
-				"type": "MappingDataFlow",
-				"typeProperties": {
-					"sources": [
-						{
-							"dataset": {
-								"referenceName": "PortfolioDimensionTables",
-								"type": "DatasetReference"
-							},
-							"name": "PortfolioDimensionTables",
-							"typeProperties": {},
-							"script": "source(output(\n\t\tDimTableName as string,\n\t\tDimID as integer,\n\t\tDimCode as string,\n\t\tDimName as string,\n\t\tDimDescription as string,\n\t\tDimActive as boolean\n\t),\n\tallowSchemaDrift: false,\n\tvalidateSchema: false,\n\tisolationLevel: 'READ_UNCOMMITTED',\n\tformat: 'table') ~> PortfolioDimensionTables"
-						},
-						{
-							"dataset": {
-								"referenceName": "TaxonomyDimensionTerms",
-								"type": "DatasetReference"
-							},
-							"name": "TaxonomyDimensionTerms",
-							"typeProperties": {},
-							"script": "source(output(\n\t\tTermDimTable as string,\n\t\tTermID as integer,\n\t\tTermDimID as long,\n\t\tTermCode as string,\n\t\tTermName as string,\n\t\tTermDescription as string,\n\t\tTermPreferred as boolean,\n\t\tTermAvailable as boolean,\n\t\tTermTypeID as integer\n\t),\n\tallowSchemaDrift: false,\n\tvalidateSchema: false,\n\tisolationLevel: 'READ_UNCOMMITTED',\n\tformat: 'table') ~> TaxonomyDimensionTerms"
-						},
-						{
-							"dataset": {
-								"referenceName": "CreateTurasDimsLookup",
-								"type": "DatasetReference"
-							},
-							"name": "LookupType",
-							"typeProperties": {},
-							"script": "source(output(\n\t\tTermTypeID as integer,\n\t\tDimTable as string\n\t),\n\tallowSchemaDrift: false,\n\tvalidateSchema: false,\n\tisolationLevel: 'READ_UNCOMMITTED',\n\tformat: 'table') ~> LookupType"
-						}
-					],
-					"sinks": [
-						{
-							"dataset": {
-								"referenceName": "IntermediateTermTable",
-								"type": "DatasetReference"
-							},
-							"name": "SinkIntoTermTaxonomy",
-							"script": "RemoveNullTermTypeID sink(input(\n\t\tTermID as integer,\n\t\tDimID as integer,\n\t\tTermCode as string,\n\t\tTermName as string,\n\t\tDescription as string,\n\t\tPreferred as boolean,\n\t\tAvailable as boolean,\n\t\tTermTypeID as integer\n\t),\n\tallowSchemaDrift: false,\n\tvalidateSchema: false,\n\tformat: 'table',\n\tdeletable:false,\n\tinsertable:true,\n\tupdateable:false,\n\tupsertable:false,\n\tmapColumn(\n\t\tDimID,\n\t\tTermCode = DimCode,\n\t\tTermName = DimName,\n\t\tDescription = DimDescription,\n\t\tPreferred,\n\t\tAvailable = DimActive,\n\t\tTermTypeID = TermTypeID_LookUp\n\t)) ~> SinkIntoTermTaxonomy"
-						},
-						{
-							"dataset": {
-								"referenceName": "IntermediateTermTable",
-								"type": "DatasetReference"
-							},
-							"name": "DeleteTerm",
-							"script": "MarkForDeletion sink(input(\n\t\tTermID as integer,\n\t\tDimID as integer,\n\t\tTermCode as string,\n\t\tTermName as string,\n\t\tDescription as string,\n\t\tPreferred as boolean,\n\t\tAvailable as boolean,\n\t\tTermTypeID as integer\n\t),\n\tallowSchemaDrift: false,\n\tvalidateSchema: false,\n\tformat: 'table',\n\tdeletable:true,\n\tinsertable:false,\n\tupdateable:false,\n\tupsertable:false,\n\tkeys:['TermID']) ~> DeleteTerm"
-						},
-						{
-							"dataset": {
-								"referenceName": "IntermediateTermTable",
-								"type": "DatasetReference"
-							},
-							"name": "UpdateSink",
-							"script": "MarkForUpdate sink(input(\n\t\tTermID as integer,\n\t\tDimID as integer,\n\t\tTermCode as string,\n\t\tTermName as string,\n\t\tDescription as string,\n\t\tPreferred as boolean,\n\t\tAvailable as boolean,\n\t\tTermTypeID as integer\n\t),\n\tallowSchemaDrift: false,\n\tvalidateSchema: false,\n\tformat: 'table',\n\tdeletable:false,\n\tinsertable:false,\n\tupdateable:true,\n\tupsertable:false,\n\tkeys:['TermID'],\n\tmapColumn(\n\t\tTermID,\n\t\tTermCode,\n\t\tTermName,\n\t\tDescription = TermDescription,\n\t\tAvailable = TermAvailable,\n\t\tDimID,\n\t\tPreferred = TermPreferred,\n\t\tTermTypeID\n\t)) ~> UpdateSink"
-						}
-					],
-					"transformations": [
-						{
-							"name": "MergeJoin",
-							"script": "PortfolioDimensionTables, TaxonomyDimensionTerms join(DimID == TermDimID\n\t&& DimTableName == TermDimTable,\n\tjoinType:'outer',\n\tbroadcast: 'none')~> MergeJoin"
-						},
-						{
-							"name": "ConditionalSplit",
-							"script": "MergeJoin split(isNull(TermID),\n\tisNull(DimID),\n\tdisjoint: true) ~> ConditionalSplit@(Insert, Delete, Update)"
-						},
-						{
-							"name": "DerivedColumn",
-							"script": "ConditionalSplit@Insert derive(Preferred = true()) ~> DerivedColumn"
-						},
-						{
-							"name": "Lookup1",
-							"script": "DerivedColumn, LookupType lookup(DimTableName == DimTable,\n\tbroadcast: 'none')~> Lookup1"
-						},
-						{
-							"name": "SelectForInsertion",
-							"script": "Lookup1 select(mapColumn(\n\t\tDimID,\n\t\tDimCode,\n\t\tDimName,\n\t\tDimDescription,\n\t\tDimActive,\n\t\tTermID,\n\t\tPreferred,\n\t\tTermTypeID_LookUp = LookupType@TermTypeID\n\t))~> SelectForInsertion"
-						},
-						{
-							"name": "SelectForDeletion",
-							"script": "ConditionalSplit@Delete select(mapColumn(\n\t\tDimID,\n\t\tTermID,\n\t\tTermCode,\n\t\tTermName\n\t))~> SelectForDeletion"
-						},
-						{
-							"name": "MarkForDeletion",
-							"script": "SelectForDeletion alterRow(deleteIf(isNull(DimID))) ~> MarkForDeletion"
-						},
-						{
-							"name": "SelectForUpdate",
-							"script": "ConditionalSplit@Update select(mapColumn(\n\t\tDimID,\n\t\tTermID,\n\t\tTermCode,\n\t\tTermName,\n\t\tTermDescription,\n\t\tTermPreferred,\n\t\tTermAvailable,\n\t\tTermTypeID\n\t))~> SelectForUpdate"
-						},
-						{
-							"name": "MarkForUpdate",
-							"script": "SelectForUpdate alterRow(updateIf(not(isNull(TermID)))) ~> MarkForUpdate"
-						},
-						{
-							"name": "AlterRow1",
-							"script": "SelectForInsertion alterRow(insertIf(not(isNull(TermTypeID_LookUp)))) ~> AlterRow1"
-						},
-						{
-							"name": "RemoveNullTermTypeID",
-							"script": "AlterRow1 filter(not(isNull(TermTypeID_LookUp))) ~> RemoveNullTermTypeID"
-						}
-					]
-				}
-			},
-			"dependsOn": []
-		},
-		{
 			"name": "[concat(parameters('factoryName'), '/CreateThesaurusTerms_Dim_Source')]",
 			"type": "Microsoft.DataFactory/factories/pipelines",
 			"apiVersion": "2018-06-01",
@@ -1454,6 +1423,182 @@
 			"dependsOn": []
 		},
 		{
+			"name": "[concat(parameters('factoryName'), '/RunMergePortfolioDimensions')]",
+			"type": "Microsoft.DataFactory/factories/pipelines",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"activities": [
+					{
+						"name": "df_MergePortfolioDimensions",
+						"type": "ExecuteDataFlow",
+						"dependsOn": [],
+						"policy": {
+							"timeout": "7.00:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"dataflow": {
+								"referenceName": "df_MergePortfolioDimensions",
+								"type": "DataFlowReference",
+								"parameters": {},
+								"datasetParameters": {
+									"PortfolioDimensionTables": {},
+									"TaxonomyDimensionTerms": {},
+									"LookupType": {},
+									"SinkIntoTermTaxonomy": {},
+									"DeleteTerm": {},
+									"UpdateSink": {}
+								}
+							},
+							"staging": {}
+						}
+					},
+					{
+						"name": "UpsertToTermTable",
+						"description": "Pipeline to upsert to the term table in the PortThesaurus DB",
+						"type": "Copy",
+						"dependsOn": [
+							{
+								"activity": "df_MergePortfolioDimensions",
+								"dependencyConditions": [
+									"Succeeded"
+								]
+							}
+						],
+						"policy": {
+							"timeout": "7.00:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"source": {
+								"type": "AzureSqlSource"
+							},
+							"sink": {
+								"type": "AzureSqlSink",
+								"sqlWriterStoredProcedureName": "[[dbo].[spUpsertTerm]",
+								"sqlWriterTableType": "Term"
+							},
+							"enableStaging": false,
+							"translator": {
+								"type": "TabularTranslator",
+								"mappings": [
+									{
+										"source": {
+											"name": "TermID",
+											"type": "Int32"
+										},
+										"sink": {
+											"name": "TermID",
+											"type": "Int32"
+										}
+									},
+									{
+										"source": {
+											"name": "DimID",
+											"type": "Int32"
+										},
+										"sink": {
+											"name": "DimID",
+											"type": "Int32"
+										}
+									},
+									{
+										"source": {
+											"name": "TermCode",
+											"type": "String"
+										},
+										"sink": {
+											"name": "TermCode",
+											"type": "String"
+										}
+									},
+									{
+										"source": {
+											"name": "TermName",
+											"type": "String"
+										},
+										"sink": {
+											"name": "TermName",
+											"type": "String"
+										}
+									},
+									{
+										"source": {
+											"name": "Description",
+											"type": "String"
+										},
+										"sink": {
+											"name": "Description",
+											"type": "String"
+										}
+									},
+									{
+										"source": {
+											"name": "Preferred",
+											"type": "Boolean"
+										},
+										"sink": {
+											"name": "Preferred",
+											"type": "Boolean"
+										}
+									},
+									{
+										"source": {
+											"name": "Available",
+											"type": "Boolean"
+										},
+										"sink": {
+											"name": "Available",
+											"type": "Boolean"
+										}
+									},
+									{
+										"source": {
+											"name": "TermTypeID",
+											"type": "Int16"
+										},
+										"sink": {
+											"name": "TermTypeID",
+											"type": "Int16"
+										}
+									}
+								]
+							}
+						},
+						"inputs": [
+							{
+								"referenceName": "datasetIntermediateTermTable",
+								"type": "DatasetReference",
+								"parameters": {}
+							}
+						],
+						"outputs": [
+							{
+								"referenceName": "DestinationTermTable",
+								"type": "DatasetReference",
+								"parameters": {}
+							}
+						]
+					}
+				],
+				"folder": {
+					"name": "MergePortfolioDimensions"
+				},
+				"annotations": []
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/dataflows/df_MergePortfolioDimensions')]"
+			]
+		},
+		{
 			"name": "[concat(parameters('factoryName'), '/RunMergePotfolioDimsOnly')]",
 			"type": "Microsoft.DataFactory/factories/pipelines",
 			"apiVersion": "2018-06-01",
@@ -1496,6 +1641,51 @@
 			},
 			"dependsOn": [
 				"[concat(variables('factoryId'), '/dataflows/df_MergePortfolioDimensions')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/RunMergeTurasDimensions')]",
+			"type": "Microsoft.DataFactory/factories/pipelines",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"activities": [
+					{
+						"name": "Run_MergeTurasDimensions",
+						"type": "ExecuteDataFlow",
+						"dependsOn": [],
+						"policy": {
+							"timeout": "7.00:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"dataflow": {
+								"referenceName": "df_MergeTurasDimensions",
+								"type": "DataFlowReference",
+								"parameters": {},
+								"datasetParameters": {
+									"TurasDimensionTables": {},
+									"TaxonomyDimensionTerms": {},
+									"LookupType": {},
+									"SinkIntoTermTaxonomy": {},
+									"DeleteTerm": {},
+									"UpdateSink": {}
+								}
+							},
+							"staging": {}
+						}
+					}
+				],
+				"folder": {
+					"name": "MergeTurasDimensions"
+				},
+				"annotations": []
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/dataflows/df_MergeTurasDimensions')]"
 			]
 		},
 		{
@@ -1746,50 +1936,6 @@
 				"annotations": []
 			},
 			"dependsOn": []
-		},
-		{
-			"name": "[concat(parameters('factoryName'), '/pl_CreateRelationshipsDriver')]",
-			"type": "Microsoft.DataFactory/factories/pipelines",
-			"apiVersion": "2018-06-01",
-			"properties": {
-				"activities": [
-					{
-						"name": "CreateRelationships",
-						"type": "ExecuteDataFlow",
-						"dependsOn": [],
-						"policy": {
-							"timeout": "7.00:00:00",
-							"retry": 0,
-							"retryIntervalInSeconds": 30,
-							"secureOutput": false,
-							"secureInput": false
-						},
-						"userProperties": [],
-						"typeProperties": {
-							"dataflow": {
-								"referenceName": "df_CreateRelationships",
-								"type": "DataFlowReference",
-								"parameters": {},
-								"datasetParameters": {
-									"GetDimRelationship": {},
-									"TermRelationships": {},
-									"LookupTable": {},
-									"InsertRelationship": {},
-									"DeleteRelationship": {}
-								}
-							},
-							"staging": {}
-						}
-					}
-				],
-				"folder": {
-					"name": "CreateRelationships"
-				},
-				"annotations": []
-			},
-			"dependsOn": [
-				"[concat(variables('factoryId'), '/dataflows/df_CreateRelationships')]"
-			]
 		}
 	]
 }

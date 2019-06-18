@@ -134,7 +134,7 @@
 					}
 				],
 				"typeProperties": {
-					"tableName": "[[dbo].[IntermediateTerm_inc_idendity]"
+					"tableName": "[[dbo].[IntermediateTerm]"
 				}
 			},
 			"dependsOn": []
