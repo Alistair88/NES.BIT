@@ -62,7 +62,7 @@
 			"transformations": [
 				{
 					"name": "ConvertDimIDToTypeID",
-					"script": "ThesaurusTerms derive(PossibleTypeID = toShort(DimID)) ~> ConvertDimIDToTypeID"
+					"script": "Filter1 derive(PossibleTypeID = toShort(DimID)) ~> ConvertDimIDToTypeID"
 				},
 				{
 					"name": "LookupTypesWithDimID",
@@ -98,7 +98,7 @@
 				},
 				{
 					"name": "SelectForUpdate",
-					"script": "DerivedColumn2 select(mapColumn(\n\t\tDimPreferred,\n\t\tDimID = TermDimID,\n\t\tTermCode,\n\t\tTermName,\n\t\tTermDescription,\n\t\tTermPreferred,\n\t\tAvailable,\n\t\tTermTypeID,\n\t\tTermID\n\t))~> SelectForUpdate"
+					"script": "DerivedColumn2 select(mapColumn(\n\t\tDimPreferred,\n\t\tDimID,\n\t\tTermCode,\n\t\tTermName = DimName,\n\t\tTermDescription = DimDescription,\n\t\tTermPreferred = DimPreferred,\n\t\tAvailable,\n\t\tTermTypeID = PossibleTypeID,\n\t\tTermID\n\t))~> SelectForUpdate"
 				},
 				{
 					"name": "DerivedColumn2",
@@ -127,6 +127,10 @@
 				{
 					"name": "SelectForInsertion",
 					"script": "ConditionsForInsertion select(mapColumn(\n\t\tDimPreferred,\n\t\tDimDescription,\n\t\tPossibleTypeID,\n\t\tDimName,\n\t\tTermCode,\n\t\tAvailable = SetAvailable@Available,\n\t\tTermTypeID = PossibleTypeID\n\t))~> SelectForInsertion"
+				},
+				{
+					"name": "Filter1",
+					"script": "ThesaurusTerms filter(DimID == 11949) ~> Filter1"
 				}
 			]
 		}
