@@ -60,7 +60,7 @@
 				},
 				"typeProperties": {
 					"dataflow": {
-						"referenceName": "df_CreateTerms_old",
+						"referenceName": "CreateTermsSwappedBranches",
 						"type": "DataFlowReference"
 					}
 				}
