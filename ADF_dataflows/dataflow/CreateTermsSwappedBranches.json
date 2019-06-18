@@ -74,7 +74,7 @@
 				},
 				{
 					"name": "ConditionalSplit1",
-					"script": "Select1 split(isNull(TermDimID),\n\tnot(isNull(DimID)),\n\tdisjoint: true) ~> ConditionalSplit1@(Delete, Update, Insert)"
+					"script": "Select1 split(isNull(DimID),\n\tnot(isNull(TermID)),\n\tdisjoint: true) ~> ConditionalSplit1@(Delete, Update, Insert)"
 				},
 				{
 					"name": "SelectForDelete",
@@ -86,7 +86,7 @@
 				},
 				{
 					"name": "ConditionsForDelete",
-					"script": "AddAvailableCol alterRow(updateIf(isNull(TermDimID))) ~> ConditionsForDelete"
+					"script": "AddAvailableCol alterRow(updateIf(isNull(DimID))) ~> ConditionsForDelete"
 				},
 				{
 					"name": "ConvertNameAndDesc",
@@ -94,7 +94,7 @@
 				},
 				{
 					"name": "ConditionsForUpdate",
-					"script": "ConvertNameAndDesc alterRow(updateIf(not(isNull(TermID)))) ~> ConditionsForUpdate"
+					"script": "ConvertNameAndDesc alterRow(updateIf(not(isNull(TermID)) && not(isNull(TermDimID)))) ~> ConditionsForUpdate"
 				},
 				{
 					"name": "SelectForUpdate",
