@@ -13,7 +13,7 @@
 						"type": "DatasetReference"
 					},
 					"name": "PortfolioDimensionTables",
-					"script": "source(output(\n\t\tDimTableName as string,\n\t\tDimID as integer,\n\t\tDimCode as string,\n\t\tDimName as string,\n\t\tDimDescription as string,\n\t\tDimActive as boolean\n\t),\n\tallowSchemaDrift: true,\n\tvalidateSchema: false,\n\tisolationLevel: 'READ_UNCOMMITTED',\n\tformat: 'table') ~> PortfolioDimensionTables"
+					"script": "source(output(\n\t\tDimTableName as string,\n\t\tDimID as integer,\n\t\tDimCode as string,\n\t\tDimName as string,\n\t\tDimDescription as string,\n\t\tDimActive as boolean\n\t),\n\tallowSchemaDrift: false,\n\tvalidateSchema: false,\n\tisolationLevel: 'READ_UNCOMMITTED',\n\tformat: 'table') ~> PortfolioDimensionTables"
 				},
 				{
 					"dataset": {
@@ -21,7 +21,7 @@
 						"type": "DatasetReference"
 					},
 					"name": "TaxonomyDimensionTerms",
-					"script": "source(output(\n\t\tTermDimTable as string,\n\t\tTermID as integer,\n\t\tTermDimID as long,\n\t\tTermCode as string,\n\t\tTermName as string,\n\t\tTermDescription as string,\n\t\tTermPreferred as boolean,\n\t\tTermAvailable as boolean,\n\t\tTermTypeID as integer\n\t),\n\tallowSchemaDrift: true,\n\tvalidateSchema: false,\n\tisolationLevel: 'READ_UNCOMMITTED',\n\tformat: 'table') ~> TaxonomyDimensionTerms"
+					"script": "source(output(\n\t\tTermDimTable as string,\n\t\tTermID as integer,\n\t\tTermDimID as long,\n\t\tTermCode as string,\n\t\tTermName as string,\n\t\tTermDescription as string,\n\t\tTermPreferred as boolean,\n\t\tTermAvailable as boolean,\n\t\tTermTypeID as integer\n\t),\n\tallowSchemaDrift: false,\n\tvalidateSchema: false,\n\tisolationLevel: 'READ_UNCOMMITTED',\n\tformat: 'table') ~> TaxonomyDimensionTerms"
 				},
 				{
 					"dataset": {
@@ -39,7 +39,7 @@
 						"type": "DatasetReference"
 					},
 					"name": "SinkIntoTermTaxonomy",
-					"script": "RemoveNullTermTypeID sink(input(\n\t\tTermID as integer,\n\t\tDimID as integer,\n\t\tTermCode as string,\n\t\tTermName as string,\n\t\tDescription as string,\n\t\tPreferred as boolean,\n\t\tAvailable as boolean,\n\t\tTermTypeID as integer\n\t),\n\tallowSchemaDrift: false,\n\tvalidateSchema: false,\n\tformat: 'table',\n\tdeletable:false,\n\tinsertable:true,\n\tupdateable:false,\n\tupsertable:false,\n\tmapColumn(\n\t\tTermID,\n\t\tDimID,\n\t\tTermCode = DimCode,\n\t\tTermName = DimName,\n\t\tDescription = DimDescription,\n\t\tPreferred,\n\t\tAvailable = DimActive,\n\t\tTermTypeID = TermTypeID_LookUp\n\t)) ~> SinkIntoTermTaxonomy"
+					"script": "RemoveNullTermTypeID sink(input(\n\t\tTermID as integer,\n\t\tDimID as integer,\n\t\tTermCode as string,\n\t\tTermName as string,\n\t\tDescription as string,\n\t\tPreferred as boolean,\n\t\tAvailable as boolean,\n\t\tTermTypeID as integer\n\t),\n\tallowSchemaDrift: false,\n\tvalidateSchema: false,\n\tformat: 'table',\n\tdeletable:false,\n\tinsertable:true,\n\tupdateable:false,\n\tupsertable:false,\n\tmapColumn(\n\t\tDimID,\n\t\tTermCode = DimCode,\n\t\tTermName = DimName,\n\t\tDescription = DimDescription,\n\t\tPreferred,\n\t\tAvailable = DimActive,\n\t\tTermTypeID = TermTypeID_LookUp\n\t)) ~> SinkIntoTermTaxonomy"
 				},
 				{
 					"dataset": {
