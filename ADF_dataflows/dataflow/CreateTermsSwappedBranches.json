@@ -74,7 +74,7 @@
 				},
 				{
 					"name": "ConditionalSplit1",
-					"script": "Select1 split(isNull(DimID),\n\tnot(isNull(DimID)),\n\tdisjoint: true) ~> ConditionalSplit1@(Delete, Update, Insert)"
+					"script": "Select1 split(isNull(TermDimID),\n\tnot(isNull(DimID)),\n\tdisjoint: true) ~> ConditionalSplit1@(Delete, Update, Insert)"
 				},
 				{
 					"name": "ConditionsForDelete",
