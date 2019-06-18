@@ -74,7 +74,7 @@
 				},
 				{
 					"name": "ConditionalSplit1",
-					"script": "MergeJoin split(isNull(DimID),\n\tnot(isNull(DimID)),\n\tdisjoint: true) ~> ConditionalSplit1@(Delete, Update, Insert)"
+					"script": "Select1 split(isNull(DimID),\n\tnot(isNull(DimID)),\n\tdisjoint: true) ~> ConditionalSplit1@(Delete, Update, Insert)"
 				},
 				{
 					"name": "ConditionsForDelete",
@@ -98,11 +98,7 @@
 				},
 				{
 					"name": "SelectForUpdate",
-					"script": "DerivedColumn2 select(mapColumn(\n\t\tDimPreferred,\n\t\tDimID,\n\t\tTermCode,\n\t\tTermName = DimName,\n\t\tTermDescription = DimDescription,\n\t\tTermPreferred = DimPreferred,\n\t\tAvailable,\n\t\tTermTypeID = PossibleTypeID,\n\t\tTermID\n\t))~> SelectForUpdate"
-				},
-				{
-					"name": "DerivedColumn2",
-					"script": "ConditionsForUpdate derive(DimTypeName = TermName,\n\t\tDimTypeDescription = DimDescription,\n\t\tDimPreferred = DimPreferred) ~> DerivedColumn2"
+					"script": "ConditionsForUpdate select(mapColumn(\n\t\tDimPreferred,\n\t\tDimID,\n\t\tTermCode,\n\t\tTermName = DimName,\n\t\tTermDescription = DimDescription,\n\t\tTermPreferred = DimPreferred,\n\t\tAvailable = ConditionalSplit1@Available,\n\t\tTermTypeID = PossibleTypeID,\n\t\tTermID\n\t))~> SelectForUpdate"
 				},
 				{
 					"name": "TermIdIsNull",
@@ -118,7 +114,7 @@
 				},
 				{
 					"name": "SelectFromLookup",
-					"script": "LookupTypesWithDimID select(mapColumn(\n\t\tDimID,\n\t\tRootID,\n\t\tDimPreferred,\n\t\tDimDescription,\n\t\tPossibleTypeID,\n\t\tDimName,\n\t\tDimSourceID\n\t))~> SelectFromLookup"
+					"script": "LookupTypesWithDimID select(mapColumn(\n\t\tDimID,\n\t\tRootID,\n\t\tDimPreferred,\n\t\tDimDescription,\n\t\tPossibleTypeID,\n\t\tDimName,\n\t\tDimSourceID,\n\t\tAvailable\n\t))~> SelectFromLookup"
 				},
 				{
 					"name": "ConditionsForInsertion",
@@ -131,6 +127,10 @@
 				{
 					"name": "Filter1",
 					"script": "ThesaurusTerms filter(DimID == 11949) ~> Filter1"
+				},
+				{
+					"name": "Select1",
+					"script": "MergeJoin select(mapColumn(\n\t\tDimID,\n\t\tRootID,\n\t\tDimPreferred,\n\t\tDimDescription,\n\t\tPossibleTypeID,\n\t\tDimName,\n\t\tDimSourceID,\n\t\tTermID,\n\t\tTermDimID,\n\t\tTermCode,\n\t\tTermName,\n\t\tTermDescription,\n\t\tTermPreferred,\n\t\tAvailable = TaxonomyTerms@Available,\n\t\tTermTypeID\n\t))~> Select1"
 				}
 			]
 		}
