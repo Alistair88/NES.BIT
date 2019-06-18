@@ -82,11 +82,11 @@
 				},
 				{
 					"name": "SelectForDelete",
-					"script": "DerivedColumn1 select(mapColumn(\n\t\tDimPreferred,\n\t\tDimID = TermDimID,\n\t\tTermCode,\n\t\tTermName,\n\t\tTermDescription,\n\t\tTermPreferred,\n\t\tAvailable,\n\t\tTermTypeID\n\t))~> SelectForDelete"
+					"script": "AddAvailableCol select(mapColumn(\n\t\tDimPreferred,\n\t\tDimID = TermDimID,\n\t\tTermCode,\n\t\tTermName,\n\t\tTermDescription,\n\t\tTermPreferred,\n\t\tAvailable,\n\t\tTermTypeID\n\t))~> SelectForDelete"
 				},
 				{
-					"name": "DerivedColumn1",
-					"script": "ConditionsForDelete derive(Available = false()) ~> DerivedColumn1"
+					"name": "AddAvailableCol",
+					"script": "ConditionsForDelete derive(Available = false()) ~> AddAvailableCol"
 				},
 				{
 					"name": "ConvertNameAndDesc",
