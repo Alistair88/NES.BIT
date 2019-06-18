@@ -74,7 +74,7 @@
 				},
 				{
 					"name": "ConditionalSplit1",
-					"script": "Select1 split(isNull(DimID),\n\tnot(isNull(TermID)),\n\tdisjoint: true) ~> ConditionalSplit1@(Delete, Update, Insert)"
+					"script": "Select1 split(isNull(DimID),\n\tnot(isNull(TermID)) && not(isNull(DimID)),\n\tdisjoint: true) ~> ConditionalSplit1@(Delete, Update, Insert)"
 				},
 				{
 					"name": "SelectForDelete",
@@ -98,7 +98,7 @@
 				},
 				{
 					"name": "SelectForUpdate",
-					"script": "ConditionsForUpdate select(mapColumn(\n\t\tDimPreferred,\n\t\tDimID,\n\t\tTermCode,\n\t\tTermName = DimName,\n\t\tTermDescription = DimDescription,\n\t\tTermPreferred = DimPreferred,\n\t\tAvailable = SelectForUpdate@{ConditionalSplit1@Available},\n\t\tTermTypeID = PossibleTypeID,\n\t\tTermID\n\t))~> SelectForUpdate"
+					"script": "ConditionsForUpdate select(mapColumn(\n\t\tDimPreferred,\n\t\tDimID,\n\t\tTermCode,\n\t\tTermName = DimName,\n\t\tTermDescription = DimDescription,\n\t\tTermPreferred = DimPreferred,\n\t\tAvailable,\n\t\tTermTypeID = PossibleTypeID,\n\t\tTermID\n\t))~> SelectForUpdate"
 				},
 				{
 					"name": "TermIdIsNull",
