@@ -78,7 +78,7 @@
 				},
 				{
 					"name": "ConditionsForDelete",
-					"script": "ConditionalSplit1@Delete alterRow(updateIf(TermID==286337)) ~> ConditionsForDelete"
+					"script": "ConditionalSplit1@Delete alterRow(updateIf(isNull(DimID))) ~> ConditionsForDelete"
 				},
 				{
 					"name": "SelectForDelete",
