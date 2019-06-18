@@ -77,16 +77,16 @@
 					"script": "Select1 split(isNull(TermDimID),\n\tnot(isNull(DimID)),\n\tdisjoint: true) ~> ConditionalSplit1@(Delete, Update, Insert)"
 				},
 				{
-					"name": "ConditionsForDelete",
-					"script": "ConditionalSplit1@Delete alterRow(updateIf(isNull(DimID))) ~> ConditionsForDelete"
-				},
-				{
 					"name": "SelectForDelete",
-					"script": "AddAvailableCol select(mapColumn(\n\t\tDimPreferred,\n\t\tDimID = TermDimID,\n\t\tTermCode,\n\t\tTermName,\n\t\tTermDescription,\n\t\tTermPreferred,\n\t\tAvailable,\n\t\tTermTypeID\n\t))~> SelectForDelete"
+					"script": "ConditionsForDelete select(mapColumn(\n\t\tDimPreferred,\n\t\tDimID,\n\t\tTermCode,\n\t\tTermName,\n\t\tTermDescription,\n\t\tTermPreferred,\n\t\tAvailable,\n\t\tTermTypeID\n\t))~> SelectForDelete"
 				},
 				{
 					"name": "AddAvailableCol",
-					"script": "ConditionsForDelete derive(Available = false()) ~> AddAvailableCol"
+					"script": "ConditionalSplit1@Delete derive(Available = false()) ~> AddAvailableCol"
+				},
+				{
+					"name": "ConditionsForDelete",
+					"script": "AddAvailableCol alterRow(updateIf(isNull(TermDimID))) ~> ConditionsForDelete"
 				},
 				{
 					"name": "ConvertNameAndDesc",
@@ -98,7 +98,7 @@
 				},
 				{
 					"name": "SelectForUpdate",
-					"script": "ConditionsForUpdate select(mapColumn(\n\t\tDimPreferred,\n\t\tDimID,\n\t\tTermCode,\n\t\tTermName = DimName,\n\t\tTermDescription = DimDescription,\n\t\tTermPreferred = DimPreferred,\n\t\tAvailable = ConditionalSplit1@Available,\n\t\tTermTypeID = PossibleTypeID,\n\t\tTermID\n\t))~> SelectForUpdate"
+					"script": "ConditionsForUpdate select(mapColumn(\n\t\tDimPreferred,\n\t\tDimID,\n\t\tTermCode,\n\t\tTermName = DimName,\n\t\tTermDescription = DimDescription,\n\t\tTermPreferred = DimPreferred,\n\t\tAvailable = SelectForUpdate@{ConditionalSplit1@Available},\n\t\tTermTypeID = PossibleTypeID,\n\t\tTermID\n\t))~> SelectForUpdate"
 				},
 				{
 					"name": "TermIdIsNull",
