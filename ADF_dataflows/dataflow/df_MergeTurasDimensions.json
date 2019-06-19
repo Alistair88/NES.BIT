@@ -1,6 +1,9 @@
 {
 	"name": "df_MergeTurasDimensions",
 	"properties": {
+		"folder": {
+			"name": "MergePortfolioDims"
+		},
 		"type": "MappingDataFlow",
 		"typeProperties": {
 			"sources": [
@@ -40,19 +43,19 @@
 				},
 				{
 					"dataset": {
-						"referenceName": "TaxonomyTermTable",
+						"referenceName": "IntermediateTermTable",
 						"type": "DatasetReference"
 					},
 					"name": "DeleteTerm",
-					"script": "MarkForDeletion sink(input(\n\t\tTermID as integer,\n\t\tDimID as integer,\n\t\tTermCode as string,\n\t\tTermName as string,\n\t\tDescription as string,\n\t\tPreferred as boolean,\n\t\tAvailable as boolean,\n\t\tTermTypeID as integer\n\t),\n\tallowSchemaDrift: false,\n\tvalidateSchema: false,\n\tformat: 'table',\n\tdeletable:true,\n\tinsertable:false,\n\tupdateable:false,\n\tupsertable:false,\n\tkeys:['TermID'],\n\tmapColumn(\n\t\tTermID,\n\t\tDimID,\n\t\tTermCode,\n\t\tTermName\n\t)) ~> DeleteTerm"
+					"script": "MarkForDeletion sink(input(\n\t\tTermID as integer,\n\t\tDimID as integer,\n\t\tTermCode as string,\n\t\tTermName as string,\n\t\tDescription as string,\n\t\tPreferred as boolean,\n\t\tAvailable as boolean,\n\t\tTermTypeID as integer\n\t),\n\tallowSchemaDrift: false,\n\tvalidateSchema: false,\n\tformat: 'table',\n\tdeletable:true,\n\tinsertable:false,\n\tupdateable:false,\n\tupsertable:false,\n\tkeys:['TermID']) ~> DeleteTerm"
 				},
 				{
 					"dataset": {
-						"referenceName": "TaxonomyTermTable",
+						"referenceName": "IntermediateTermTable",
 						"type": "DatasetReference"
 					},
 					"name": "UpdateSink",
-					"script": "MarkForUpdate sink(input(\n\t\tTermID as integer,\n\t\tDimID as integer,\n\t\tTermCode as string,\n\t\tTermName as string,\n\t\tDescription as string,\n\t\tPreferred as boolean,\n\t\tAvailable as boolean,\n\t\tTermTypeID as integer\n\t),\n\tallowSchemaDrift: false,\n\tvalidateSchema: false,\n\tformat: 'table',\n\tdeletable:false,\n\tinsertable:false,\n\tupdateable:true,\n\tupsertable:false,\n\tkeys:['TermID'],\n\tmapColumn(\n\t\tTermID,\n\t\tDescription,\n\t\tAvailable = DimActive\n\t)) ~> UpdateSink"
+					"script": "MarkForUpdate sink(input(\n\t\tTermID as integer,\n\t\tDimID as integer,\n\t\tTermCode as string,\n\t\tTermName as string,\n\t\tDescription as string,\n\t\tPreferred as boolean,\n\t\tAvailable as boolean,\n\t\tTermTypeID as integer\n\t),\n\tallowSchemaDrift: false,\n\tvalidateSchema: false,\n\tformat: 'table',\n\tdeletable:false,\n\tinsertable:false,\n\tupdateable:true,\n\tupsertable:false,\n\tkeys:['TermID'],\n\tmapColumn(\n\t\tTermID,\n\t\tTermCode,\n\t\tTermName,\n\t\tDescription = TermDescription,\n\t\tAvailable = TermAvailable,\n\t\tDimID,\n\t\tPreferred = TermPreferred,\n\t\tTermTypeID\n\t)) ~> UpdateSink"
 				}
 			],
 			"transformations": [
@@ -62,15 +65,15 @@
 				},
 				{
 					"name": "ConditionalSplit",
-					"script": "Filter1 split(isNull(TermID),\n\tisNull(DimID),\n\tdisjoint: true) ~> ConditionalSplit@(Insert, Delete, Update)"
+					"script": "MergeJoin split(isNull(TermID),\n\tisNull(DimID),\n\tdisjoint: true) ~> ConditionalSplit@(Insert, Delete, Update)"
 				},
 				{
-					"name": "AddPreferredColumn",
-					"script": "ConditionalSplit@Insert derive(Preferred = true()) ~> AddPreferredColumn"
+					"name": "DerivedColumn",
+					"script": "ConditionalSplit@Insert derive(Preferred = true()) ~> DerivedColumn"
 				},
 				{
 					"name": "Lookup1",
-					"script": "AddPreferredColumn, LookupType lookup(DimTableName == DimTable,\n\tbroadcast: 'none')~> Lookup1"
+					"script": "DerivedColumn, LookupType lookup(DimTableName == DimTable,\n\tbroadcast: 'none')~> Lookup1"
 				},
 				{
 					"name": "SelectForInsertion",
@@ -86,7 +89,7 @@
 				},
 				{
 					"name": "SelectForUpdate",
-					"script": "ConditionalSplit@Update select(mapColumn(\n\t\tDimCode,\n\t\tDimName,\n\t\tDescription = DimDescription,\n\t\tDimActive,\n\t\tTermID\n\t))~> SelectForUpdate"
+					"script": "ConditionalSplit@Update select(mapColumn(\n\t\tDimID,\n\t\tTermID,\n\t\tTermCode,\n\t\tTermName,\n\t\tTermDescription,\n\t\tTermPreferred,\n\t\tTermAvailable,\n\t\tTermTypeID\n\t))~> SelectForUpdate"
 				},
 				{
 					"name": "MarkForUpdate",
@@ -99,10 +102,6 @@
 				{
 					"name": "RemoveNullTermTypeID",
 					"script": "AlterRow1 filter(not(isNull(TermTypeID_LookUp))) ~> RemoveNullTermTypeID"
-				},
-				{
-					"name": "Filter1",
-					"script": "MergeJoin filter(DimID == 515) ~> Filter1"
 				}
 			]
 		}
