@@ -1,5 +1,5 @@
 {
-	"name": "pl_CopyLocalToTermRelationships-old",
+	"name": "pl_CopyLocalToTermRelationships",
 	"properties": {
 		"description": "Uses a query to copy from the TermRelationship and Term table on the Taxonomy db.  Used in the Term relationships sink in the Create relationships dataflow.",
 		"activities": [
