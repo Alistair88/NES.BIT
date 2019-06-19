@@ -29,11 +29,11 @@
 			"transformations": [
 				{
 					"name": "DelIfTermXIDIsNull",
-					"script": "TermRelationships alterRow(deleteIf(isNull(TermXID))) ~> DelIfTermXIDIsNull"
+					"script": "TermRelationships alterRow(deleteIf(not(isNull(TermXID)))) ~> DelIfTermXIDIsNull"
 				},
 				{
 					"name": "DelIfTermYIDIsNull",
-					"script": "DelIfTermXIDIsNull alterRow(deleteIf(isNull(TermYID))) ~> DelIfTermYIDIsNull"
+					"script": "DelIfTermXIDIsNull alterRow(deleteIf(not(isNull(TermYID)))) ~> DelIfTermYIDIsNull"
 				}
 			]
 		}

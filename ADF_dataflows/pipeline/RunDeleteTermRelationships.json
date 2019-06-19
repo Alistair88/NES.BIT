@@ -1,0 +1,25 @@
+{
+	"name": "RunDeleteTermRelationships",
+	"properties": {
+		"description": "Delete Term Relationships from the TermRelationship table.",
+		"activities": [
+			{
+				"name": "df_DeleteTermRelationships",
+				"type": "ExecuteDataFlow",
+				"policy": {
+					"timeout": "7.00:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"typeProperties": {
+					"dataflow": {
+						"referenceName": "df_DeleteTermRelationships",
+						"type": "DataFlowReference"
+					}
+				}
+			}
+		]
+	}
+}
