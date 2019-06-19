@@ -47,6 +47,41 @@
 			"dependsOn": []
 		},
 		{
+			"name": "[concat(parameters('factoryName'), '/TermTable')]",
+			"type": "Microsoft.DataFactory/factories/datasets",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"linkedServiceName": {
+					"referenceName": "WarehouseAlphaTest",
+					"type": "LinkedServiceReference"
+				},
+				"folder": {
+					"name": "PortThesaurus"
+				},
+				"annotations": [],
+				"type": "AzureSqlTable",
+				"schema": [
+					{
+						"name": "DimID",
+						"type": "int",
+						"precision": 10
+					},
+					{
+						"name": "DimName",
+						"type": "varchar"
+					},
+					{
+						"name": "DimDescription",
+						"type": "varchar"
+					}
+				],
+				"typeProperties": {
+					"tableName": "[[dbo].[TermSOURCE]"
+				}
+			},
+			"dependsOn": []
+		},
+		{
 			"name": "[concat(parameters('factoryName'), '/CopyToPortThesaurusDB')]",
 			"type": "Microsoft.DataFactory/factories/pipelines",
 			"apiVersion": "2018-06-01",
@@ -1487,47 +1522,6 @@
 					},
 					{
 						"name": "TypeSourceID",
-						"type": "Int16"
-					}
-				],
-				"typeProperties": {
-					"tableName": "[[dbo].[TermType]"
-				}
-			},
-			"dependsOn": [
-				"[concat(variables('factoryId'), '/linkedServices/LocalhostTermType')]"
-			]
-		},
-		{
-			"name": "[concat(parameters('factoryName'), '/Taxonomy_tst')]",
-			"type": "Microsoft.DataFactory/factories/datasets",
-			"apiVersion": "2018-06-01",
-			"properties": {
-				"linkedServiceName": {
-					"referenceName": "LocalhostTermType",
-					"type": "LinkedServiceReference"
-				},
-				"annotations": [],
-				"type": "SqlServerTable",
-				"structure": [
-					{
-						"name": "TermTypeID",
-						"type": "Int16"
-					},
-					{
-						"name": "TypeName",
-						"type": "String"
-					},
-					{
-						"name": "Description",
-						"type": "String"
-					},
-					{
-						"name": "Available",
-						"type": "Boolean"
-					},
-					{
-						"name": "SourceID",
 						"type": "Int16"
 					}
 				],

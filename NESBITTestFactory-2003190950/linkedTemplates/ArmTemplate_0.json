@@ -18,6 +18,10 @@
 		"WarehouseAlphaTest2_connectionString": {
 			"type": "secureString",
 			"metadata": "Secure string for 'connectionString' of 'WarehouseAlphaTest2'"
+		},
+		"SqlDatabaseIncParam_connectionString": {
+			"type": "secureString",
+			"metadata": "Secure string for 'connectionString' of 'SqlDatabaseIncParam'"
 		}
 	},
 	"variables": {
@@ -83,6 +87,24 @@
 				"type": "SelfHosted",
 				"description": "connection to the local computer",
 				"typeProperties": {}
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/SqlDatabaseIncParam')]",
+			"type": "Microsoft.DataFactory/factories/linkedServices",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"parameters": {
+					"DBName": {
+						"type": "String"
+					}
+				},
+				"annotations": [],
+				"type": "AzureSqlDatabase",
+				"typeProperties": {
+					"connectionString": "[parameters('SqlDatabaseIncParam_connectionString')]"
+				}
 			},
 			"dependsOn": []
 		},
@@ -729,54 +751,6 @@
 				],
 				"typeProperties": {
 					"tableName": "[[dbo].[PortfolioDimension]"
-				}
-			},
-			"dependsOn": [
-				"[concat(variables('factoryId'), '/linkedServices/WarehouseAlphaTest')]"
-			]
-		},
-		{
-			"name": "[concat(parameters('factoryName'), '/DestinationTermRelationships')]",
-			"type": "Microsoft.DataFactory/factories/datasets",
-			"apiVersion": "2018-06-01",
-			"properties": {
-				"linkedServiceName": {
-					"referenceName": "WarehouseAlphaTest",
-					"type": "LinkedServiceReference"
-				},
-				"folder": {
-					"name": "CreateRelationships"
-				},
-				"annotations": [],
-				"type": "AzureSqlTable",
-				"structure": [
-					{
-						"name": "RelationshipID",
-						"type": "Int32"
-					},
-					{
-						"name": "XTermID",
-						"type": "Int32"
-					},
-					{
-						"name": "XTermDimID",
-						"type": "Int32"
-					},
-					{
-						"name": "YTermID",
-						"type": "Int32"
-					},
-					{
-						"name": "YTermDimID",
-						"type": "Int32"
-					},
-					{
-						"name": "TermKindID",
-						"type": "Int32"
-					}
-				],
-				"typeProperties": {
-					"tableName": "[[dbo].[TermRelationships]"
 				}
 			},
 			"dependsOn": [

@@ -13,6 +13,255 @@
 	},
 	"resources": [
 		{
+			"name": "[concat(parameters('factoryName'), '/pl_CopyFromLocalToRelation')]",
+			"type": "Microsoft.DataFactory/factories/pipelines",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"description": "Uses a query to create a table for use in the Create Relationships dataflow source table entitled 'Get Dim relationship'",
+				"activities": [
+					{
+						"name": "CreateDimRelationship",
+						"type": "Copy",
+						"dependsOn": [],
+						"policy": {
+							"timeout": "7.00:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [
+							{
+								"name": "Destination",
+								"value": "[[dbo].[GetDimRelationship]"
+							}
+						],
+						"typeProperties": {
+							"source": {
+								"type": "SqlSource",
+								"sqlReaderQuery": "SELECT maintermid XDimID, relatedtermid YDimID,\r\nCAST(CASE relationship\r\n  WHEN 1 THEN 2 -- synonym\r\n  WHEN 4 THEN 1 -- parent/child\r\n  WHEN 5 THEN 4 --association\r\n  END AS SMALLINT) DimKindID\r\nFROM dbo.Relation WHERE relationship IN (1, 4, 5) \r\nAND relatedtermid <> maintermid\r\nORDER BY XDimID, YDimID, DimKindID;"
+							},
+							"sink": {
+								"type": "SqlSink",
+								"writeBatchSize": 10000
+							},
+							"enableStaging": false,
+							"translator": {
+								"type": "TabularTranslator",
+								"columnMappings": {
+									"XDimID": "XDimID",
+									"YDimID": "YDimID",
+									"DimKindID": "DimKindID"
+								}
+							}
+						},
+						"inputs": [
+							{
+								"referenceName": "SourceRelationFromLocal",
+								"type": "DatasetReference",
+								"parameters": {}
+							}
+						],
+						"outputs": [
+							{
+								"referenceName": "DestinationGetDimRelationship",
+								"type": "DatasetReference",
+								"parameters": {}
+							}
+						]
+					}
+				],
+				"folder": {
+					"name": "CreateRelationships"
+				},
+				"annotations": []
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/pl_CopyLocalToTermRelationships')]",
+			"type": "Microsoft.DataFactory/factories/pipelines",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"description": "Uses a query to copy from the TermRelationship and Term table on the Taxonomy db.  Used in the Term relationships sink in the Create relationships dataflow.",
+				"activities": [
+					{
+						"name": "CopyLocalToTermRelationships",
+						"description": "Uses a query to create the TermRelationships table on the AzureDB",
+						"type": "Copy",
+						"dependsOn": [],
+						"policy": {
+							"timeout": "7.00:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [
+							{
+								"name": "Destination",
+								"value": "[[dbo].[TermRelationships]"
+							}
+						],
+						"typeProperties": {
+							"source": {
+								"type": "SqlSource",
+								"sqlReaderQuery": "SELECT TermRelationship.RelationshipID, TermX.TermID XTermID, TermX.DimID XTermDimID,\r\n  TermY.TermID YTermID, TermY.DimID YTermDimID,\r\n  TermRelationship.KindID TermKindID\r\nFROM dbo.TermRelationship\r\n  LEFT JOIN dbo.Term TermX on TermX.TermID = TermRelationship.TermXID\r\n  LEFT JOIN dbo.Term TermY on TermY.TermID = TermRelationship.TermYID\r\n  LEFT JOIN dbo.TermType on TermType.TermTypeID = TermX.TermTypeID\r\nWHERE TermType.SourceID = 2\r\nORDER BY TermX.DimID, TermY.DimID, TermKindID;"
+							},
+							"sink": {
+								"type": "SqlSink",
+								"writeBatchSize": 10000
+							},
+							"enableStaging": false,
+							"translator": {
+								"type": "TabularTranslator",
+								"columnMappings": {
+									"RelationshipID": "RelationshipID",
+									"XTermID": "XTermID",
+									"XTermDimID": "XTermDimID",
+									"YTermID": "YTermID",
+									"YTermDimID": "YTermDimID",
+									"TermKindID": "TermKindID"
+								}
+							}
+						},
+						"inputs": [
+							{
+								"referenceName": "SourceLocalToTermRelationships",
+								"type": "DatasetReference",
+								"parameters": {}
+							}
+						],
+						"outputs": [
+							{
+								"referenceName": "DestinationTermRelationships",
+								"type": "DatasetReference",
+								"parameters": {}
+							}
+						]
+					}
+				],
+				"folder": {
+					"name": "CreateRelationships"
+				},
+				"annotations": []
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/pl_CopyLocalToTermTypeSource')]",
+			"type": "Microsoft.DataFactory/factories/pipelines",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"description": "Copy the contents of the TermType table on the local db to the TermTypeSource table on Azure. ",
+				"activities": [
+					{
+						"name": "CopyLocalToTermTypeSource",
+						"type": "Copy",
+						"dependsOn": [],
+						"policy": {
+							"timeout": "7.00:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [
+							{
+								"name": "Destination",
+								"value": "[[dbo].[TermTypeSOURCE]"
+							}
+						],
+						"typeProperties": {
+							"source": {
+								"type": "SqlServerSource",
+								"sqlReaderQuery": "SELECT TermTypeID, TypeName, Description TypeDescription, Available TypeAvailable, SourceID TypeSourceID FROM dbo.TermType WHERE SourceID = 2"
+							},
+							"sink": {
+								"type": "AzureSqlSink",
+								"writeBatchSize": 10000
+							},
+							"enableStaging": false,
+							"translator": {
+								"type": "TabularTranslator",
+								"mappings": [
+									{
+										"source": {
+											"name": "TermTypeID",
+											"type": "Int16"
+										},
+										"sink": {
+											"name": "TermTypeID",
+											"type": "Int16"
+										}
+									},
+									{
+										"source": {
+											"name": "TypeName",
+											"type": "String"
+										},
+										"sink": {
+											"name": "TypeName",
+											"type": "String"
+										}
+									},
+									{
+										"source": {
+											"name": "TypeDescription",
+											"type": "String"
+										},
+										"sink": {
+											"name": "TypeDescription",
+											"type": "String"
+										}
+									},
+									{
+										"source": {
+											"name": "TypeAvailable",
+											"type": "Boolean"
+										},
+										"sink": {
+											"name": "TypeAvailable",
+											"type": "Boolean"
+										}
+									},
+									{
+										"source": {
+											"name": "TypeSourceID",
+											"type": "Int16"
+										},
+										"sink": {
+											"name": "TypeSourceID",
+											"type": "Int16"
+										}
+									}
+								]
+							}
+						},
+						"inputs": [
+							{
+								"referenceName": "SourceTermType",
+								"type": "DatasetReference",
+								"parameters": {}
+							}
+						],
+						"outputs": [
+							{
+								"referenceName": "DestinationTermTypeSOURCE",
+								"type": "DatasetReference",
+								"parameters": {}
+							}
+						]
+					}
+				],
+				"folder": {
+					"name": "PortThesaurus"
+				},
+				"annotations": []
+			},
+			"dependsOn": []
+		},
+		{
 			"name": "[concat(parameters('factoryName'), '/pl_CreateRelationshipsDriver')]",
 			"type": "Microsoft.DataFactory/factories/pipelines",
 			"apiVersion": "2018-06-01",
@@ -863,7 +1112,9 @@
 				"annotations": []
 			},
 			"dependsOn": [
-				"[concat(variables('factoryId'), '/pipelines/pl_LocalToAzureDB')]"
+				"[concat(variables('factoryId'), '/pipelines/pl_CopyLocalToTermTypeSource')]",
+				"[concat(variables('factoryId'), '/pipelines/pl_LocalToAzureDB')]",
+				"[concat(variables('factoryId'), '/pipelines/pl_CopyFromLocalToRelation')]"
 			]
 		}
 	]

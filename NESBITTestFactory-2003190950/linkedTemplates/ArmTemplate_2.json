@@ -25,6 +25,60 @@
 	},
 	"resources": [
 		{
+			"name": "[concat(parameters('factoryName'), '/TaxonomyTerms')]",
+			"type": "Microsoft.DataFactory/factories/datasets",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"linkedServiceName": {
+					"referenceName": "WarehouseAlphaTest",
+					"type": "LinkedServiceReference"
+				},
+				"annotations": [],
+				"type": "AzureSqlTable",
+				"schema": [
+					{
+						"name": "TermID",
+						"type": "int",
+						"precision": 10
+					},
+					{
+						"name": "TermDimID",
+						"type": "int",
+						"precision": 10
+					},
+					{
+						"name": "TermCode",
+						"type": "nvarchar"
+					},
+					{
+						"name": "TermName",
+						"type": "nvarchar"
+					},
+					{
+						"name": "TermDescription",
+						"type": "nvarchar"
+					},
+					{
+						"name": "TermPreferred",
+						"type": "bit"
+					},
+					{
+						"name": "Available",
+						"type": "bit"
+					},
+					{
+						"name": "TermTypeID",
+						"type": "smallint",
+						"precision": 5
+					}
+				],
+				"typeProperties": {
+					"tableName": "[[dbo].[TaxonomyTerms]"
+				}
+			},
+			"dependsOn": []
+		},
+		{
 			"name": "[concat(parameters('factoryName'), '/TaxonomyTermsFromTaxonomy')]",
 			"type": "Microsoft.DataFactory/factories/datasets",
 			"apiVersion": "2018-06-01",
@@ -372,41 +426,6 @@
 				],
 				"typeProperties": {
 					"tableName": "[[dbo].[IntermediateTerm]"
-				}
-			},
-			"dependsOn": []
-		},
-		{
-			"name": "[concat(parameters('factoryName'), '/TermTable')]",
-			"type": "Microsoft.DataFactory/factories/datasets",
-			"apiVersion": "2018-06-01",
-			"properties": {
-				"linkedServiceName": {
-					"referenceName": "WarehouseAlphaTest",
-					"type": "LinkedServiceReference"
-				},
-				"folder": {
-					"name": "PortThesaurus"
-				},
-				"annotations": [],
-				"type": "AzureSqlTable",
-				"schema": [
-					{
-						"name": "DimID",
-						"type": "int",
-						"precision": 10
-					},
-					{
-						"name": "DimName",
-						"type": "varchar"
-					},
-					{
-						"name": "DimDescription",
-						"type": "varchar"
-					}
-				],
-				"typeProperties": {
-					"tableName": "[[dbo].[TermSOURCE]"
 				}
 			},
 			"dependsOn": []

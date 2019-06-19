@@ -35,6 +35,10 @@
 			"type": "secureString",
 			"metadata": "Secure string for 'connectionString' of 'WarehouseAlphaTest2'"
 		},
+		"SqlDatabaseIncParam_connectionString": {
+			"type": "secureString",
+			"metadata": "Secure string for 'connectionString' of 'SqlDatabaseIncParam'"
+		},
 		"LocalhostSqlServer_properties_typeProperties_userName": {
 			"type": "string",
 			"defaultValue": "NES\\AlistairB"
@@ -78,6 +82,9 @@
 					},
 					"WarehouseAlphaTest2_connectionString": {
 						"value": "[parameters('WarehouseAlphaTest2_connectionString')]"
+					},
+					"SqlDatabaseIncParam_connectionString": {
+						"value": "[parameters('SqlDatabaseIncParam_connectionString')]"
 					}
 				}
 			},
