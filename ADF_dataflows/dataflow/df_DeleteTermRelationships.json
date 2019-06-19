@@ -1,6 +1,9 @@
 {
 	"name": "df_DeleteTermRelationships",
 	"properties": {
+		"folder": {
+			"name": "DeleteTermRelationships"
+		},
 		"type": "MappingDataFlow",
 		"typeProperties": {
 			"sources": [
@@ -10,7 +13,7 @@
 						"type": "DatasetReference"
 					},
 					"name": "TermRelationships",
-					"script": "source(output(\n\t\tRelationshipID as integer,\n\t\tTermXID as integer,\n\t\tTermYID as integer,\n\t\tKindID as integer,\n\t\tDescription as string\n\t),\n\tallowSchemaDrift: false,\n\tvalidateSchema: false,\n\tformat: 'table') ~> TermRelationships"
+					"script": "source(output(\n\t\tRelationshipID as integer,\n\t\tTermXID as integer,\n\t\tTermYID as integer,\n\t\tKindID as integer,\n\t\tDescription as string\n\t),\n\tallowSchemaDrift: false,\n\tvalidateSchema: false,\n\tisolationLevel: 'READ_UNCOMMITTED',\n\tformat: 'table') ~> TermRelationships"
 				}
 			],
 			"sinks": [

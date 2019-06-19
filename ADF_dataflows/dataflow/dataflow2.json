@@ -1,19 +1,19 @@
 {
-	"name": "df_MergeTurasDimensions",
+	"name": "dataflow2",
 	"properties": {
 		"folder": {
-			"name": "MergeTurasDimensions"
+			"name": "DeleteTermRelationships"
 		},
 		"type": "MappingDataFlow",
 		"typeProperties": {
 			"sources": [
 				{
 					"dataset": {
-						"referenceName": "DestinationTurasDimensions",
+						"referenceName": "PortfolioDimensionTables",
 						"type": "DatasetReference"
 					},
-					"name": "TurasDimensionTables",
-					"script": "source(output(\n\t\tDimTableName as string,\n\t\tDimID as long,\n\t\tDimCode as string,\n\t\tDimName as string,\n\t\tDimDescription as string,\n\t\tDimActive as boolean\n\t),\n\tallowSchemaDrift: false,\n\tvalidateSchema: false,\n\tisolationLevel: 'READ_UNCOMMITTED',\n\tformat: 'table') ~> TurasDimensionTables"
+					"name": "PortfolioDimensionTables",
+					"script": "source(output(\n\t\tDimTableName as string,\n\t\tDimID as integer,\n\t\tDimCode as string,\n\t\tDimName as string,\n\t\tDimDescription as string,\n\t\tDimActive as boolean\n\t),\n\tallowSchemaDrift: false,\n\tvalidateSchema: false,\n\tisolationLevel: 'READ_UNCOMMITTED',\n\tformat: 'table') ~> PortfolioDimensionTables"
 				},
 				{
 					"dataset": {
@@ -61,7 +61,7 @@
 			"transformations": [
 				{
 					"name": "MergeJoin",
-					"script": "TurasDimensionTables, TaxonomyDimensionTerms join(DimID == TermDimID\n\t&& DimTableName == TermDimTable,\n\tjoinType:'outer',\n\tbroadcast: 'none')~> MergeJoin"
+					"script": "PortfolioDimensionTables, TaxonomyDimensionTerms join(DimID == TermDimID\n\t&& DimTableName == TermDimTable,\n\tjoinType:'outer',\n\tbroadcast: 'none')~> MergeJoin"
 				},
 				{
 					"name": "ConditionalSplit",
