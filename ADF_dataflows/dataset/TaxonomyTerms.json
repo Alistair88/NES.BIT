@@ -44,7 +44,7 @@
 			}
 		],
 		"typeProperties": {
-			"tableName": "[dbo].[TaxonomyTerms]"
+			"tableName": "[Taxonomy].[TermSOURCE]"
 		}
 	},
 	"type": "Microsoft.DataFactory/factories/datasets"

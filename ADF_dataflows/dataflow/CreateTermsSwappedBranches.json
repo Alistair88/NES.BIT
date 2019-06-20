@@ -94,7 +94,7 @@
 				},
 				{
 					"name": "ConditionsForUpdate",
-					"script": "ConvertNameAndDesc alterRow(updateIf(not(isNull(TermID)) && not(isNull(TermDimID)))) ~> ConditionsForUpdate"
+					"script": "ConvertNameAndDesc alterRow(updateIf(not(isNull(TermID))&&not(isNull(TermDimID)))) ~> ConditionsForUpdate"
 				},
 				{
 					"name": "SelectForUpdate",
@@ -126,7 +126,7 @@
 				},
 				{
 					"name": "Filter1",
-					"script": "ThesaurusTerms filter(DimID == 11949) ~> Filter1"
+					"script": "ThesaurusTerms filter(DimID != 11949) ~> Filter1"
 				},
 				{
 					"name": "Select1",
