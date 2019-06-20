@@ -6,18 +6,6 @@
 			"type": "string",
 			"metadata": "Data Factory Name",
 			"defaultValue": "NESBITTestFactory-2003190950"
-		},
-		"LocalhostSqlServer_connectionString": {
-			"type": "secureString",
-			"metadata": "Secure string for 'connectionString' of 'LocalhostSqlServer'"
-		},
-		"LocalhostSqlServer_password": {
-			"type": "secureString",
-			"metadata": "Secure string for 'password' of 'LocalhostSqlServer'"
-		},
-		"LocalhostSqlServer_properties_typeProperties_userName": {
-			"type": "string",
-			"defaultValue": "NES\\AlistairB"
 		}
 	},
 	"variables": {
@@ -73,7 +61,7 @@
 					}
 				],
 				"typeProperties": {
-					"tableName": "[[dbo].[TaxonomyTerms]"
+					"tableName": "[[Taxonomy].[TermSOURCE]"
 				}
 			},
 			"dependsOn": []
@@ -426,6 +414,41 @@
 				],
 				"typeProperties": {
 					"tableName": "[[dbo].[IntermediateTerm]"
+				}
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/TermTable')]",
+			"type": "Microsoft.DataFactory/factories/datasets",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"linkedServiceName": {
+					"referenceName": "WarehouseAlphaTest",
+					"type": "LinkedServiceReference"
+				},
+				"folder": {
+					"name": "PortThesaurus"
+				},
+				"annotations": [],
+				"type": "AzureSqlTable",
+				"schema": [
+					{
+						"name": "DimID",
+						"type": "int",
+						"precision": 10
+					},
+					{
+						"name": "DimName",
+						"type": "varchar"
+					},
+					{
+						"name": "DimDescription",
+						"type": "varchar"
+					}
+				],
+				"typeProperties": {
+					"tableName": "[[dbo].[TermSOURCE]"
 				}
 			},
 			"dependsOn": []
@@ -954,28 +977,6 @@
 				],
 				"typeProperties": {
 					"tableName": "[[dbo].[TaxonomyTerms]"
-				}
-			},
-			"dependsOn": []
-		},
-		{
-			"name": "[concat(parameters('factoryName'), '/LocalhostSqlServer')]",
-			"type": "Microsoft.DataFactory/factories/linkedServices",
-			"apiVersion": "2018-06-01",
-			"properties": {
-				"annotations": [],
-				"type": "SqlServer",
-				"typeProperties": {
-					"connectionString": "[parameters('LocalhostSqlServer_connectionString')]",
-					"userName": "[parameters('LocalhostSqlServer_properties_typeProperties_userName')]",
-					"password": {
-						"type": "SecureString",
-						"value": "[parameters('LocalhostSqlServer_password')]"
-					}
-				},
-				"connectVia": {
-					"referenceName": "LocalintegrationRuntime",
-					"type": "IntegrationRuntimeReference"
 				}
 			},
 			"dependsOn": []

@@ -20,13 +20,13 @@
 		"PortThesaurusDB_connectionString": {
 			"value": ""
 		},
+		"SqlDatabaseIncParam_connectionString": {
+			"value": ""
+		},
 		"WarehouseAlphaTest_connectionString": {
 			"value": ""
 		},
 		"WarehouseAlphaTest2_connectionString": {
-			"value": ""
-		},
-		"SqlDatabaseIncParam_connectionString": {
 			"value": ""
 		},
 		"LocalhostSqlServer_properties_typeProperties_userName": {

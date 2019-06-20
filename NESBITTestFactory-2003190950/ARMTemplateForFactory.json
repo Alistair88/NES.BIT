@@ -27,6 +27,10 @@
 			"type": "secureString",
 			"metadata": "Secure string for 'connectionString' of 'PortThesaurusDB'"
 		},
+		"SqlDatabaseIncParam_connectionString": {
+			"type": "secureString",
+			"metadata": "Secure string for 'connectionString' of 'SqlDatabaseIncParam'"
+		},
 		"WarehouseAlphaTest_connectionString": {
 			"type": "secureString",
 			"metadata": "Secure string for 'connectionString' of 'WarehouseAlphaTest'"
@@ -34,10 +38,6 @@
 		"WarehouseAlphaTest2_connectionString": {
 			"type": "secureString",
 			"metadata": "Secure string for 'connectionString' of 'WarehouseAlphaTest2'"
-		},
-		"SqlDatabaseIncParam_connectionString": {
-			"type": "secureString",
-			"metadata": "Secure string for 'connectionString' of 'SqlDatabaseIncParam'"
 		},
 		"LocalhostSqlServer_properties_typeProperties_userName": {
 			"type": "string",
@@ -4698,7 +4698,7 @@
 					}
 				],
 				"typeProperties": {
-					"tableName": "[[dbo].[TaxonomyTerms]"
+					"tableName": "[[Taxonomy].[TermSOURCE]"
 				}
 			},
 			"dependsOn": [
@@ -5110,6 +5110,43 @@
 			},
 			"dependsOn": [
 				"[concat(variables('factoryId'), '/linkedServices/PortThesaurusDB')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/TermTable')]",
+			"type": "Microsoft.DataFactory/factories/datasets",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"linkedServiceName": {
+					"referenceName": "WarehouseAlphaTest",
+					"type": "LinkedServiceReference"
+				},
+				"folder": {
+					"name": "PortThesaurus"
+				},
+				"annotations": [],
+				"type": "AzureSqlTable",
+				"schema": [
+					{
+						"name": "DimID",
+						"type": "int",
+						"precision": 10
+					},
+					{
+						"name": "DimName",
+						"type": "varchar"
+					},
+					{
+						"name": "DimDescription",
+						"type": "varchar"
+					}
+				],
+				"typeProperties": {
+					"tableName": "[[dbo].[TermSOURCE]"
+				}
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/linkedServices/WarehouseAlphaTest')]"
 			]
 		},
 		{
@@ -5724,6 +5761,24 @@
 			"dependsOn": []
 		},
 		{
+			"name": "[concat(parameters('factoryName'), '/SqlDatabaseIncParam')]",
+			"type": "Microsoft.DataFactory/factories/linkedServices",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"parameters": {
+					"DBName": {
+						"type": "String"
+					}
+				},
+				"annotations": [],
+				"type": "AzureSqlDatabase",
+				"typeProperties": {
+					"connectionString": "[parameters('SqlDatabaseIncParam_connectionString')]"
+				}
+			},
+			"dependsOn": []
+		},
+		{
 			"name": "[concat(parameters('factoryName'), '/WarehouseAlphaTest')]",
 			"type": "Microsoft.DataFactory/factories/linkedServices",
 			"apiVersion": "2018-06-01",
@@ -5841,7 +5896,7 @@
 					"transformations": [
 						{
 							"name": "ConvertDimIDToTypeID",
-							"script": "Filter1 derive(PossibleTypeID = toShort(DimID)) ~> ConvertDimIDToTypeID"
+							"script": "ThesaurusTerms derive(PossibleTypeID = toShort(DimID)) ~> ConvertDimIDToTypeID"
 						},
 						{
 							"name": "LookupTypesWithDimID",
@@ -5902,10 +5957,6 @@
 						{
 							"name": "SelectForInsertion",
 							"script": "ConditionsForInsertion select(mapColumn(\n\t\tDimPreferred,\n\t\tDimDescription,\n\t\tPossibleTypeID,\n\t\tDimName,\n\t\tTermCode,\n\t\tAvailable = SetAvailable@Available,\n\t\tTermTypeID = PossibleTypeID\n\t))~> SelectForInsertion"
-						},
-						{
-							"name": "Filter1",
-							"script": "ThesaurusTerms filter(DimID == 11949) ~> Filter1"
 						},
 						{
 							"name": "Select1",
@@ -7316,61 +7367,6 @@
 				"[concat(variables('factoryId'), '/datasets/TaxonomyDimensionTerms')]",
 				"[concat(variables('factoryId'), '/datasets/CreateTurasDimsLookup')]",
 				"[concat(variables('factoryId'), '/datasets/IntermediateTermTable')]"
-			]
-		},
-		{
-			"name": "[concat(parameters('factoryName'), '/SqlDatabaseIncParam')]",
-			"type": "Microsoft.DataFactory/factories/linkedServices",
-			"apiVersion": "2018-06-01",
-			"properties": {
-				"parameters": {
-					"DBName": {
-						"type": "String"
-					}
-				},
-				"annotations": [],
-				"type": "AzureSqlDatabase",
-				"typeProperties": {
-					"connectionString": "[parameters('SqlDatabaseIncParam_connectionString')]"
-				}
-			},
-			"dependsOn": []
-		},
-		{
-			"name": "[concat(parameters('factoryName'), '/TermTable')]",
-			"type": "Microsoft.DataFactory/factories/datasets",
-			"apiVersion": "2018-06-01",
-			"properties": {
-				"linkedServiceName": {
-					"referenceName": "WarehouseAlphaTest",
-					"type": "LinkedServiceReference"
-				},
-				"folder": {
-					"name": "PortThesaurus"
-				},
-				"annotations": [],
-				"type": "AzureSqlTable",
-				"schema": [
-					{
-						"name": "DimID",
-						"type": "int",
-						"precision": 10
-					},
-					{
-						"name": "DimName",
-						"type": "varchar"
-					},
-					{
-						"name": "DimDescription",
-						"type": "varchar"
-					}
-				],
-				"typeProperties": {
-					"tableName": "[[dbo].[TermSOURCE]"
-				}
-			},
-			"dependsOn": [
-				"[concat(variables('factoryId'), '/linkedServices/WarehouseAlphaTest')]"
 			]
 		}
 	]

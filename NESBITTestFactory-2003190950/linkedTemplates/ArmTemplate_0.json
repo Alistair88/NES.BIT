@@ -11,6 +11,10 @@
 			"type": "secureString",
 			"metadata": "Secure string for 'connectionString' of 'PortThesaurusDB'"
 		},
+		"SqlDatabaseIncParam_connectionString": {
+			"type": "secureString",
+			"metadata": "Secure string for 'connectionString' of 'SqlDatabaseIncParam'"
+		},
 		"WarehouseAlphaTest_connectionString": {
 			"type": "secureString",
 			"metadata": "Secure string for 'connectionString' of 'WarehouseAlphaTest'"
@@ -18,10 +22,6 @@
 		"WarehouseAlphaTest2_connectionString": {
 			"type": "secureString",
 			"metadata": "Secure string for 'connectionString' of 'WarehouseAlphaTest2'"
-		},
-		"SqlDatabaseIncParam_connectionString": {
-			"type": "secureString",
-			"metadata": "Secure string for 'connectionString' of 'SqlDatabaseIncParam'"
 		}
 	},
 	"variables": {
@@ -37,6 +37,24 @@
 				"type": "AzureSqlDatabase",
 				"typeProperties": {
 					"connectionString": "[parameters('PortThesaurusDB_connectionString')]"
+				}
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/SqlDatabaseIncParam')]",
+			"type": "Microsoft.DataFactory/factories/linkedServices",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"parameters": {
+					"DBName": {
+						"type": "String"
+					}
+				},
+				"annotations": [],
+				"type": "AzureSqlDatabase",
+				"typeProperties": {
+					"connectionString": "[parameters('SqlDatabaseIncParam_connectionString')]"
 				}
 			},
 			"dependsOn": []
@@ -87,24 +105,6 @@
 				"type": "SelfHosted",
 				"description": "connection to the local computer",
 				"typeProperties": {}
-			},
-			"dependsOn": []
-		},
-		{
-			"name": "[concat(parameters('factoryName'), '/SqlDatabaseIncParam')]",
-			"type": "Microsoft.DataFactory/factories/linkedServices",
-			"apiVersion": "2018-06-01",
-			"properties": {
-				"parameters": {
-					"DBName": {
-						"type": "String"
-					}
-				},
-				"annotations": [],
-				"type": "AzureSqlDatabase",
-				"typeProperties": {
-					"connectionString": "[parameters('SqlDatabaseIncParam_connectionString')]"
-				}
 			},
 			"dependsOn": []
 		},

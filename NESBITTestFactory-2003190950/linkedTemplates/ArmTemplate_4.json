@@ -120,7 +120,7 @@
 					"transformations": [
 						{
 							"name": "ConvertDimIDToTypeID",
-							"script": "Filter1 derive(PossibleTypeID = toShort(DimID)) ~> ConvertDimIDToTypeID"
+							"script": "ThesaurusTerms derive(PossibleTypeID = toShort(DimID)) ~> ConvertDimIDToTypeID"
 						},
 						{
 							"name": "LookupTypesWithDimID",
@@ -181,10 +181,6 @@
 						{
 							"name": "SelectForInsertion",
 							"script": "ConditionsForInsertion select(mapColumn(\n\t\tDimPreferred,\n\t\tDimDescription,\n\t\tPossibleTypeID,\n\t\tDimName,\n\t\tTermCode,\n\t\tAvailable = SetAvailable@Available,\n\t\tTermTypeID = PossibleTypeID\n\t))~> SelectForInsertion"
-						},
-						{
-							"name": "Filter1",
-							"script": "ThesaurusTerms filter(DimID == 11949) ~> Filter1"
 						},
 						{
 							"name": "Select1",

@@ -27,6 +27,10 @@
 			"type": "secureString",
 			"metadata": "Secure string for 'connectionString' of 'PortThesaurusDB'"
 		},
+		"SqlDatabaseIncParam_connectionString": {
+			"type": "secureString",
+			"metadata": "Secure string for 'connectionString' of 'SqlDatabaseIncParam'"
+		},
 		"WarehouseAlphaTest_connectionString": {
 			"type": "secureString",
 			"metadata": "Secure string for 'connectionString' of 'WarehouseAlphaTest'"
@@ -34,10 +38,6 @@
 		"WarehouseAlphaTest2_connectionString": {
 			"type": "secureString",
 			"metadata": "Secure string for 'connectionString' of 'WarehouseAlphaTest2'"
-		},
-		"SqlDatabaseIncParam_connectionString": {
-			"type": "secureString",
-			"metadata": "Secure string for 'connectionString' of 'SqlDatabaseIncParam'"
 		},
 		"LocalhostSqlServer_properties_typeProperties_userName": {
 			"type": "string",
@@ -77,14 +77,14 @@
 					"PortThesaurusDB_connectionString": {
 						"value": "[parameters('PortThesaurusDB_connectionString')]"
 					},
+					"SqlDatabaseIncParam_connectionString": {
+						"value": "[parameters('SqlDatabaseIncParam_connectionString')]"
+					},
 					"WarehouseAlphaTest_connectionString": {
 						"value": "[parameters('WarehouseAlphaTest_connectionString')]"
 					},
 					"WarehouseAlphaTest2_connectionString": {
 						"value": "[parameters('WarehouseAlphaTest2_connectionString')]"
-					},
-					"SqlDatabaseIncParam_connectionString": {
-						"value": "[parameters('SqlDatabaseIncParam_connectionString')]"
 					}
 				}
 			},
@@ -123,15 +123,6 @@
 				"parameters": {
 					"factoryName": {
 						"value": "[parameters('factoryName')]"
-					},
-					"LocalhostSqlServer_connectionString": {
-						"value": "[parameters('LocalhostSqlServer_connectionString')]"
-					},
-					"LocalhostSqlServer_password": {
-						"value": "[parameters('LocalhostSqlServer_password')]"
-					},
-					"LocalhostSqlServer_properties_typeProperties_userName": {
-						"value": "[parameters('LocalhostSqlServer_properties_typeProperties_userName')]"
 					}
 				}
 			},
@@ -153,11 +144,20 @@
 					"factoryName": {
 						"value": "[parameters('factoryName')]"
 					},
+					"LocalhostSqlServer_connectionString": {
+						"value": "[parameters('LocalhostSqlServer_connectionString')]"
+					},
+					"LocalhostSqlServer_password": {
+						"value": "[parameters('LocalhostSqlServer_password')]"
+					},
 					"LocalhostTermType_connectionString": {
 						"value": "[parameters('LocalhostTermType_connectionString')]"
 					},
 					"LocalhostTermType_password": {
 						"value": "[parameters('LocalhostTermType_password')]"
+					},
+					"LocalhostSqlServer_properties_typeProperties_userName": {
+						"value": "[parameters('LocalhostSqlServer_properties_typeProperties_userName')]"
 					},
 					"LocalhostTermType_properties_typeProperties_userName": {
 						"value": "[parameters('LocalhostTermType_properties_typeProperties_userName')]"
