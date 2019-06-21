@@ -525,7 +525,7 @@
 			"apiVersion": "2018-06-01",
 			"properties": {
 				"linkedServiceName": {
-					"referenceName": "WarehouseAlphaTest",
+					"referenceName": "PortThesaurusDB",
 					"type": "LinkedServiceReference"
 				},
 				"folder": {
@@ -567,11 +567,11 @@
 					}
 				],
 				"typeProperties": {
-					"tableName": "[[Taxonomy].[TermSOURCE]"
+					"tableName": "[[dbo].[TaxonomyTermSOURCE]"
 				}
 			},
 			"dependsOn": [
-				"[concat(variables('factoryId'), '/linkedServices/WarehouseAlphaTest')]"
+				"[concat(variables('factoryId'), '/linkedServices/PortThesaurusDB')]"
 			]
 		},
 		{
