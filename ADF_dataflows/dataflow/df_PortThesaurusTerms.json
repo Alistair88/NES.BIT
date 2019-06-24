@@ -36,7 +36,7 @@
 						"type": "DatasetReference"
 					},
 					"name": "UpdateSink",
-					"script": "Filter1 sink(input(\n\t\tTermTypeID as integer,\n\t\tTypeName as string,\n\t\tDescription as string,\n\t\tAvailable as boolean,\n\t\tDimTable as string,\n\t\tSourceID as integer\n\t),\n\tallowSchemaDrift: false,\n\tvalidateSchema: false,\n\tformat: 'table',\n\tdeletable:false,\n\tinsertable:false,\n\tupdateable:true,\n\tupsertable:false,\n\tkeys:['TermTypeID'],\n\tmapColumn(\n\t\tTermTypeID,\n\t\tTypeName,\n\t\tDescription = TypeDescription\n\t),\n\tdateFormat:'dd/MM/yyyy') ~> UpdateSink"
+					"script": "Filter1 sink(input(\n\t\tTermTypeID as integer,\n\t\tTypeName as string,\n\t\tDescription as string,\n\t\tAvailable as boolean,\n\t\tDimTable as string,\n\t\tSourceID as integer\n\t),\n\tallowSchemaDrift: false,\n\tvalidateSchema: false,\n\tformat: 'table',\n\tdeletable:false,\n\tinsertable:false,\n\tupdateable:true,\n\tupsertable:false,\n\tkeys:['TermTypeID'],\n\tmapColumn(\n\t\tTermTypeID,\n\t\tTypeName = DimName,\n\t\tDescription = DimDescription\n\t),\n\tdateFormat:'dd/MM/yyyy') ~> UpdateSink"
 				},
 				{
 					"dataset": {
@@ -78,7 +78,7 @@
 				},
 				{
 					"name": "SelectForUpdate",
-					"script": "ConditionForUpdate select(mapColumn(\n\t\tTermTypeID,\n\t\tTypeName = DimTypeName,\n\t\tTypeDescription = DimTypeDescription,\n\t\tAvailable = TypeAvailable,\n\t\tSourceID = TypeSourceID\n\t))~> SelectForUpdate"
+					"script": "ConditionForUpdate select(mapColumn(\n\t\tTermTypeID,\n\t\tDimName = DimTypeName,\n\t\tDimDescription = DimTypeDescription,\n\t\tAvailable = TypeAvailable,\n\t\tSourceID = TypeSourceID\n\t))~> SelectForUpdate"
 				},
 				{
 					"name": "ConditionForUpdate",
@@ -106,7 +106,7 @@
 				},
 				{
 					"name": "Filter1",
-					"script": "SelectForUpdate filter(not(isNull(TermTypeID)) && not(isNull(TypeName))) ~> Filter1"
+					"script": "SelectForUpdate filter(not(isNull(TermTypeID)) && not(isNull(DimName))) ~> Filter1"
 				},
 				{
 					"name": "Filter2",
