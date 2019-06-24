@@ -78,7 +78,7 @@
 				},
 				{
 					"name": "SelectForUpdate",
-					"script": "ConditionForUpdate select(mapColumn(\n\t\tTermTypeID,\n\t\tTypeName = DimTypeName,\n\t\tTypeDescription = DimTypeDescription\n\t))~> SelectForUpdate"
+					"script": "ConditionForUpdate select(mapColumn(\n\t\tTermTypeID,\n\t\tTypeName = DimTypeName,\n\t\tTypeDescription = DimTypeDescription,\n\t\tAvailable = TypeAvailable,\n\t\tSourceID = TypeSourceID\n\t))~> SelectForUpdate"
 				},
 				{
 					"name": "ConditionForUpdate",
