@@ -39,7 +39,7 @@
 						"type": "DatasetReference"
 					},
 					"name": "UpdateSink",
-					"script": "Filter1 sink(input(\n\t\tTermTypeID as integer,\n\t\tTypeName as string,\n\t\tDescription as string,\n\t\tAvailable as boolean,\n\t\tDimTable as string,\n\t\tSourceID as integer\n\t),\n\tallowSchemaDrift: false,\n\tvalidateSchema: false,\n\tformat: 'table',\n\tdeletable:false,\n\tinsertable:false,\n\tupdateable:true,\n\tupsertable:false,\n\tkeys:['TermTypeID'],\n\tmapColumn(\n\t\tTermTypeID,\n\t\tTypeName = DimName,\n\t\tDescription = DimDescription\n\t),\n\tdateFormat:'dd/MM/yyyy') ~> UpdateSink"
+					"script": "RemoveNulls sink(input(\n\t\tTermTypeID as integer,\n\t\tTypeName as string,\n\t\tDescription as string,\n\t\tAvailable as boolean,\n\t\tDimTable as string,\n\t\tSourceID as integer\n\t),\n\tallowSchemaDrift: false,\n\tvalidateSchema: false,\n\tformat: 'table',\n\tdeletable:false,\n\tinsertable:false,\n\tupdateable:true,\n\tupsertable:false,\n\tkeys:['TermTypeID'],\n\tmapColumn(\n\t\tTermTypeID,\n\t\tTypeName = DimName,\n\t\tDescription = DimDescription\n\t),\n\tdateFormat:'dd/MM/yyyy') ~> UpdateSink"
 				},
 				{
 					"dataset": {
@@ -47,7 +47,7 @@
 						"type": "DatasetReference"
 					},
 					"name": "DeleteSink",
-					"script": "TermTypeSoftDelete sink(input(\n\t\tTermTypeID as integer,\n\t\tTypeName as string,\n\t\tDescription as string,\n\t\tAvailable as boolean,\n\t\tDimTable as string,\n\t\tSourceID as integer\n\t),\n\tallowSchemaDrift: false,\n\tvalidateSchema: false,\n\tformat: 'table',\n\tdeletable:false,\n\tinsertable:false,\n\tupdateable:true,\n\tupsertable:false,\n\tkeys:['TermTypeID'],\n\tmapColumn(\n\t\tTermTypeID,\n\t\tTypeName,\n\t\tDescription,\n\t\tAvailable = TypeAvailable,\n\t\tSourceID = TypeSourceID\n\t)) ~> DeleteSink"
+					"script": "RemoveNullTermTypeID2 sink(input(\n\t\tTermTypeID as integer,\n\t\tTypeName as string,\n\t\tDescription as string,\n\t\tAvailable as boolean,\n\t\tDimTable as string,\n\t\tSourceID as integer\n\t),\n\tallowSchemaDrift: false,\n\tvalidateSchema: false,\n\tformat: 'table',\n\tdeletable:false,\n\tinsertable:false,\n\tupdateable:true,\n\tupsertable:false,\n\tkeys:['TermTypeID'],\n\tmapColumn(\n\t\tTermTypeID,\n\t\tTypeName,\n\t\tDescription,\n\t\tAvailable = TypeAvailable,\n\t\tSourceID = TypeSourceID\n\t)) ~> DeleteSink"
 				},
 				{
 					"dataset": {
@@ -55,7 +55,7 @@
 						"type": "DatasetReference"
 					},
 					"name": "MarkTermsOfThisTypeAlsoUnavailable",
-					"script": "Filter2 sink(input(\n\t\tTermID as integer,\n\t\tDimID as integer,\n\t\tTermCode as string,\n\t\tTermName as string,\n\t\tDescription as string,\n\t\tPreferred as boolean,\n\t\tAvailable as boolean,\n\t\tTermTypeID as integer\n\t),\n\tallowSchemaDrift: false,\n\tvalidateSchema: false,\n\tformat: 'table',\n\tdeletable:false,\n\tinsertable:false,\n\tupdateable:true,\n\tupsertable:false,\n\tkeys:['TermTypeID'],\n\tmapColumn(\n\t\tTermTypeID,\n\t\tTermName = TypeName,\n\t\tDescription = TypeDescription,\n\t\tAvailable = TypeAvailable\n\t)) ~> MarkTermsOfThisTypeAlsoUnavailable"
+					"script": "RemoveNullTermTypeID1 sink(input(\n\t\tTermID as integer,\n\t\tDimID as integer,\n\t\tTermCode as string,\n\t\tTermName as string,\n\t\tDescription as string,\n\t\tPreferred as boolean,\n\t\tAvailable as boolean,\n\t\tTermTypeID as integer\n\t),\n\tallowSchemaDrift: false,\n\tvalidateSchema: false,\n\tformat: 'table',\n\tdeletable:false,\n\tinsertable:false,\n\tupdateable:true,\n\tupsertable:false,\n\tkeys:['TermTypeID'],\n\tmapColumn(\n\t\tTermTypeID,\n\t\tTermName = TypeName,\n\t\tDescription = TypeDescription,\n\t\tAvailable = TypeAvailable\n\t)) ~> MarkTermsOfThisTypeAlsoUnavailable"
 				}
 			],
 			"transformations": [
@@ -108,12 +108,16 @@
 					"script": "SelectColumnsToInsert alterRow(insertIf(not(isNull(TermTypeID)))) ~> AssignForInsertion"
 				},
 				{
-					"name": "Filter1",
-					"script": "SelectForUpdate filter(not(isNull(TermTypeID)) && not(isNull(DimName))) ~> Filter1"
+					"name": "RemoveNulls",
+					"script": "SelectForUpdate filter(not(isNull(TermTypeID)) && not(isNull(DimName))) ~> RemoveNulls"
 				},
 				{
-					"name": "Filter2",
-					"script": "SoftDeleteTermTable filter(not(isNull(TermTypeID))) ~> Filter2"
+					"name": "RemoveNullTermTypeID1",
+					"script": "SoftDeleteTermTable filter(not(isNull(TermTypeID))) ~> RemoveNullTermTypeID1"
+				},
+				{
+					"name": "RemoveNullTermTypeID2",
+					"script": "TermTypeSoftDelete filter(not(isNull(TermTypeID))) ~> RemoveNullTermTypeID2"
 				}
 			]
 		}
