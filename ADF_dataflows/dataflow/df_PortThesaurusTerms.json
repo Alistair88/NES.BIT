@@ -1,6 +1,9 @@
 {
 	"name": "df_PortThesaurusTerms",
 	"properties": {
+		"folder": {
+			"name": "PortThesaurusTerms"
+		},
 		"type": "MappingDataFlow",
 		"typeProperties": {
 			"sources": [
