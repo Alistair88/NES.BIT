@@ -55,7 +55,7 @@
 						"type": "DatasetReference"
 					},
 					"name": "MarkTermsOfThisTypeAlsoUnavailable",
-					"script": "Filter2 sink(input(\n\t\tTermID as integer,\n\t\tDimID as integer,\n\t\tTermCode as string,\n\t\tTermName as string,\n\t\tDescription as string,\n\t\tPreferred as boolean,\n\t\tAvailable as boolean,\n\t\tTermTypeID as integer\n\t),\n\tallowSchemaDrift: false,\n\tvalidateSchema: false,\n\tformat: 'table',\n\tdeletable:false,\n\tinsertable:false,\n\tupdateable:true,\n\tupsertable:false,\n\tkeys:['TermTypeID'],\n\tmapColumn(\n\t\tTermTypeID,\n\t\tTermName = TypeName,\n\t\tDescription = TypeDescription,\n\t\tAvailable = TypeAvailable\n\t)) ~> MarkTermsOfThisTypeAlsoUnavailable"
+					"script": "SoftDeleteTermTable sink(input(\n\t\tTermID as integer,\n\t\tDimID as integer,\n\t\tTermCode as string,\n\t\tTermName as string,\n\t\tDescription as string,\n\t\tPreferred as boolean,\n\t\tAvailable as boolean,\n\t\tTermTypeID as integer\n\t),\n\tallowSchemaDrift: false,\n\tvalidateSchema: false,\n\tformat: 'table',\n\tdeletable:false,\n\tinsertable:false,\n\tupdateable:true,\n\tupsertable:false,\n\tkeys:['TermTypeID'],\n\tmapColumn(\n\t\tTermTypeID,\n\t\tTermName = TypeName,\n\t\tDescription = TypeDescription,\n\t\tAvailable = TypeAvailable\n\t)) ~> MarkTermsOfThisTypeAlsoUnavailable"
 				}
 			],
 			"transformations": [
@@ -93,7 +93,7 @@
 				},
 				{
 					"name": "SelectValueToModify",
-					"script": "ConditionForDelete derive(TypeAvailable = TypeAvailable == false()) ~> SelectValueToModify"
+					"script": "RemoveNullTermTypeID derive(TypeAvailable = TypeAvailable == false()) ~> SelectValueToModify"
 				},
 				{
 					"name": "SoftDeleteTermTable",
@@ -108,8 +108,8 @@
 					"script": "SelectForUpdate filter(not(isNull(TermTypeID)) && not(isNull(DimName))) ~> Filter1"
 				},
 				{
-					"name": "Filter2",
-					"script": "SoftDeleteTermTable filter(not(isNull(TermTypeID))) ~> Filter2"
+					"name": "RemoveNullTermTypeID",
+					"script": "ConditionForDelete filter(not(isNull(TermTypeID))) ~> RemoveNullTermTypeID"
 				},
 				{
 					"name": "InsertFilterTest",
