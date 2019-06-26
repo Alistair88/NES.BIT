@@ -81,7 +81,7 @@
 				},
 				{
 					"name": "SelectForUpdate",
-					"script": "ConditionForUpdate select(mapColumn(\n\t\tTermTypeID,\n\t\tDimName = DimTypeName,\n\t\tDimDescription = DimTypeDescription,\n\t\tAvailable = TypeAvailable,\n\t\tSourceID = TypeSourceID\n\t))~> SelectForUpdate"
+					"script": "Match select(mapColumn(\n\t\tTermTypeID,\n\t\tDimName = DimTypeName,\n\t\tDimDescription = DimTypeDescription,\n\t\tAvailable = TypeAvailable,\n\t\tSourceID = TypeSourceID\n\t))~> SelectForUpdate"
 				},
 				{
 					"name": "ConditionForUpdate",
@@ -114,6 +114,10 @@
 				{
 					"name": "RemoveNullTermTypeID",
 					"script": "ConditionForDelete filter(not(isNull(TermTypeID))) ~> RemoveNullTermTypeID"
+				},
+				{
+					"name": "Match",
+					"script": "ConditionForUpdate filter(left(DimName, 80) == TypeName && iif(isNull(left(DimDescription, 500)), '', 'DimDescription') == iif(isNull(TypeDescription), '', TypeDescription)) ~> Match"
 				}
 			]
 		}
