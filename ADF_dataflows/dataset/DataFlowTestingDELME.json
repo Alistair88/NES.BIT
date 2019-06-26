@@ -1,0 +1,28 @@
+{
+	"name": "DataFlowTestingDELME",
+	"properties": {
+		"linkedServiceName": {
+			"referenceName": "PortThesaurusDB",
+			"type": "LinkedServiceReference"
+		},
+		"type": "AzureSqlTable",
+		"schema": [
+			{
+				"name": "DimID",
+				"type": "int",
+				"precision": 10
+			},
+			{
+				"name": "DimName",
+				"type": "nvarchar"
+			},
+			{
+				"name": "DimDescription",
+				"type": "nvarchar"
+			}
+		],
+		"typeProperties": {
+			"tableName": "[dbo].[DataflowUpdateTesting]"
+		}
+	}
+}
