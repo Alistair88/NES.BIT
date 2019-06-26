@@ -8,12 +8,8 @@
 		"typeProperties": {
 			"sources": [
 				{
-					"dataset": {
-						"referenceName": "TermTable",
-						"type": "DatasetReference"
-					},
 					"name": "GetThesaurusTypes",
-					"script": "source(output(\n\t\tDimID as integer,\n\t\tDimName as string,\n\t\tDimDescription as string\n\t),\n\tallowSchemaDrift: false,\n\tvalidateSchema: false,\n\tisolationLevel: 'READ_UNCOMMITTED',\n\tformat: 'table') ~> GetThesaurusTypes"
+					"script": "source(output(\n\t\tDimID as integer,\n\t\tDimName as string,\n\t\tDimDescription as string\n\t),\n\tallowSchemaDrift: false,\n\tvalidateSchema: false) ~> GetThesaurusTypes"
 				},
 				{
 					"dataset": {
