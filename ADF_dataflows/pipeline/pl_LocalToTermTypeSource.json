@@ -1,5 +1,5 @@
 {
-	"name": "pl_CopyLocalToTermTypeSource",
+	"name": "pl_LocalToTermTypeSource",
 	"properties": {
 		"description": "Copy the contents of the TermType table on the local db to the TermTypeSource table on Azure. ",
 		"activities": [
