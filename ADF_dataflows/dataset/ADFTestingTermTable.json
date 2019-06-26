@@ -1,5 +1,5 @@
 {
-	"name": "AzureSqlTermTable",
+	"name": "ADFTestingTermTable",
 	"properties": {
 		"description": "Term table used as a sink for Thesaurus data.",
 		"linkedServiceName": {

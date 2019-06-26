@@ -5,7 +5,7 @@
 		"activities": [
 			{
 				"name": "LocalToTermSource",
-				"description": "Load from local machine to Azure db",
+				"description": "Copy from local machine to TermSOURCE table  in the ADFTesting DB",
 				"type": "Copy",
 				"policy": {
 					"timeout": "7.00:00:00",
@@ -41,7 +41,7 @@
 				],
 				"outputs": [
 					{
-						"referenceName": "AzureSqlTermTable",
+						"referenceName": "ADFTestingTermTable",
 						"type": "DatasetReference"
 					}
 				]

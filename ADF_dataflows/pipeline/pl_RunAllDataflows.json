@@ -204,7 +204,7 @@
 				"type": "ExecutePipeline",
 				"typeProperties": {
 					"pipeline": {
-						"referenceName": "pl_CopyLocalToTermTypeSource",
+						"referenceName": "pl_LocalToTermTypeSource",
 						"type": "PipelineReference"
 					},
 					"waitOnCompletion": true
@@ -216,7 +216,7 @@
 				"type": "ExecutePipeline",
 				"typeProperties": {
 					"pipeline": {
-						"referenceName": "pl_LocalToAzureDB",
+						"referenceName": "pl_LocalToTermSource",
 						"type": "PipelineReference"
 					},
 					"waitOnCompletion": true
