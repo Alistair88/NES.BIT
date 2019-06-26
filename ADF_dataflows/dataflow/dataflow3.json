@@ -9,7 +9,7 @@
 			"sources": [
 				{
 					"dataset": {
-						"referenceName": "TermTable",
+						"referenceName": "ADFTestingTermTable",
 						"type": "DatasetReference"
 					},
 					"name": "GetThesaurusTypes",

@@ -1,5 +1,5 @@
 {
-	"name": "ADFTestingTermTableDELME",
+	"name": "ADFTestingTermTable",
 	"properties": {
 		"description": "Term table used as a sink for Thesaurus data.",
 		"linkedServiceName": {
@@ -10,18 +10,19 @@
 			"name": "PortThesaurus"
 		},
 		"type": "AzureSqlTable",
-		"structure": [
+		"schema": [
 			{
 				"name": "DimID",
-				"type": "Int32"
+				"type": "int",
+				"precision": 10
 			},
 			{
 				"name": "DimName",
-				"type": "String"
+				"type": "varchar"
 			},
 			{
 				"name": "DimDescription",
-				"type": "String"
+				"type": "varchar"
 			}
 		],
 		"typeProperties": {

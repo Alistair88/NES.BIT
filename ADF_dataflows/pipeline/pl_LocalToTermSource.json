@@ -41,7 +41,7 @@
 				],
 				"outputs": [
 					{
-						"referenceName": "ADFTestingTermTable",
+						"referenceName": "ADFTestingTermTableDELME",
 						"type": "DatasetReference"
 					}
 				]
