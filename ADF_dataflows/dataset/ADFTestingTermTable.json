@@ -6,6 +6,9 @@
 			"referenceName": "WarehouseAlphaTest",
 			"type": "LinkedServiceReference"
 		},
+		"folder": {
+			"name": "PortThesaurus"
+		},
 		"type": "AzureSqlTable",
 		"structure": [
 			{
