@@ -1,10 +1,10 @@
 {
-	"name": "pl_LocalToAzureDB",
+	"name": "pl_LocalToTermSource",
 	"properties": {
 		"description": "Copy the term table from local host to an Azure DB",
 		"activities": [
 			{
-				"name": "LoadFromTermTable",
+				"name": "LocalToTermSource",
 				"description": "Load from local machine to Azure db",
 				"type": "Copy",
 				"policy": {
