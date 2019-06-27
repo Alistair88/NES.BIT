@@ -74,7 +74,7 @@
 				},
 				{
 					"name": "AlterRow2",
-					"script": "ConvertNameAndDesc alterRow(updateIf(TermID==286337)) ~> AlterRow2"
+					"script": "ConvertNameAndDesc alterRow(updateIf(not(DimName == TermName &&  ((left(DimDescription, 500) == TermDescription) && (DimPreferred == TermPreferred))))) ~> AlterRow2"
 				},
 				{
 					"name": "DerivedColumn1",
@@ -86,7 +86,7 @@
 				},
 				{
 					"name": "Filter1",
-					"script": "ConditionalSplit1@Update filter(not(DimName == TermName &&  ((left(DimDescription, 500) == TermDescription) && (DimPreferred == TermPreferred)))) ~> Filter1"
+					"script": "ConditionalSplit1@Update filter(DimName == TermName &&  ((left(DimDescription, 500) == TermDescription) && (DimPreferred == TermPreferred))) ~> Filter1"
 				}
 			]
 		}
