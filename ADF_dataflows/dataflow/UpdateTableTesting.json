@@ -58,7 +58,7 @@
 				},
 				{
 					"name": "ConditionalSplit1",
-					"script": "ReplaceNullsWithSpace split(not(isNull(TermID)),\n\tdisjoint: false) ~> ConditionalSplit1@(Update, Default)"
+					"script": "MergeJoin split(not(isNull(TermID)),\n\tdisjoint: false) ~> ConditionalSplit1@(Update, Default)"
 				},
 				{
 					"name": "ConvertNameAndDesc",
@@ -74,7 +74,7 @@
 				},
 				{
 					"name": "AlterRow2",
-					"script": "ConvertNameAndDesc alterRow(updateIf(not(DimName == TermName &&  ((left(DimDescription, 500) == TermDescription) && (DimPreferred == TermPreferred))))) ~> AlterRow2"
+					"script": "ConvertNameAndDesc alterRow(updateIf(not(isNull(TermID)))) ~> AlterRow2"
 				},
 				{
 					"name": "DerivedColumn1",
@@ -82,11 +82,11 @@
 				},
 				{
 					"name": "ReplaceNullsWithSpace",
-					"script": "MergeJoin derive(DimDescription = iif(isNull(DimDescription), ' ', DimDescription),\n\t\tTermDescription = iif(isNull(TermDescription), ' ', TermDescription),\n\t\tDimPreferred = iif(isNull(DimPreferred), false(), DimPreferred),\n\t\tTermPreferred = iif(isNull(TermPreferred), false(), TermPreferred)) ~> ReplaceNullsWithSpace"
+					"script": "ConditionalSplit1@Default derive(DimDescription = iif(isNull(DimDescription), ' ', DimDescription),\n\t\tTermDescription = iif(isNull(TermDescription), ' ', TermDescription),\n\t\tDimPreferred = iif(isNull(DimPreferred), false(), DimPreferred),\n\t\tTermPreferred = iif(isNull(TermPreferred), false(), TermPreferred)) ~> ReplaceNullsWithSpace"
 				},
 				{
 					"name": "Filter1",
-					"script": "ConditionalSplit1@Default filter(DimName == TermName &&  ((left(DimDescription, 500) == TermDescription) && (DimPreferred == TermPreferred))) ~> Filter1"
+					"script": "ReplaceNullsWithSpace filter(not(DimName == TermName &&  ((left(DimDescription, 500) == TermDescription) && (DimPreferred == TermPreferred)))) ~> Filter1"
 				}
 			]
 		}
