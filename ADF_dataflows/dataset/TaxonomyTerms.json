@@ -2,7 +2,7 @@
 	"name": "TaxonomyTerms",
 	"properties": {
 		"linkedServiceName": {
-			"referenceName": "WarehouseAlphaTest",
+			"referenceName": "PortThesaurusDB",
 			"type": "LinkedServiceReference"
 		},
 		"type": "AzureSqlTable",
@@ -44,7 +44,7 @@
 			}
 		],
 		"typeProperties": {
-			"tableName": "[Taxonomy].[TermSOURCE]"
+			"tableName": "[dbo].[TaxonomyTermSOURCE]"
 		}
 	},
 	"type": "Microsoft.DataFactory/factories/datasets"
