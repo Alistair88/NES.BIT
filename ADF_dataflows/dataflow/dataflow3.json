@@ -112,12 +112,12 @@
 					"script": "ConditionForDelete filter(not(isNull(TermTypeID))) ~> RemoveNullTermTypeID"
 				},
 				{
-					"name": "ReplaceNullWithSpace",
-					"script": "ConditionalSplit1@update derive(DimDescription = iif(isNull(DimDescription), ' ', DimDescription),\n\t\tTypeDescription = iif(isNull(TypeDescription), ' ', TypeDescription)) ~> ReplaceNullWithSpace"
+					"name": "ReplaceNullsWithSpace",
+					"script": "ConditionalSplit1@update derive(DimDescription = iif(isNull(DimDescription), ' ', DimDescription),\n\t\tTypeDescription = iif(isNull(TypeDescription), ' ', TypeDescription)) ~> ReplaceNullsWithSpace"
 				},
 				{
 					"name": "Filter1",
-					"script": "ReplaceNullWithSpace filter(not(left(DimName, 80) == TypeName && (left(DimDescription, 500) == TypeDescription)) && !isNull(DimID) && not(isNull(TermTypeID))) ~> Filter1"
+					"script": "ReplaceNullsWithSpace filter(not(left(DimName, 80) == TypeName && (left(DimDescription, 500) == TypeDescription)) && !isNull(DimID) && not(isNull(TermTypeID))) ~> Filter1"
 				}
 			]
 		}

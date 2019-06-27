@@ -39,7 +39,7 @@
 						"type": "DatasetReference"
 					},
 					"name": "UpdateSink",
-					"script": "RemoveNulls sink(input(\n\t\tTermTypeID as integer,\n\t\tTypeName as string,\n\t\tDescription as string,\n\t\tAvailable as boolean,\n\t\tDimTable as string,\n\t\tSourceID as integer\n\t),\n\tallowSchemaDrift: false,\n\tvalidateSchema: false,\n\tformat: 'table',\n\tdeletable:false,\n\tinsertable:false,\n\tupdateable:true,\n\tupsertable:false,\n\tkeys:['TermTypeID'],\n\tmapColumn(\n\t\tTermTypeID,\n\t\tTypeName = DimName,\n\t\tDescription = DimDescription,\n\t\tAvailable,\n\t\tSourceID\n\t),\n\tdateFormat:'dd/MM/yyyy') ~> UpdateSink"
+					"script": "SelectForUpdate sink(input(\n\t\tTermTypeID as integer,\n\t\tTypeName as string,\n\t\tDescription as string,\n\t\tAvailable as boolean,\n\t\tDimTable as string,\n\t\tSourceID as integer\n\t),\n\tallowSchemaDrift: false,\n\tvalidateSchema: false,\n\tformat: 'table',\n\tdeletable:false,\n\tinsertable:false,\n\tupdateable:true,\n\tupsertable:false,\n\tkeys:['TermTypeID'],\n\tmapColumn(\n\t\tTermTypeID,\n\t\tTypeName = DimName,\n\t\tDescription = DimDescription,\n\t\tAvailable,\n\t\tSourceID\n\t),\n\tdateFormat:'dd/MM/yyyy') ~> UpdateSink"
 				},
 				{
 					"dataset": {
@@ -65,7 +65,7 @@
 				},
 				{
 					"name": "ConditionalSplit1",
-					"script": "MergeJoin split(isNull(TermTypeID),\n\tisNull(DimID),\n\tleft(DimName, 80) == TypeName && (iif(isNull(left(DimDescription, 500)), '', 'DimDescription') == iif(isNull(TypeDescription), '', TypeDescription)),\n\tdisjoint: true) ~> ConditionalSplit1@(insert, delete, match, update)"
+					"script": "MergeJoin split(isNull(TermTypeID),\n\tisNull(DimID),\n\tleft(DimName, 80) == TypeName && (iif(isNull(left(DimDescription, 500)), '', 'DimDescription') == iif(isNull(TypeDescription), '', TypeDescription)),\n\tdisjoint: true) ~> ConditionalSplit1@(insert, delete, DoNothingOnMatch, update)"
 				},
 				{
 					"name": "ConvertDimToType",
@@ -108,20 +108,16 @@
 					"script": "SelectColumnsToInsert alterRow(insertIf(not(isNull(TermTypeID)))) ~> AssignForInsertion"
 				},
 				{
-					"name": "RemoveNulls",
-					"script": "SelectForUpdate filter(not(isNull(TermTypeID)) && not(isNull(DimName))) ~> RemoveNulls"
-				},
-				{
 					"name": "RemoveNullTermTypeID",
 					"script": "ConditionForDelete filter(not(isNull(TermTypeID))) ~> RemoveNullTermTypeID"
 				},
 				{
-					"name": "DerivedColumn1",
-					"script": "ConditionalSplit1@update derive(DimDescription = iif(isNull(DimDescription), ' ', DimDescription),\n\t\tTypeDescription = iif(isNull(TypeDescription), ' ', TypeDescription)) ~> DerivedColumn1"
+					"name": "ReplaceNullsWithSpace",
+					"script": "ConditionalSplit1@update derive(DimDescription = iif(isNull(DimDescription), ' ', DimDescription),\n\t\tTypeDescription = iif(isNull(TypeDescription), ' ', TypeDescription)) ~> ReplaceNullsWithSpace"
 				},
 				{
 					"name": "Filter1",
-					"script": "DerivedColumn1 filter(\r\nnot(left(DimName, 80) == TypeName && (left(DimDescription, 500) == TypeDescription))&& !isNull(DimID) && not(isNull(TermTypeID))) ~> Filter1"
+					"script": "ReplaceNullsWithSpace filter(not(left(DimName, 80) == TypeName && (left(DimDescription, 500) == TypeDescription))&& !isNull(DimID) && not(isNull(TermTypeID))) ~> Filter1"
 				}
 			]
 		}
