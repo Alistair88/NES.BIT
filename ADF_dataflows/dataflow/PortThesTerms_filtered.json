@@ -121,7 +121,7 @@
 				},
 				{
 					"name": "UpdateFilterTest",
-					"script": "MergeJoin filter(\r\nnot(left(DimName, 80) == TypeName && iif(isNull(left(DimDescription, 500)), '', DimDescription) == iif(isNull(TypeDescription), '', TypeDescription)) && not(isNull(TermTypeID))) ~> UpdateFilterTest"
+					"script": "MergeJoin filter(\r\nnot(left(DimName, 80) == TypeName && iif(isNull(left(DimDescription, 500)), '', DimDescription) == iif(isNull(TypeDescription), '', TypeDescription)) && not(isNull(TermTypeID) && isNull(DimID))) ~> UpdateFilterTest"
 				},
 				{
 					"name": "DerivedColumn1",
@@ -129,7 +129,7 @@
 				},
 				{
 					"name": "Match",
-					"script": "DerivedColumn1 filter(left(DimName, 80) == TypeName && (left(DimDescription, 500) == DerivedColumn1@TypeDescription)) ~> Match"
+					"script": "DerivedColumn1 filter(not(left(DimName, 80) == TypeName && (left(DimDescription, 500) == DerivedColumn1@TypeDescription))&& !isNull(DimID) && not(isNull(TermTypeID))) ~> Match"
 				}
 			]
 		}
