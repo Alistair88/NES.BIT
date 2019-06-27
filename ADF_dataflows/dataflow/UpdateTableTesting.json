@@ -86,7 +86,7 @@
 				},
 				{
 					"name": "Filter1",
-					"script": "ConditionalSplit1@Update filter(DimName == TermName &&  ((left(DimDescription, 500) == TermDescription) && (DimPreferred == TermPreferred))) ~> Filter1"
+					"script": "ConditionalSplit1@Default filter(DimName == TermName &&  ((left(DimDescription, 500) == TermDescription) && (DimPreferred == TermPreferred))) ~> Filter1"
 				}
 			]
 		}
