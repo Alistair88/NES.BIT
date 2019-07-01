@@ -12,24 +12,21 @@
 						"referenceName": "PortfolioDimensionTables",
 						"type": "DatasetReference"
 					},
-					"name": "PortfolioDimensionTables",
-					"script": "source(output(\n\t\tDimTableName as string,\n\t\tDimID as integer,\n\t\tDimCode as string,\n\t\tDimName as string,\n\t\tDimDescription as string,\n\t\tDimActive as boolean\n\t),\n\tallowSchemaDrift: false,\n\tvalidateSchema: false,\n\tisolationLevel: 'READ_UNCOMMITTED',\n\tformat: 'table') ~> PortfolioDimensionTables"
+					"name": "PortfolioDimensionTables"
 				},
 				{
 					"dataset": {
 						"referenceName": "TaxonomyDimensionTerms",
 						"type": "DatasetReference"
 					},
-					"name": "TaxonomyDimensionTerms",
-					"script": "source(output(\n\t\tTermDimTable as string,\n\t\tTermID as integer,\n\t\tTermDimID as long,\n\t\tTermCode as string,\n\t\tTermName as string,\n\t\tTermDescription as string,\n\t\tTermPreferred as boolean,\n\t\tTermAvailable as boolean,\n\t\tTermTypeID as integer\n\t),\n\tallowSchemaDrift: false,\n\tvalidateSchema: false,\n\tisolationLevel: 'READ_UNCOMMITTED',\n\tformat: 'table') ~> TaxonomyDimensionTerms"
+					"name": "TaxonomyDimensionTerms"
 				},
 				{
 					"dataset": {
 						"referenceName": "CreateTurasDimsLookup",
 						"type": "DatasetReference"
 					},
-					"name": "LookupType",
-					"script": "source(output(\n\t\tTermTypeID as integer,\n\t\tDimTable as string\n\t),\n\tallowSchemaDrift: false,\n\tvalidateSchema: false,\n\tisolationLevel: 'READ_UNCOMMITTED',\n\tformat: 'table') ~> LookupType"
+					"name": "LookupType"
 				}
 			],
 			"sinks": [
@@ -38,32 +35,10 @@
 						"referenceName": "IntermediateTermTable",
 						"type": "DatasetReference"
 					},
-					"name": "UpdateSink",
-					"script": "MarkForUpdate sink(input(\n\t\tTermID as integer,\n\t\tDimID as integer,\n\t\tTermCode as string,\n\t\tTermName as string,\n\t\tDescription as string,\n\t\tPreferred as boolean,\n\t\tAvailable as boolean,\n\t\tTermTypeID as integer\n\t),\n\tallowSchemaDrift: false,\n\tvalidateSchema: false,\n\tformat: 'table',\n\tdeletable:false,\n\tinsertable:false,\n\tupdateable:true,\n\tupsertable:false,\n\tkeys:['TermID'],\n\tmapColumn(\n\t\tTermID,\n\t\tDimID,\n\t\tTermCode,\n\t\tTermName,\n\t\tDescription = TermDescription,\n\t\tPreferred = TermPreferred,\n\t\tAvailable = TermAvailable,\n\t\tTermTypeID\n\t)) ~> UpdateSink"
+					"name": "UpdateSink"
 				}
 			],
-			"transformations": [
-				{
-					"name": "MergeJoin",
-					"script": "PortfolioDimensionTables, TaxonomyDimensionTerms join(DimID == TermDimID\n\t&& DimTableName == TermDimTable,\n\tjoinType:'outer',\n\tbroadcast: 'none')~> MergeJoin"
-				},
-				{
-					"name": "ConditionalSplit",
-					"script": "Filter1 split(not(isNull(TermID)),\n\tdisjoint: true) ~> ConditionalSplit@(Update, Default)"
-				},
-				{
-					"name": "SelectForUpdate",
-					"script": "ConditionalSplit@Update select(mapColumn(\n\t\tDimID,\n\t\tTermID,\n\t\tTermCode,\n\t\tTermName,\n\t\tTermDescription,\n\t\tTermPreferred,\n\t\tTermAvailable,\n\t\tTermTypeID\n\t))~> SelectForUpdate"
-				},
-				{
-					"name": "MarkForUpdate",
-					"script": "SelectForUpdate alterRow(updateIf(not(isNull(TermID)))) ~> MarkForUpdate"
-				},
-				{
-					"name": "Filter1",
-					"script": "MergeJoin filter(DimID == 4303) ~> Filter1"
-				}
-			]
+			"script": "\n\nsource(output(\n\t\tDimTableName as string,\n\t\tDimID as integer,\n\t\tDimCode as string,\n\t\tDimName as string,\n\t\tDimDescription as string,\n\t\tDimActive as boolean\n\t),\n\tallowSchemaDrift: false,\n\tvalidateSchema: false,\n\tisolationLevel: 'READ_UNCOMMITTED',\n\tformat: 'table') ~> PortfolioDimensionTables\nsource(output(\n\t\tTermDimTable as string,\n\t\tTermID as integer,\n\t\tTermDimID as long,\n\t\tTermCode as string,\n\t\tTermName as string,\n\t\tTermDescription as string,\n\t\tTermPreferred as boolean,\n\t\tTermAvailable as boolean,\n\t\tTermTypeID as integer\n\t),\n\tallowSchemaDrift: false,\n\tvalidateSchema: false,\n\tisolationLevel: 'READ_UNCOMMITTED',\n\tformat: 'table') ~> TaxonomyDimensionTerms\nsource(output(\n\t\tTermTypeID as integer,\n\t\tDimTable as string\n\t),\n\tallowSchemaDrift: false,\n\tvalidateSchema: false,\n\tisolationLevel: 'READ_UNCOMMITTED',\n\tformat: 'table') ~> LookupType\nPortfolioDimensionTables, TaxonomyDimensionTerms join(DimID == TermDimID\n\t&& DimTableName == TermDimTable,\n\tjoinType:'outer',\n\tbroadcast: 'none')~> MergeJoin\nFilter1 split(not(isNull(TermID)),\n\tdisjoint: true) ~> ConditionalSplit@(Update, Default)\nConditionalSplit@Update select(mapColumn(\n\t\tDimID,\n\t\tTermID,\n\t\tTermCode,\n\t\tTermName,\n\t\tTermDescription,\n\t\tTermPreferred,\n\t\tTermAvailable,\n\t\tTermTypeID\n\t)) ~> SelectForUpdate\nSelectForUpdate alterRow(updateIf(not(isNull(TermID)))) ~> MarkForUpdate\nMergeJoin filter(DimID == 4303) ~> Filter1\nMarkForUpdate sink(input(\n\t\tTermID as integer,\n\t\tDimID as integer,\n\t\tTermCode as string,\n\t\tTermName as string,\n\t\tDescription as string,\n\t\tPreferred as boolean,\n\t\tAvailable as boolean,\n\t\tTermTypeID as integer\n\t),\n\tallowSchemaDrift: false,\n\tvalidateSchema: false,\n\tformat: 'table',\n\tdeletable:false,\n\tinsertable:false,\n\tupdateable:true,\n\tupsertable:false,\n\tkeys:['TermID'],\n\tmapColumn(\n\t\tTermID,\n\t\tDimID,\n\t\tTermCode,\n\t\tTermName,\n\t\tDescription = TermDescription,\n\t\tPreferred = TermPreferred,\n\t\tAvailable = TermAvailable,\n\t\tTermTypeID\n\t)) ~> UpdateSink"
 		}
 	}
 }
