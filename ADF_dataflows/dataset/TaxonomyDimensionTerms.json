@@ -8,6 +8,7 @@
 		"folder": {
 			"name": "MergeTurasDimensions"
 		},
+		"annotations": [],
 		"type": "AzureSqlTable",
 		"schema": [
 			{
