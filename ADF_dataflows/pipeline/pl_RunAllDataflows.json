@@ -27,6 +27,7 @@
 					"secureOutput": false,
 					"secureInput": false
 				},
+				"userProperties": [],
 				"typeProperties": {
 					"dataflow": {
 						"referenceName": "df_PortThesaurusTerms",
@@ -58,6 +59,7 @@
 					"secureOutput": false,
 					"secureInput": false
 				},
+				"userProperties": [],
 				"typeProperties": {
 					"dataflow": {
 						"referenceName": "CreateTermsSwappedBranches",
@@ -89,6 +91,7 @@
 					"secureOutput": false,
 					"secureInput": false
 				},
+				"userProperties": [],
 				"typeProperties": {
 					"dataflow": {
 						"referenceName": "df_CreateRelationships",
@@ -120,6 +123,7 @@
 					"secureOutput": false,
 					"secureInput": false
 				},
+				"userProperties": [],
 				"typeProperties": {
 					"dataflow": {
 						"referenceName": "df_MergeTurasDimensions",
@@ -151,6 +155,7 @@
 					"secureOutput": false,
 					"secureInput": false
 				},
+				"userProperties": [],
 				"typeProperties": {
 					"dataflow": {
 						"referenceName": "df_MergePortfolioDimensions",
@@ -170,6 +175,7 @@
 						]
 					}
 				],
+				"userProperties": [],
 				"typeProperties": {
 					"pipeline": {
 						"referenceName": "pl_CreateTaxonomyTermsSource",
@@ -190,6 +196,7 @@
 						]
 					}
 				],
+				"userProperties": [],
 				"typeProperties": {
 					"pipeline": {
 						"referenceName": "pl_GetDataFromPortfolioDimensionTables",
@@ -202,6 +209,8 @@
 				"name": "LocalToDboTermType",
 				"description": "Create the TermType table on the Azure DB using a query.",
 				"type": "ExecutePipeline",
+				"dependsOn": [],
+				"userProperties": [],
 				"typeProperties": {
 					"pipeline": {
 						"referenceName": "pl_LocalToTermTypeSource",
@@ -214,6 +223,8 @@
 				"name": "CreateTermTable",
 				"description": "Create the term table using a query.",
 				"type": "ExecutePipeline",
+				"dependsOn": [],
+				"userProperties": [],
 				"typeProperties": {
 					"pipeline": {
 						"referenceName": "pl_LocalToTermSource",
@@ -233,6 +244,7 @@
 						]
 					}
 				],
+				"userProperties": [],
 				"typeProperties": {
 					"pipeline": {
 						"referenceName": "pl_CreateTermRelationshipsSource",
@@ -252,6 +264,7 @@
 						]
 					}
 				],
+				"userProperties": [],
 				"typeProperties": {
 					"pipeline": {
 						"referenceName": "pl_CreateTurasDimensionTables",
@@ -271,6 +284,7 @@
 						]
 					}
 				],
+				"userProperties": [],
 				"typeProperties": {
 					"pipeline": {
 						"referenceName": "pl_CreateTaxonomyDimensionTerms",
@@ -290,6 +304,7 @@
 						]
 					}
 				],
+				"userProperties": [],
 				"typeProperties": {
 					"pipeline": {
 						"referenceName": "RunMergePortfolioDimensions",
@@ -309,6 +324,7 @@
 						]
 					}
 				],
+				"userProperties": [],
 				"typeProperties": {
 					"pipeline": {
 						"referenceName": "pl_CreateTaxonomyDimensionTerms",
@@ -328,6 +344,7 @@
 						]
 					}
 				],
+				"userProperties": [],
 				"typeProperties": {
 					"pipeline": {
 						"referenceName": "CreateThesaurusTerms_Dim_Source",
@@ -347,6 +364,7 @@
 						]
 					}
 				],
+				"userProperties": [],
 				"typeProperties": {
 					"pipeline": {
 						"referenceName": "pl_CopyFromLocalToRelation",
@@ -358,7 +376,8 @@
 		],
 		"folder": {
 			"name": "RunAllDataflows"
-		}
+		},
+		"annotations": []
 	},
 	"type": "Microsoft.DataFactory/factories/pipelines"
 }
