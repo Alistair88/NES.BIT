@@ -1,38 +1,12 @@
 {
-	"name": "RunMergePortfolioDimensions",
+	"name": "TruncateIntermediateTerm",
 	"properties": {
+		"description": "This activity truncates the Intermediate Term table.",
 		"activities": [
 			{
-				"name": "df_MergePortfolioDimensions",
-				"type": "ExecuteDataFlow",
-				"dependsOn": [],
-				"policy": {
-					"timeout": "7.00:00:00",
-					"retry": 0,
-					"retryIntervalInSeconds": 30,
-					"secureOutput": false,
-					"secureInput": false
-				},
-				"userProperties": [],
-				"typeProperties": {
-					"dataflow": {
-						"referenceName": "df_MergePortfolioDimensions",
-						"type": "DataFlowReference"
-					}
-				}
-			},
-			{
-				"name": "UpsertToTermTable",
-				"description": "Pipeline to upsert to the term table in the PortThesaurus DB",
+				"name": "TruncateIntermediateTerm",
 				"type": "Copy",
-				"dependsOn": [
-					{
-						"activity": "df_MergePortfolioDimensions",
-						"dependencyConditions": [
-							"Succeeded"
-						]
-					}
-				],
+				"dependsOn": [],
 				"policy": {
 					"timeout": "7.00:00:00",
 					"retry": 0,
@@ -47,8 +21,7 @@
 					},
 					"sink": {
 						"type": "AzureSqlSink",
-						"sqlWriterStoredProcedureName": "[dbo].[spUpsertTerm]",
-						"sqlWriterTableType": "Term"
+						"sqlWriterCleanupScript": "TRUNCATE TABLE IntermediateTerm"
 					},
 					"enableStaging": false,
 					"translator": {
@@ -139,22 +112,40 @@
 				},
 				"inputs": [
 					{
-						"referenceName": "datasetIntermediateTermTable",
+						"referenceName": "IntermediateTermTable",
 						"type": "DatasetReference"
 					}
 				],
 				"outputs": [
 					{
-						"referenceName": "DestinationTermTable",
+						"referenceName": "IntermediateTermTable",
 						"type": "DatasetReference"
 					}
 				]
+			},
+			{
+				"name": "Lookup1",
+				"type": "Lookup",
+				"dependsOn": [],
+				"policy": {
+					"timeout": "7.00:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"source": {
+						"type": "AzureSqlSource"
+					},
+					"dataset": {
+						"referenceName": "DataFactoryTableList",
+						"type": "DatasetReference"
+					}
+				}
 			}
 		],
-		"folder": {
-			"name": "MergePortfolioDimensions"
-		},
 		"annotations": []
-	},
-	"type": "Microsoft.DataFactory/factories/pipelines"
+	}
 }
