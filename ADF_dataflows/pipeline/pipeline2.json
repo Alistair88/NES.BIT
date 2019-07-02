@@ -73,7 +73,7 @@
 							],
 							"outputs": [
 								{
-									"referenceName": "IntermediateTermTable",
+									"referenceName": "sqlSinkDataSet",
 									"type": "DatasetReference"
 								}
 							]
