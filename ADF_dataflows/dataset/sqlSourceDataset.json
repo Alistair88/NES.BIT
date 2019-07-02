@@ -7,11 +7,9 @@
 		},
 		"parameters": {
 			"SqlTableName": {
-				"type": "String"
+				"type": "String",
+				"defaultValue": "dbo.TermTypeSOURCE"
 			}
-		},
-		"folder": {
-			"name": "ForEachTesting"
 		},
 		"annotations": [],
 		"type": "AzureSqlTable",

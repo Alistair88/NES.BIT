@@ -61,9 +61,16 @@
 									"type": "AzureSqlSource"
 								},
 								"sink": {
-									"type": "AzureSqlSink"
+									"type": "AzureSqlSink",
+									"sqlWriterCleanupScript": "TRUNCATE TABLE  @item().sourceTableName"
 								},
-								"enableStaging": false
+								"enableStaging": false,
+								"translator": {
+									"type": "TabularTranslator",
+									"columnMappings": {
+										"TableName": "TableName"
+									}
+								}
 							},
 							"inputs": [
 								{
@@ -71,7 +78,7 @@
 									"type": "DatasetReference",
 									"parameters": {
 										"SqlTableName": {
-											"value": "@item().TableName",
+											"value": "@item().sourceTableName",
 											"type": "Expression"
 										}
 									}
@@ -83,7 +90,7 @@
 									"type": "DatasetReference",
 									"parameters": {
 										"SqlTableName": {
-											"value": "@item().TableName",
+											"value": "@item().sinkTableName",
 											"type": "Expression"
 										}
 									}

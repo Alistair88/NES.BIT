@@ -7,7 +7,8 @@
 		},
 		"parameters": {
 			"SqlTableName": {
-				"type": "String"
+				"type": "String",
+				"defaultValue": "dbo.TermTypeSOURCE"
 			}
 		},
 		"annotations": [],
