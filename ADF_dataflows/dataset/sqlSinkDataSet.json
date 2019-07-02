@@ -1,0 +1,27 @@
+{
+	"name": "sqlSinkDataSet",
+	"properties": {
+		"linkedServiceName": {
+			"referenceName": "WarehouseAlphaTest",
+			"type": "LinkedServiceReference"
+		},
+		"parameters": {
+			"SqlTableName": {
+				"type": "String"
+			}
+		},
+		"annotations": [],
+		"type": "AzureSqlTable",
+		"structure": [
+			{
+				"name": "TableName"
+			}
+		],
+		"typeProperties": {
+			"tableName": {
+				"value": "@dataset().SqlTableName",
+				"type": "Expression"
+			}
+		}
+	}
+}
