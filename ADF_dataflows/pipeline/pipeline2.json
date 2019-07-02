@@ -61,8 +61,7 @@
 									"type": "AzureSqlSource"
 								},
 								"sink": {
-									"type": "AzureSqlSink",
-									"sqlWriterCleanupScript": "TRUNCATE TABLE  @item().TableName"
+									"type": "AzureSqlSink"
 								},
 								"enableStaging": false,
 								"translator": {
@@ -77,10 +76,7 @@
 									"referenceName": "sqlSourceDataset",
 									"type": "DatasetReference",
 									"parameters": {
-										"SqlTableName": {
-											"value": "@item().TableName",
-											"type": "Expression"
-										}
+										"SqlTableName": "dbo.TermTypeSOURCE"
 									}
 								}
 							],
@@ -89,10 +85,7 @@
 									"referenceName": "sqlSinkDataSet",
 									"type": "DatasetReference",
 									"parameters": {
-										"SqlTableName": {
-											"value": "@item().TableName",
-											"type": "Expression"
-										}
+										"SqlTableName": "dbo.TermTypeSOURCE"
 									}
 								}
 							]
