@@ -5,6 +5,7 @@
 			"referenceName": "PortThesaurusDB",
 			"type": "LinkedServiceReference"
 		},
+		"annotations": [],
 		"type": "AzureSqlTable",
 		"schema": [
 			{
