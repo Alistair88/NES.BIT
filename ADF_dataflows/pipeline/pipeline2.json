@@ -67,7 +67,7 @@
 							},
 							"inputs": [
 								{
-									"referenceName": "IntermediateTermTable",
+									"referenceName": "sqlSourceDataset",
 									"type": "DatasetReference"
 								}
 							],
@@ -78,10 +78,21 @@
 								}
 							]
 						}
-					]
+					],
+					"parameters": {
+						"sourceTableName": {
+							"type": "String"
+						},
+						"sinkTableName": {
+							"type": "String"
+						}
+					}
 				}
 			}
 		],
+		"folder": {
+			"name": "TruncateTable"
+		},
 		"annotations": []
 	}
 }
