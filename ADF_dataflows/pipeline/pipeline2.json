@@ -68,7 +68,13 @@
 							"inputs": [
 								{
 									"referenceName": "sqlSourceDataset",
-									"type": "DatasetReference"
+									"type": "DatasetReference",
+									"parameters": {
+										"SqlTableName": {
+											"value": "@item().TableName",
+											"type": "Expression"
+										}
+									}
 								}
 							],
 							"outputs": [
