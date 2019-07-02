@@ -6,7 +6,14 @@
 			{
 				"name": "TruncateIntermediateTerm",
 				"type": "Copy",
-				"dependsOn": [],
+				"dependsOn": [
+					{
+						"activity": "LookupTableName",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
 				"policy": {
 					"timeout": "7.00:00:00",
 					"retry": 0,
@@ -14,101 +21,25 @@
 					"secureOutput": false,
 					"secureInput": false
 				},
-				"userProperties": [],
+				"userProperties": [
+					{
+						"name": "Source",
+						"value": "[dbo].[IntermediateTerm]"
+					},
+					{
+						"name": "Destination",
+						"value": "[dbo].[IntermediateTerm]"
+					}
+				],
 				"typeProperties": {
 					"source": {
 						"type": "AzureSqlSource"
 					},
 					"sink": {
 						"type": "AzureSqlSink",
-						"sqlWriterCleanupScript": "TRUNCATE TABLE IntermediateTerm"
+						"sqlWriterCleanupScript": "TRUNCATE TABLE  @activity('LookupTableName').output"
 					},
-					"enableStaging": false,
-					"translator": {
-						"type": "TabularTranslator",
-						"mappings": [
-							{
-								"source": {
-									"name": "TermID",
-									"type": "Int32"
-								},
-								"sink": {
-									"name": "TermID",
-									"type": "Int32"
-								}
-							},
-							{
-								"source": {
-									"name": "DimID",
-									"type": "Int32"
-								},
-								"sink": {
-									"name": "DimID",
-									"type": "Int32"
-								}
-							},
-							{
-								"source": {
-									"name": "TermCode",
-									"type": "String"
-								},
-								"sink": {
-									"name": "TermCode",
-									"type": "String"
-								}
-							},
-							{
-								"source": {
-									"name": "TermName",
-									"type": "String"
-								},
-								"sink": {
-									"name": "TermName",
-									"type": "String"
-								}
-							},
-							{
-								"source": {
-									"name": "Description",
-									"type": "String"
-								},
-								"sink": {
-									"name": "Description",
-									"type": "String"
-								}
-							},
-							{
-								"source": {
-									"name": "Preferred",
-									"type": "Boolean"
-								},
-								"sink": {
-									"name": "Preferred",
-									"type": "Boolean"
-								}
-							},
-							{
-								"source": {
-									"name": "Available",
-									"type": "Boolean"
-								},
-								"sink": {
-									"name": "Available",
-									"type": "Boolean"
-								}
-							},
-							{
-								"source": {
-									"name": "TermTypeID",
-									"type": "Int16"
-								},
-								"sink": {
-									"name": "TermTypeID",
-									"type": "Int16"
-								}
-							}
-						]
-					}
+					"enableStaging": false
 				},
 				"inputs": [
 					{
@@ -124,48 +55,29 @@
 				]
 			},
 			{
-				"name": "ForEach1",
-				"type": "ForEach",
+				"name": "LookupTableName",
+				"type": "Lookup",
 				"dependsOn": [],
+				"policy": {
+					"timeout": "7.00:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
 				"userProperties": [],
 				"typeProperties": {
-					"items": {
-						"value": "@pipeline().parameters.TableName",
-						"type": "Expression"
+					"source": {
+						"type": "AzureSqlSource"
 					},
-					"activities": [
-						{
-							"name": "Lookup1",
-							"type": "Lookup",
-							"dependsOn": [],
-							"policy": {
-								"timeout": "7.00:00:00",
-								"retry": 0,
-								"retryIntervalInSeconds": 30,
-								"secureOutput": false,
-								"secureInput": false
-							},
-							"userProperties": [],
-							"typeProperties": {
-								"source": {
-									"type": "AzureSqlSource"
-								},
-								"dataset": {
-									"referenceName": "DataFactoryTableList",
-									"type": "DatasetReference"
-								},
-								"firstRowOnly": false
-							}
-						}
-					]
+					"dataset": {
+						"referenceName": "DataFactoryTableList",
+						"type": "DatasetReference"
+					},
+					"firstRowOnly": false
 				}
 			}
 		],
-		"parameters": {
-			"TableName": {
-				"type": "String"
-			}
-		},
 		"annotations": []
 	}
 }
