@@ -1,6 +1,7 @@
 {
-	"name": "pipeline4",
+	"name": "TruncatePortThesaurusTable",
 	"properties": {
+		"description": "Truncate the tables in the PortThesaurus db used in the dataflow",
 		"activities": [
 			{
 				"name": "LookupTableList",
@@ -19,7 +20,7 @@
 						"type": "AzureSqlSource"
 					},
 					"dataset": {
-						"referenceName": "DataFactoryTableList",
+						"referenceName": "PortThesaurusTableList",
 						"type": "DatasetReference"
 					},
 					"firstRowOnly": false
@@ -44,7 +45,7 @@
 					},
 					"activities": [
 						{
-							"name": "SqlServerStoredProcedure1",
+							"name": "TruncatePortThesaurusTables",
 							"type": "SqlServerStoredProcedure",
 							"dependsOn": [],
 							"policy": {
@@ -56,7 +57,7 @@
 							},
 							"userProperties": [],
 							"typeProperties": {
-								"storedProcedureName": "[dbo].[TruncateTable]",
+								"storedProcedureName": "[dbo].[TruncatePortThesaurusTables]",
 								"storedProcedureParameters": {
 									"databaseName": {
 										"value": {
@@ -75,7 +76,7 @@
 								}
 							},
 							"linkedServiceName": {
-								"referenceName": "WarehouseAlphaTest",
+								"referenceName": "PortThesaurusDB",
 								"type": "LinkedServiceReference"
 							}
 						}

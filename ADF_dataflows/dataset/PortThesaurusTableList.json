@@ -1,0 +1,24 @@
+{
+	"name": "PortThesaurusTableList",
+	"properties": {
+		"linkedServiceName": {
+			"referenceName": "PortThesaurusDB",
+			"type": "LinkedServiceReference"
+		},
+		"annotations": [],
+		"type": "AzureSqlTable",
+		"schema": [
+			{
+				"name": "databaseName",
+				"type": "nvarchar"
+			},
+			{
+				"name": "tableName",
+				"type": "nvarchar"
+			}
+		],
+		"typeProperties": {
+			"tableName": "[dbo].[PortThesaurusTableList]"
+		}
+	}
+}
