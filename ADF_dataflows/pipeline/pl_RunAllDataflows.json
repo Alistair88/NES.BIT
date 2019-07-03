@@ -8,12 +8,6 @@
 				"type": "ExecuteDataFlow",
 				"dependsOn": [
 					{
-						"activity": "LocalToDboTermType",
-						"dependencyConditions": [
-							"Succeeded"
-						]
-					},
-					{
 						"activity": "CreateTermTable",
 						"dependencyConditions": [
 							"Succeeded"
@@ -209,7 +203,14 @@
 				"name": "LocalToDboTermType",
 				"description": "Create the TermType table on the Azure DB using a query.",
 				"type": "ExecutePipeline",
-				"dependsOn": [],
+				"dependsOn": [
+					{
+						"activity": "TruncateTables",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
 				"userProperties": [],
 				"typeProperties": {
 					"pipeline": {
@@ -223,7 +224,14 @@
 				"name": "CreateTermTable",
 				"description": "Create the term table using a query.",
 				"type": "ExecutePipeline",
-				"dependsOn": [],
+				"dependsOn": [
+					{
+						"activity": "LocalToDboTermType",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
 				"userProperties": [],
 				"typeProperties": {
 					"pipeline": {
@@ -368,6 +376,19 @@
 				"typeProperties": {
 					"pipeline": {
 						"referenceName": "pl_CopyFromLocalToRelation",
+						"type": "PipelineReference"
+					},
+					"waitOnCompletion": true
+				}
+			},
+			{
+				"name": "TruncateTables",
+				"type": "ExecutePipeline",
+				"dependsOn": [],
+				"userProperties": [],
+				"typeProperties": {
+					"pipeline": {
+						"referenceName": "TruncateTables",
 						"type": "PipelineReference"
 					},
 					"waitOnCompletion": true
