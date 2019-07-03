@@ -1,9 +1,9 @@
 {
-	"name": "pipeline1",
+	"name": "TruncateTables",
 	"properties": {
 		"activities": [
 			{
-				"name": "Lookup2",
+				"name": "LookupTableList",
 				"type": "Lookup",
 				"dependsOn": [],
 				"policy": {
@@ -30,7 +30,7 @@
 				"type": "ForEach",
 				"dependsOn": [
 					{
-						"activity": "Lookup2",
+						"activity": "LookupTableList",
 						"dependencyConditions": [
 							"Succeeded"
 						]
@@ -39,7 +39,7 @@
 				"userProperties": [],
 				"typeProperties": {
 					"items": {
-						"value": "@activity('Lookup2').output.value",
+						"value": "@activity('LookupTableList').output.value",
 						"type": "Expression"
 					},
 					"activities": [
