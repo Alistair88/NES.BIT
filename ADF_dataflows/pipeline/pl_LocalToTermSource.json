@@ -7,6 +7,7 @@
 				"name": "LocalToTermSource",
 				"description": "Copy from local machine to TermSOURCE table  in the ADFTesting DB",
 				"type": "Copy",
+				"dependsOn": [],
 				"policy": {
 					"timeout": "7.00:00:00",
 					"retry": 0,
@@ -14,6 +15,7 @@
 					"secureOutput": false,
 					"secureInput": false
 				},
+				"userProperties": [],
 				"typeProperties": {
 					"source": {
 						"type": "SqlSource",
@@ -49,7 +51,8 @@
 		],
 		"folder": {
 			"name": "PortThesaurus"
-		}
+		},
+		"annotations": []
 	},
 	"type": "Microsoft.DataFactory/factories/pipelines"
 }
