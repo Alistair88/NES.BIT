@@ -8,7 +8,7 @@
 				"type": "ExecuteDataFlow",
 				"dependsOn": [
 					{
-						"activity": "Executepl_CreateTermRelationshipsSource",
+						"activity": "Execpl_CreateTermRelationshipsSource",
 						"dependencyConditions": [
 							"Succeeded"
 						]
@@ -42,7 +42,7 @@
 				}
 			},
 			{
-				"name": "Executepl_CreateTermRelationshipsSource",
+				"name": "Execpl_CreateTermRelationshipsSource",
 				"type": "ExecutePipeline",
 				"dependsOn": [],
 				"userProperties": [],
