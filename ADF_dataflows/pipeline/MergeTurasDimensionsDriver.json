@@ -1,5 +1,5 @@
 {
-	"name": "RunMergeTurasDimensions",
+	"name": "MergeTurasDimensionsDriver",
 	"properties": {
 		"activities": [
 			{
