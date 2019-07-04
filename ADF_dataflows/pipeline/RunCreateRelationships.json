@@ -14,12 +14,6 @@
 						]
 					},
 					{
-						"activity": "ExecutePl_CopyFromLocalToRelation",
-						"dependencyConditions": [
-							"Succeeded"
-						]
-					},
-					{
 						"activity": "ExecCreateDimRelationship",
 						"dependencyConditions": [
 							"Succeeded"
@@ -49,19 +43,6 @@
 				"typeProperties": {
 					"pipeline": {
 						"referenceName": "pl_CreateTermRelationshipsSource",
-						"type": "PipelineReference"
-					},
-					"waitOnCompletion": true
-				}
-			},
-			{
-				"name": "ExecutePl_CopyFromLocalToRelation",
-				"type": "ExecutePipeline",
-				"dependsOn": [],
-				"userProperties": [],
-				"typeProperties": {
-					"pipeline": {
-						"referenceName": "pl_CreateDimRelationships",
 						"type": "PipelineReference"
 					},
 					"waitOnCompletion": true
