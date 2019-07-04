@@ -55,7 +55,7 @@
 				"userProperties": [],
 				"typeProperties": {
 					"pipeline": {
-						"referenceName": "pl_CopyFromLocalToRelation",
+						"referenceName": "pl_CreateDimRelationship",
 						"type": "PipelineReference"
 					},
 					"waitOnCompletion": true
