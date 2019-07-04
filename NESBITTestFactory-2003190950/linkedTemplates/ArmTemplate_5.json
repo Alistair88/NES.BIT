@@ -13,6 +13,49 @@
 	},
 	"resources": [
 		{
+			"name": "[concat(parameters('factoryName'), '/MergePotfolioDimsDriver')]",
+			"type": "Microsoft.DataFactory/factories/pipelines",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"activities": [
+					{
+						"name": "df_MergePortfolioDimensions",
+						"type": "ExecuteDataFlow",
+						"dependsOn": [],
+						"policy": {
+							"timeout": "7.00:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"dataflow": {
+								"referenceName": "df_MergePortfolioDimensions",
+								"type": "DataFlowReference",
+								"parameters": {},
+								"datasetParameters": {
+									"PortfolioDimensionTables": {},
+									"TaxonomyDimensionTerms": {},
+									"LookupType": {},
+									"SinkIntoTermTaxonomy": {},
+									"DeleteTerm": {},
+									"UpdateSink": {}
+								}
+							},
+							"staging": {}
+						}
+					}
+				],
+				"folder": {
+					"name": "MergePortfolioDimensions"
+				},
+				"annotations": []
+			},
+			"dependsOn": []
+		},
+		{
 			"name": "[concat(parameters('factoryName'), '/MergeTurasDimensionsDriver')]",
 			"type": "Microsoft.DataFactory/factories/pipelines",
 			"apiVersion": "2018-06-01",
@@ -88,6 +131,9 @@
 						}
 					}
 				],
+				"folder": {
+					"name": "RunAllDataflows"
+				},
 				"annotations": []
 			},
 			"dependsOn": []
@@ -1909,6 +1955,27 @@
 							"waitOnCompletion": true,
 							"parameters": {}
 						}
+					},
+					{
+						"name": "ExecRunDeleteTermRelationships",
+						"type": "ExecutePipeline",
+						"dependsOn": [
+							{
+								"activity": "ExecRunPortfolioDims",
+								"dependencyConditions": [
+									"Succeeded"
+								]
+							}
+						],
+						"userProperties": [],
+						"typeProperties": {
+							"pipeline": {
+								"referenceName": "RunDeleteTermRelationships",
+								"type": "PipelineReference"
+							},
+							"waitOnCompletion": true,
+							"parameters": {}
+						}
 					}
 				],
 				"folder": {
@@ -1920,7 +1987,8 @@
 				"[concat(variables('factoryId'), '/pipelines/RunCreateTerms')]",
 				"[concat(variables('factoryId'), '/pipelines/RunPortThesaurus')]",
 				"[concat(variables('factoryId'), '/pipelines/RunMergeTuras')]",
-				"[concat(variables('factoryId'), '/pipelines/RunMergePortfolioDims')]"
+				"[concat(variables('factoryId'), '/pipelines/RunMergePortfolioDims')]",
+				"[concat(variables('factoryId'), '/pipelines/RunDeleteTermRelationships')]"
 			]
 		}
 	]

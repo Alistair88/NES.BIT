@@ -619,6 +619,9 @@
 						}
 					}
 				],
+				"folder": {
+					"name": "RunAllDataflows"
+				},
 				"annotations": []
 			},
 			"dependsOn": [
@@ -3143,6 +3146,27 @@
 							"waitOnCompletion": true,
 							"parameters": {}
 						}
+					},
+					{
+						"name": "ExecRunDeleteTermRelationships",
+						"type": "ExecutePipeline",
+						"dependsOn": [
+							{
+								"activity": "ExecRunPortfolioDims",
+								"dependencyConditions": [
+									"Succeeded"
+								]
+							}
+						],
+						"userProperties": [],
+						"typeProperties": {
+							"pipeline": {
+								"referenceName": "RunDeleteTermRelationships",
+								"type": "PipelineReference"
+							},
+							"waitOnCompletion": true,
+							"parameters": {}
+						}
 					}
 				],
 				"folder": {
@@ -3155,7 +3179,8 @@
 				"[concat(variables('factoryId'), '/pipelines/RunCreateTerms')]",
 				"[concat(variables('factoryId'), '/pipelines/RunPortThesaurus')]",
 				"[concat(variables('factoryId'), '/pipelines/RunMergeTuras')]",
-				"[concat(variables('factoryId'), '/pipelines/RunMergePortfolioDims')]"
+				"[concat(variables('factoryId'), '/pipelines/RunMergePortfolioDims')]",
+				"[concat(variables('factoryId'), '/pipelines/RunDeleteTermRelationships')]"
 			]
 		},
 		{
@@ -7407,6 +7432,52 @@
 				"[concat(variables('factoryId'), '/datasets/PortfolioDimensionTables')]",
 				"[concat(variables('factoryId'), '/datasets/TaxonomyDimensionTerms')]",
 				"[concat(variables('factoryId'), '/datasets/CreateTurasDimsLookup')]",
+				"[concat(variables('factoryId'), '/datasets/IntermediateTermTable')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/dataflow1')]",
+			"type": "Microsoft.DataFactory/factories/dataflows",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"folder": {
+					"name": "DeleteTermRelationships"
+				},
+				"type": "MappingDataFlow",
+				"typeProperties": {
+					"sources": [
+						{
+							"dataset": {
+								"referenceName": "PortfolioDimensionTables",
+								"type": "DatasetReference"
+							},
+							"name": "PortfolioDimensionTables",
+							"typeProperties": {}
+						},
+						{
+							"dataset": {
+								"referenceName": "TaxonomyDimensionTerms",
+								"type": "DatasetReference"
+							},
+							"name": "TaxonomyDimensionTerms",
+							"typeProperties": {}
+						}
+					],
+					"sinks": [
+						{
+							"dataset": {
+								"referenceName": "IntermediateTermTable",
+								"type": "DatasetReference"
+							},
+							"name": "DeleteTerm"
+						}
+					],
+					"script": "\n\nsource(output(\n\t\tDimTableName as string,\n\t\tDimID as integer,\n\t\tDimCode as string,\n\t\tDimName as string,\n\t\tDimDescription as string,\n\t\tDimActive as boolean\n\t),\n\tallowSchemaDrift: false,\n\tvalidateSchema: false,\n\tisolationLevel: 'READ_UNCOMMITTED',\n\tformat: 'table') ~> PortfolioDimensionTables\nsource(output(\n\t\tTermDimTable as string,\n\t\tTermID as integer,\n\t\tTermDimID as long,\n\t\tTermCode as string,\n\t\tTermName as string,\n\t\tTermDescription as string,\n\t\tTermPreferred as boolean,\n\t\tTermAvailable as boolean,\n\t\tTermTypeID as integer\n\t),\n\tallowSchemaDrift: false,\n\tvalidateSchema: false,\n\tisolationLevel: 'READ_UNCOMMITTED',\n\tformat: 'table') ~> TaxonomyDimensionTerms\nPortfolioDimensionTables, TaxonomyDimensionTerms join(DimID == TermDimID\n\t&& DimTableName == TermDimTable,\n\tjoinType:'outer',\n\tbroadcast: 'none')~> MergeJoin\nMergeJoin split(isNull(DimID),\n\tdisjoint: true) ~> ConditionalSplit@(Delete, Update)\nConditionalSplit@Delete select(mapColumn(\n\t\tDimID,\n\t\tTermID,\n\t\tTermCode,\n\t\tTermName\n\t)) ~> SelectForDeletion\nSelectForDeletion alterRow(deleteIf(isNull(DimID))) ~> MarkForDeletion\nMarkForDeletion sink(input(\n\t\tTermID as integer,\n\t\tDimID as integer,\n\t\tTermCode as string,\n\t\tTermName as string,\n\t\tDescription as string,\n\t\tPreferred as boolean,\n\t\tAvailable as boolean,\n\t\tTermTypeID as integer\n\t),\n\tallowSchemaDrift: false,\n\tvalidateSchema: false,\n\tformat: 'table',\n\tdeletable:true,\n\tinsertable:false,\n\tupdateable:false,\n\tupsertable:false,\n\tkeys:['TermID']) ~> DeleteTerm"
+				}
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/datasets/PortfolioDimensionTables')]",
+				"[concat(variables('factoryId'), '/datasets/TaxonomyDimensionTerms')]",
 				"[concat(variables('factoryId'), '/datasets/IntermediateTermTable')]"
 			]
 		}
