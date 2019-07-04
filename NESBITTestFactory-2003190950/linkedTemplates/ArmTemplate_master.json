@@ -23,13 +23,13 @@
 			"type": "secureString",
 			"metadata": "Secure string for 'password' of 'LocalhostTermType'"
 		},
+		"ParameterizedConnection_connectionString": {
+			"type": "secureString",
+			"metadata": "Secure string for 'connectionString' of 'ParameterizedConnection'"
+		},
 		"PortThesaurusDB_connectionString": {
 			"type": "secureString",
 			"metadata": "Secure string for 'connectionString' of 'PortThesaurusDB'"
-		},
-		"SqlDatabaseIncParam_connectionString": {
-			"type": "secureString",
-			"metadata": "Secure string for 'connectionString' of 'SqlDatabaseIncParam'"
 		},
 		"WarehouseAlphaTest_connectionString": {
 			"type": "secureString",
@@ -74,11 +74,11 @@
 					"factoryName": {
 						"value": "[parameters('factoryName')]"
 					},
+					"ParameterizedConnection_connectionString": {
+						"value": "[parameters('ParameterizedConnection_connectionString')]"
+					},
 					"PortThesaurusDB_connectionString": {
 						"value": "[parameters('PortThesaurusDB_connectionString')]"
-					},
-					"SqlDatabaseIncParam_connectionString": {
-						"value": "[parameters('SqlDatabaseIncParam_connectionString')]"
 					},
 					"WarehouseAlphaTest_connectionString": {
 						"value": "[parameters('WarehouseAlphaTest_connectionString')]"

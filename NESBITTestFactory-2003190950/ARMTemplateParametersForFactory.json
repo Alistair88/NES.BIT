@@ -17,10 +17,10 @@
 		"LocalhostTermType_password": {
 			"value": ""
 		},
-		"PortThesaurusDB_connectionString": {
+		"ParameterizedConnection_connectionString": {
 			"value": ""
 		},
-		"SqlDatabaseIncParam_connectionString": {
+		"PortThesaurusDB_connectionString": {
 			"value": ""
 		},
 		"WarehouseAlphaTest_connectionString": {
