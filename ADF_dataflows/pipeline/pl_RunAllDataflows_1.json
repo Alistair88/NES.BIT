@@ -355,7 +355,7 @@
 				"userProperties": [],
 				"typeProperties": {
 					"pipeline": {
-						"referenceName": "pl_CreateDimRelationship",
+						"referenceName": "pl_CreateDimRelationships",
 						"type": "PipelineReference"
 					},
 					"waitOnCompletion": true
