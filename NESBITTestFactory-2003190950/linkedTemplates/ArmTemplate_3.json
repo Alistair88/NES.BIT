@@ -123,7 +123,10 @@
 					}
 				],
 				"typeProperties": {
-					"tableName": "@dataset().SqlTableName"
+					"tableName": {
+						"value": "@dataset().SqlTableName",
+						"type": "Expression"
+					}
 				}
 			},
 			"dependsOn": []

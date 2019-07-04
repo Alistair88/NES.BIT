@@ -420,13 +420,13 @@
 						"type": "ExecuteDataFlow",
 						"dependsOn": [
 							{
-								"activity": "Executepl_CreateTermRelationshipsSource",
+								"activity": "Execpl_CreateTermRelationshipsSource",
 								"dependencyConditions": [
 									"Succeeded"
 								]
 							},
 							{
-								"activity": "ExecutePl_CopyFromLocalToRelation",
+								"activity": "ExecCreateDimRelationship",
 								"dependencyConditions": [
 									"Succeeded"
 								]
@@ -457,7 +457,7 @@
 						}
 					},
 					{
-						"name": "Executepl_CreateTermRelationshipsSource",
+						"name": "Execpl_CreateTermRelationshipsSource",
 						"type": "ExecutePipeline",
 						"dependsOn": [],
 						"userProperties": [],
@@ -471,13 +471,13 @@
 						}
 					},
 					{
-						"name": "ExecutePl_CopyFromLocalToRelation",
+						"name": "ExecCreateDimRelationship",
 						"type": "ExecutePipeline",
 						"dependsOn": [],
 						"userProperties": [],
 						"typeProperties": {
 							"pipeline": {
-								"referenceName": "pl_CopyFromLocalToRelation",
+								"referenceName": "pl_CreateDimRelationships",
 								"type": "PipelineReference"
 							},
 							"waitOnCompletion": true,
@@ -493,7 +493,7 @@
 			"dependsOn": [
 				"[concat(variables('factoryId'), '/dataflows/df_CreateRelationships')]",
 				"[concat(variables('factoryId'), '/pipelines/pl_CreateTermRelationshipsSource')]",
-				"[concat(variables('factoryId'), '/pipelines/pl_CopyFromLocalToRelation')]"
+				"[concat(variables('factoryId'), '/pipelines/pl_CreateDimRelationships')]"
 			]
 		},
 		{
@@ -1548,72 +1548,122 @@
 			]
 		},
 		{
-			"name": "[concat(parameters('factoryName'), '/pl_CopyFromLocalToRelation')]",
+			"name": "[concat(parameters('factoryName'), '/pipeline4')]",
 			"type": "Microsoft.DataFactory/factories/pipelines",
 			"apiVersion": "2018-06-01",
 			"properties": {
-				"description": "Uses a query to create a table for use in the Create Relationships dataflow source table entitled 'Get Dim relationship'",
+				"description": "Run all PortThesaurus dataflows",
 				"activities": [
 					{
-						"name": "CreateDimRelationship",
-						"type": "Copy",
+						"name": "TruncateTables",
+						"type": "ExecutePipeline",
 						"dependsOn": [],
-						"policy": {
-							"timeout": "7.00:00:00",
-							"retry": 0,
-							"retryIntervalInSeconds": 30,
-							"secureOutput": false,
-							"secureInput": false
-						},
-						"userProperties": [
-							{
-								"name": "Destination",
-								"value": "[[dbo].[GetDimRelationship]"
-							}
-						],
+						"userProperties": [],
 						"typeProperties": {
-							"source": {
-								"type": "SqlSource",
-								"sqlReaderQuery": "SELECT maintermid XDimID, relatedtermid YDimID,\r\nCAST(CASE relationship\r\n  WHEN 1 THEN 2 -- synonym\r\n  WHEN 4 THEN 1 -- parent/child\r\n  WHEN 5 THEN 4 --association\r\n  END AS SMALLINT) DimKindID\r\nFROM dbo.Relation WHERE relationship IN (1, 4, 5) \r\nAND relatedtermid <> maintermid\r\nORDER BY XDimID, YDimID, DimKindID;"
+							"pipeline": {
+								"referenceName": "TruncateTables",
+								"type": "PipelineReference"
 							},
-							"sink": {
-								"type": "SqlSink",
-								"writeBatchSize": 10000
-							},
-							"enableStaging": false,
-							"translator": {
-								"type": "TabularTranslator",
-								"columnMappings": {
-									"XDimID": "XDimID",
-									"YDimID": "YDimID",
-									"DimKindID": "DimKindID"
-								}
-							}
-						},
-						"inputs": [
+							"waitOnCompletion": true,
+							"parameters": {}
+						}
+					},
+					{
+						"name": "ExecRunCreateTerms",
+						"type": "ExecutePipeline",
+						"dependsOn": [
 							{
-								"referenceName": "SourceRelationFromLocal",
-								"type": "DatasetReference",
-								"parameters": {}
+								"activity": "ExecRunPortThesaurus",
+								"dependencyConditions": [
+									"Succeeded"
+								]
 							}
 						],
-						"outputs": [
+						"userProperties": [],
+						"typeProperties": {
+							"pipeline": {
+								"referenceName": "RunCreateTerms",
+								"type": "PipelineReference"
+							},
+							"waitOnCompletion": true,
+							"parameters": {}
+						}
+					},
+					{
+						"name": "ExecRunPortThesaurus",
+						"type": "ExecutePipeline",
+						"dependsOn": [
 							{
-								"referenceName": "DestinationGetDimRelationship",
-								"type": "DatasetReference",
-								"parameters": {}
+								"activity": "TruncateTables",
+								"dependencyConditions": [
+									"Succeeded"
+								]
 							}
-						]
+						],
+						"userProperties": [],
+						"typeProperties": {
+							"pipeline": {
+								"referenceName": "RunPortThesaurus",
+								"type": "PipelineReference"
+							},
+							"waitOnCompletion": true,
+							"parameters": {}
+						}
+					},
+					{
+						"name": "ExecMergeTuras",
+						"type": "ExecutePipeline",
+						"dependsOn": [
+							{
+								"activity": "ExecRunCreateTerms",
+								"dependencyConditions": [
+									"Succeeded"
+								]
+							}
+						],
+						"userProperties": [],
+						"typeProperties": {
+							"pipeline": {
+								"referenceName": "RunMergeTuras",
+								"type": "PipelineReference"
+							},
+							"waitOnCompletion": true,
+							"parameters": {}
+						}
+					},
+					{
+						"name": "ExecRunPortfolioDims",
+						"type": "ExecutePipeline",
+						"dependsOn": [
+							{
+								"activity": "ExecMergeTuras",
+								"dependencyConditions": [
+									"Succeeded"
+								]
+							}
+						],
+						"userProperties": [],
+						"typeProperties": {
+							"pipeline": {
+								"referenceName": "RunMergePortfolioDims",
+								"type": "PipelineReference"
+							},
+							"waitOnCompletion": true,
+							"parameters": {}
+						}
 					}
 				],
 				"folder": {
-					"name": "CreateRelationships"
+					"name": "RunAllDataflows"
 				},
 				"annotations": []
 			},
 			"dependsOn": [
-				"[concat(variables('factoryId'), '/datasets/SourceRelationFromLocal')]",
-				"[concat(variables('factoryId'), '/datasets/DestinationGetDimRelationship')]"
+				"[concat(variables('factoryId'), '/pipelines/TruncateTables')]",
+				"[concat(variables('factoryId'), '/pipelines/RunCreateTerms')]",
+				"[concat(variables('factoryId'), '/pipelines/RunPortThesaurus')]",
+				"[concat(variables('factoryId'), '/pipelines/RunMergeTuras')]",
+				"[concat(variables('factoryId'), '/pipelines/RunMergePortfolioDims')]"
 			]
 		},
 		{
@@ -1751,6 +1801,75 @@
 			"dependsOn": [
 				"[concat(variables('factoryId'), '/datasets/SourceDataset_mgm')]",
 				"[concat(variables('factoryId'), '/datasets/DestinationDataset_mgm')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/pl_CreateDimRelationships')]",
+			"type": "Microsoft.DataFactory/factories/pipelines",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"description": "Uses a query to create a table for use in the Create Relationships dataflow source table entitled 'Get Dim relationship'",
+				"activities": [
+					{
+						"name": "CreateDimRelationship",
+						"type": "Copy",
+						"dependsOn": [],
+						"policy": {
+							"timeout": "7.00:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [
+							{
+								"name": "Destination",
+								"value": "[[dbo].[GetDimRelationship]"
+							}
+						],
+						"typeProperties": {
+							"source": {
+								"type": "SqlSource",
+								"sqlReaderQuery": "SELECT maintermid XDimID, relatedtermid YDimID,\r\nCAST(CASE relationship\r\n  WHEN 1 THEN 2 -- synonym\r\n  WHEN 4 THEN 1 -- parent/child\r\n  WHEN 5 THEN 4 --association\r\n  END AS SMALLINT) DimKindID\r\nFROM dbo.Relation WHERE relationship IN (1, 4, 5) \r\nAND relatedtermid <> maintermid\r\nORDER BY XDimID, YDimID, DimKindID;"
+							},
+							"sink": {
+								"type": "SqlSink",
+								"writeBatchSize": 10000
+							},
+							"enableStaging": false,
+							"translator": {
+								"type": "TabularTranslator",
+								"columnMappings": {
+									"XDimID": "XDimID",
+									"YDimID": "YDimID",
+									"DimKindID": "DimKindID"
+								}
+							}
+						},
+						"inputs": [
+							{
+								"referenceName": "SourceRelationFromLocal",
+								"type": "DatasetReference",
+								"parameters": {}
+							}
+						],
+						"outputs": [
+							{
+								"referenceName": "DestinationGetDimRelationship",
+								"type": "DatasetReference",
+								"parameters": {}
+							}
+						]
+					}
+				],
+				"folder": {
+					"name": "CreateRelationships"
+				},
+				"annotations": []
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/datasets/SourceRelationFromLocal')]",
+				"[concat(variables('factoryId'), '/datasets/DestinationGetDimRelationship')]"
 			]
 		},
 		{
@@ -3600,7 +3719,7 @@
 						"userProperties": [],
 						"typeProperties": {
 							"pipeline": {
-								"referenceName": "pl_CopyFromLocalToRelation",
+								"referenceName": "pl_CreateDimRelationships",
 								"type": "PipelineReference"
 							},
 							"waitOnCompletion": true,
@@ -3641,7 +3760,7 @@
 				"[concat(variables('factoryId'), '/pipelines/pl_CreateTurasDimensionTables')]",
 				"[concat(variables('factoryId'), '/pipelines/pl_CreateTaxonomyDimensionTerms')]",
 				"[concat(variables('factoryId'), '/pipelines/CreateThesaurusTerms_Dim_Source')]",
-				"[concat(variables('factoryId'), '/pipelines/pl_CopyFromLocalToRelation')]",
+				"[concat(variables('factoryId'), '/pipelines/pl_CreateDimRelationships')]",
 				"[concat(variables('factoryId'), '/pipelines/TruncateTables')]"
 			]
 		},
@@ -6679,7 +6798,10 @@
 					}
 				],
 				"typeProperties": {
-					"tableName": "@dataset().SqlTableName"
+					"tableName": {
+						"value": "@dataset().SqlTableName",
+						"type": "Expression"
+					}
 				}
 			},
 			"dependsOn": [
@@ -6936,6 +7058,52 @@
 				"[concat(variables('factoryId'), '/datasets/PortfolioDimensionTables')]",
 				"[concat(variables('factoryId'), '/datasets/TaxonomyDimensionTerms')]",
 				"[concat(variables('factoryId'), '/datasets/CreateTurasDimsLookup')]",
+				"[concat(variables('factoryId'), '/datasets/IntermediateTermTable')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/dataflow1')]",
+			"type": "Microsoft.DataFactory/factories/dataflows",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"folder": {
+					"name": "DeleteTermRelationships"
+				},
+				"type": "MappingDataFlow",
+				"typeProperties": {
+					"sources": [
+						{
+							"dataset": {
+								"referenceName": "PortfolioDimensionTables",
+								"type": "DatasetReference"
+							},
+							"name": "PortfolioDimensionTables",
+							"typeProperties": {}
+						},
+						{
+							"dataset": {
+								"referenceName": "TaxonomyDimensionTerms",
+								"type": "DatasetReference"
+							},
+							"name": "TaxonomyDimensionTerms",
+							"typeProperties": {}
+						}
+					],
+					"sinks": [
+						{
+							"dataset": {
+								"referenceName": "IntermediateTermTable",
+								"type": "DatasetReference"
+							},
+							"name": "DeleteTerm"
+						}
+					],
+					"script": "\n\nsource(output(\n\t\tDimTableName as string,\n\t\tDimID as integer,\n\t\tDimCode as string,\n\t\tDimName as string,\n\t\tDimDescription as string,\n\t\tDimActive as boolean\n\t),\n\tallowSchemaDrift: false,\n\tvalidateSchema: false,\n\tisolationLevel: 'READ_UNCOMMITTED',\n\tformat: 'table') ~> PortfolioDimensionTables\nsource(output(\n\t\tTermDimTable as string,\n\t\tTermID as integer,\n\t\tTermDimID as long,\n\t\tTermCode as string,\n\t\tTermName as string,\n\t\tTermDescription as string,\n\t\tTermPreferred as boolean,\n\t\tTermAvailable as boolean,\n\t\tTermTypeID as integer\n\t),\n\tallowSchemaDrift: false,\n\tvalidateSchema: false,\n\tisolationLevel: 'READ_UNCOMMITTED',\n\tformat: 'table') ~> TaxonomyDimensionTerms\nPortfolioDimensionTables, TaxonomyDimensionTerms join(DimID == TermDimID\n\t&& DimTableName == TermDimTable,\n\tjoinType:'outer',\n\tbroadcast: 'none')~> MergeJoin\nMergeJoin split(isNull(DimID),\n\tdisjoint: true) ~> ConditionalSplit@(Delete, Update)\nConditionalSplit@Delete select(mapColumn(\n\t\tDimID,\n\t\tTermID,\n\t\tTermCode,\n\t\tTermName\n\t)) ~> SelectForDeletion\nSelectForDeletion alterRow(deleteIf(isNull(DimID))) ~> MarkForDeletion\nMarkForDeletion sink(input(\n\t\tTermID as integer,\n\t\tDimID as integer,\n\t\tTermCode as string,\n\t\tTermName as string,\n\t\tDescription as string,\n\t\tPreferred as boolean,\n\t\tAvailable as boolean,\n\t\tTermTypeID as integer\n\t),\n\tallowSchemaDrift: false,\n\tvalidateSchema: false,\n\tformat: 'table',\n\tdeletable:true,\n\tinsertable:false,\n\tupdateable:false,\n\tupsertable:false,\n\tkeys:['TermID']) ~> DeleteTerm"
+				}
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/datasets/PortfolioDimensionTables')]",
+				"[concat(variables('factoryId'), '/datasets/TaxonomyDimensionTerms')]",
 				"[concat(variables('factoryId'), '/datasets/IntermediateTermTable')]"
 			]
 		},
@@ -7432,52 +7600,6 @@
 				"[concat(variables('factoryId'), '/datasets/PortfolioDimensionTables')]",
 				"[concat(variables('factoryId'), '/datasets/TaxonomyDimensionTerms')]",
 				"[concat(variables('factoryId'), '/datasets/CreateTurasDimsLookup')]",
-				"[concat(variables('factoryId'), '/datasets/IntermediateTermTable')]"
-			]
-		},
-		{
-			"name": "[concat(parameters('factoryName'), '/dataflow1')]",
-			"type": "Microsoft.DataFactory/factories/dataflows",
-			"apiVersion": "2018-06-01",
-			"properties": {
-				"folder": {
-					"name": "DeleteTermRelationships"
-				},
-				"type": "MappingDataFlow",
-				"typeProperties": {
-					"sources": [
-						{
-							"dataset": {
-								"referenceName": "PortfolioDimensionTables",
-								"type": "DatasetReference"
-							},
-							"name": "PortfolioDimensionTables",
-							"typeProperties": {}
-						},
-						{
-							"dataset": {
-								"referenceName": "TaxonomyDimensionTerms",
-								"type": "DatasetReference"
-							},
-							"name": "TaxonomyDimensionTerms",
-							"typeProperties": {}
-						}
-					],
-					"sinks": [
-						{
-							"dataset": {
-								"referenceName": "IntermediateTermTable",
-								"type": "DatasetReference"
-							},
-							"name": "DeleteTerm"
-						}
-					],
-					"script": "\n\nsource(output(\n\t\tDimTableName as string,\n\t\tDimID as integer,\n\t\tDimCode as string,\n\t\tDimName as string,\n\t\tDimDescription as string,\n\t\tDimActive as boolean\n\t),\n\tallowSchemaDrift: false,\n\tvalidateSchema: false,\n\tisolationLevel: 'READ_UNCOMMITTED',\n\tformat: 'table') ~> PortfolioDimensionTables\nsource(output(\n\t\tTermDimTable as string,\n\t\tTermID as integer,\n\t\tTermDimID as long,\n\t\tTermCode as string,\n\t\tTermName as string,\n\t\tTermDescription as string,\n\t\tTermPreferred as boolean,\n\t\tTermAvailable as boolean,\n\t\tTermTypeID as integer\n\t),\n\tallowSchemaDrift: false,\n\tvalidateSchema: false,\n\tisolationLevel: 'READ_UNCOMMITTED',\n\tformat: 'table') ~> TaxonomyDimensionTerms\nPortfolioDimensionTables, TaxonomyDimensionTerms join(DimID == TermDimID\n\t&& DimTableName == TermDimTable,\n\tjoinType:'outer',\n\tbroadcast: 'none')~> MergeJoin\nMergeJoin split(isNull(DimID),\n\tdisjoint: true) ~> ConditionalSplit@(Delete, Update)\nConditionalSplit@Delete select(mapColumn(\n\t\tDimID,\n\t\tTermID,\n\t\tTermCode,\n\t\tTermName\n\t)) ~> SelectForDeletion\nSelectForDeletion alterRow(deleteIf(isNull(DimID))) ~> MarkForDeletion\nMarkForDeletion sink(input(\n\t\tTermID as integer,\n\t\tDimID as integer,\n\t\tTermCode as string,\n\t\tTermName as string,\n\t\tDescription as string,\n\t\tPreferred as boolean,\n\t\tAvailable as boolean,\n\t\tTermTypeID as integer\n\t),\n\tallowSchemaDrift: false,\n\tvalidateSchema: false,\n\tformat: 'table',\n\tdeletable:true,\n\tinsertable:false,\n\tupdateable:false,\n\tupsertable:false,\n\tkeys:['TermID']) ~> DeleteTerm"
-				}
-			},
-			"dependsOn": [
-				"[concat(variables('factoryId'), '/datasets/PortfolioDimensionTables')]",
-				"[concat(variables('factoryId'), '/datasets/TaxonomyDimensionTerms')]",
 				"[concat(variables('factoryId'), '/datasets/IntermediateTermTable')]"
 			]
 		}

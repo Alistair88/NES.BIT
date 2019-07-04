@@ -1,0 +1,651 @@
+{
+	"$schema": "http://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+	"contentVersion": "1.0.0.0",
+	"parameters": {
+		"factoryName": {
+			"type": "string",
+			"metadata": "Data Factory Name",
+			"defaultValue": "NESBITTestFactory-2003190950"
+		}
+	},
+	"variables": {
+		"factoryId": "[concat('Microsoft.DataFactory/factories/', parameters('factoryName'))]"
+	},
+	"resources": [
+		{
+			"name": "[concat(parameters('factoryName'), '/RunCreateRelationships')]",
+			"type": "Microsoft.DataFactory/factories/pipelines",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"description": "Run CreateRelationships dataflow\n",
+				"activities": [
+					{
+						"name": "df_CreateRelationships",
+						"type": "ExecuteDataFlow",
+						"dependsOn": [
+							{
+								"activity": "Execpl_CreateTermRelationshipsSource",
+								"dependencyConditions": [
+									"Succeeded"
+								]
+							},
+							{
+								"activity": "ExecCreateDimRelationship",
+								"dependencyConditions": [
+									"Succeeded"
+								]
+							}
+						],
+						"policy": {
+							"timeout": "7.00:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"dataflow": {
+								"referenceName": "df_CreateRelationships",
+								"type": "DataFlowReference"
+							}
+						}
+					},
+					{
+						"name": "Execpl_CreateTermRelationshipsSource",
+						"type": "ExecutePipeline",
+						"dependsOn": [],
+						"userProperties": [],
+						"typeProperties": {
+							"pipeline": {
+								"referenceName": "pl_CreateTermRelationshipsSource",
+								"type": "PipelineReference"
+							},
+							"waitOnCompletion": true
+						}
+					},
+					{
+						"name": "ExecCreateDimRelationship",
+						"type": "ExecutePipeline",
+						"dependsOn": [],
+						"userProperties": [],
+						"typeProperties": {
+							"pipeline": {
+								"referenceName": "pl_CreateDimRelationships",
+								"type": "PipelineReference"
+							},
+							"waitOnCompletion": true
+						}
+					}
+				],
+				"folder": {
+					"name": "RunAllDataflows"
+				},
+				"annotations": []
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/pipelines/pl_CreateDimRelationships')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/pipeline4')]",
+			"type": "Microsoft.DataFactory/factories/pipelines",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"description": "Run all PortThesaurus dataflows",
+				"activities": [
+					{
+						"name": "TruncateTables",
+						"type": "ExecutePipeline",
+						"dependsOn": [],
+						"userProperties": [],
+						"typeProperties": {
+							"pipeline": {
+								"referenceName": "TruncateTables",
+								"type": "PipelineReference"
+							},
+							"waitOnCompletion": true
+						}
+					},
+					{
+						"name": "ExecRunCreateTerms",
+						"type": "ExecutePipeline",
+						"dependsOn": [
+							{
+								"activity": "ExecRunPortThesaurus",
+								"dependencyConditions": [
+									"Succeeded"
+								]
+							}
+						],
+						"userProperties": [],
+						"typeProperties": {
+							"pipeline": {
+								"referenceName": "RunCreateTerms",
+								"type": "PipelineReference"
+							},
+							"waitOnCompletion": true
+						}
+					},
+					{
+						"name": "ExecRunPortThesaurus",
+						"type": "ExecutePipeline",
+						"dependsOn": [
+							{
+								"activity": "TruncateTables",
+								"dependencyConditions": [
+									"Succeeded"
+								]
+							}
+						],
+						"userProperties": [],
+						"typeProperties": {
+							"pipeline": {
+								"referenceName": "RunPortThesaurus",
+								"type": "PipelineReference"
+							},
+							"waitOnCompletion": true
+						}
+					},
+					{
+						"name": "ExecMergeTuras",
+						"type": "ExecutePipeline",
+						"dependsOn": [
+							{
+								"activity": "ExecRunCreateTerms",
+								"dependencyConditions": [
+									"Succeeded"
+								]
+							}
+						],
+						"userProperties": [],
+						"typeProperties": {
+							"pipeline": {
+								"referenceName": "RunMergeTuras",
+								"type": "PipelineReference"
+							},
+							"waitOnCompletion": true
+						}
+					},
+					{
+						"name": "ExecRunPortfolioDims",
+						"type": "ExecutePipeline",
+						"dependsOn": [
+							{
+								"activity": "ExecMergeTuras",
+								"dependencyConditions": [
+									"Succeeded"
+								]
+							}
+						],
+						"userProperties": [],
+						"typeProperties": {
+							"pipeline": {
+								"referenceName": "RunMergePortfolioDims",
+								"type": "PipelineReference"
+							},
+							"waitOnCompletion": true
+						}
+					}
+				],
+				"folder": {
+					"name": "RunAllDataflows"
+				},
+				"annotations": []
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/pl_CreateDimRelationships')]",
+			"type": "Microsoft.DataFactory/factories/pipelines",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"description": "Uses a query to create a table for use in the Create Relationships dataflow source table entitled 'Get Dim relationship'",
+				"activities": [
+					{
+						"name": "CreateDimRelationship",
+						"type": "Copy",
+						"dependsOn": [],
+						"policy": {
+							"timeout": "7.00:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [
+							{
+								"name": "Destination",
+								"value": "[[dbo].[GetDimRelationship]"
+							}
+						],
+						"typeProperties": {
+							"source": {
+								"type": "SqlSource",
+								"sqlReaderQuery": "SELECT maintermid XDimID, relatedtermid YDimID,\r\nCAST(CASE relationship\r\n  WHEN 1 THEN 2 -- synonym\r\n  WHEN 4 THEN 1 -- parent/child\r\n  WHEN 5 THEN 4 --association\r\n  END AS SMALLINT) DimKindID\r\nFROM dbo.Relation WHERE relationship IN (1, 4, 5) \r\nAND relatedtermid <> maintermid\r\nORDER BY XDimID, YDimID, DimKindID;"
+							},
+							"sink": {
+								"type": "SqlSink",
+								"writeBatchSize": 10000
+							},
+							"enableStaging": false,
+							"translator": {
+								"type": "TabularTranslator",
+								"columnMappings": {
+									"XDimID": "XDimID",
+									"YDimID": "YDimID",
+									"DimKindID": "DimKindID"
+								}
+							}
+						},
+						"inputs": [
+							{
+								"referenceName": "SourceRelationFromLocal",
+								"type": "DatasetReference"
+							}
+						],
+						"outputs": [
+							{
+								"referenceName": "DestinationGetDimRelationship",
+								"type": "DatasetReference"
+							}
+						]
+					}
+				],
+				"folder": {
+					"name": "CreateRelationships"
+				},
+				"annotations": []
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/pl_RunAllDataflows_1')]",
+			"type": "Microsoft.DataFactory/factories/pipelines",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"description": "Run all PortThesaurus dataflows",
+				"activities": [
+					{
+						"name": "df_PortThesaurusTerms",
+						"type": "ExecuteDataFlow",
+						"dependsOn": [
+							{
+								"activity": "CreateTermTable",
+								"dependencyConditions": [
+									"Succeeded"
+								]
+							}
+						],
+						"policy": {
+							"timeout": "7.00:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"dataflow": {
+								"referenceName": "df_PortThesaurusTerms",
+								"type": "DataFlowReference"
+							}
+						}
+					},
+					{
+						"name": "df_CreateTerms",
+						"type": "ExecuteDataFlow",
+						"dependsOn": [
+							{
+								"activity": "ExecuteCreateTaxonomyTermsSource",
+								"dependencyConditions": [
+									"Succeeded"
+								]
+							},
+							{
+								"activity": "ExecuteCreateThesaurus_Dim_Source",
+								"dependencyConditions": [
+									"Succeeded"
+								]
+							}
+						],
+						"policy": {
+							"timeout": "7.00:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"dataflow": {
+								"referenceName": "df_CreateTerms",
+								"type": "DataFlowReference"
+							}
+						}
+					},
+					{
+						"name": "df_CreateRelationships",
+						"type": "ExecuteDataFlow",
+						"dependsOn": [
+							{
+								"activity": "Executepl_CreateTermRelationshipsSource",
+								"dependencyConditions": [
+									"Succeeded"
+								]
+							},
+							{
+								"activity": "ExecutePl_CopyFromLocalToRelation",
+								"dependencyConditions": [
+									"Succeeded"
+								]
+							}
+						],
+						"policy": {
+							"timeout": "7.00:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"dataflow": {
+								"referenceName": "df_CreateRelationships",
+								"type": "DataFlowReference"
+							}
+						}
+					},
+					{
+						"name": "df_MergeTurasDimensions",
+						"type": "ExecuteDataFlow",
+						"dependsOn": [
+							{
+								"activity": "ExecutePl_CreateTurasDimensionTables",
+								"dependencyConditions": [
+									"Succeeded"
+								]
+							},
+							{
+								"activity": "ExecutePl_CreateTaxonomyDimensionTerms",
+								"dependencyConditions": [
+									"Succeeded"
+								]
+							}
+						],
+						"policy": {
+							"timeout": "7.00:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"dataflow": {
+								"referenceName": "df_MergeTurasDimensions",
+								"type": "DataFlowReference"
+							}
+						}
+					},
+					{
+						"name": "df_MergePortfolioDimensions",
+						"type": "ExecuteDataFlow",
+						"dependsOn": [
+							{
+								"activity": "UpdatePortfolioDimensions",
+								"dependencyConditions": [
+									"Succeeded"
+								]
+							},
+							{
+								"activity": "ExecuteCreateTaxonomyDimensionTerms",
+								"dependencyConditions": [
+									"Succeeded"
+								]
+							}
+						],
+						"policy": {
+							"timeout": "7.00:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"dataflow": {
+								"referenceName": "df_MergePortfolioDimensions",
+								"type": "DataFlowReference"
+							}
+						}
+					},
+					{
+						"name": "ExecuteCreateTaxonomyTermsSource",
+						"description": "Create the Taxonomy terms source tab using a query.",
+						"type": "ExecutePipeline",
+						"dependsOn": [
+							{
+								"activity": "df_PortThesaurusTerms",
+								"dependencyConditions": [
+									"Succeeded"
+								]
+							}
+						],
+						"userProperties": [],
+						"typeProperties": {
+							"pipeline": {
+								"referenceName": "pl_CreateTaxonomyTermsSource",
+								"type": "PipelineReference"
+							},
+							"waitOnCompletion": true
+						}
+					},
+					{
+						"name": "UpdatePortfolioDimensions",
+						"description": "Update the Portfolio Dimensions table",
+						"type": "ExecutePipeline",
+						"dependsOn": [
+							{
+								"activity": "df_MergeTurasDimensions",
+								"dependencyConditions": [
+									"Succeeded"
+								]
+							}
+						],
+						"userProperties": [],
+						"typeProperties": {
+							"pipeline": {
+								"referenceName": "pl_GetDataFromPortfolioDimensionTables",
+								"type": "PipelineReference"
+							},
+							"waitOnCompletion": true
+						}
+					},
+					{
+						"name": "LocalToDboTermType",
+						"description": "Create the TermType table on the Azure DB using a query.",
+						"type": "ExecutePipeline",
+						"dependsOn": [
+							{
+								"activity": "TruncateTables",
+								"dependencyConditions": [
+									"Succeeded"
+								]
+							}
+						],
+						"userProperties": [],
+						"typeProperties": {
+							"pipeline": {
+								"referenceName": "pl_LocalToTermTypeSource",
+								"type": "PipelineReference"
+							},
+							"waitOnCompletion": true
+						}
+					},
+					{
+						"name": "CreateTermTable",
+						"description": "Create the term table using a query.",
+						"type": "ExecutePipeline",
+						"dependsOn": [
+							{
+								"activity": "LocalToDboTermType",
+								"dependencyConditions": [
+									"Succeeded"
+								]
+							}
+						],
+						"userProperties": [],
+						"typeProperties": {
+							"pipeline": {
+								"referenceName": "pl_LocalToTermSource",
+								"type": "PipelineReference"
+							},
+							"waitOnCompletion": true
+						}
+					},
+					{
+						"name": "Executepl_CreateTermRelationshipsSource",
+						"type": "ExecutePipeline",
+						"dependsOn": [
+							{
+								"activity": "df_CreateTerms",
+								"dependencyConditions": [
+									"Succeeded"
+								]
+							}
+						],
+						"userProperties": [],
+						"typeProperties": {
+							"pipeline": {
+								"referenceName": "pl_CreateTermRelationshipsSource",
+								"type": "PipelineReference"
+							},
+							"waitOnCompletion": true
+						}
+					},
+					{
+						"name": "ExecutePl_CreateTurasDimensionTables",
+						"type": "ExecutePipeline",
+						"dependsOn": [
+							{
+								"activity": "df_CreateRelationships",
+								"dependencyConditions": [
+									"Succeeded"
+								]
+							}
+						],
+						"userProperties": [],
+						"typeProperties": {
+							"pipeline": {
+								"referenceName": "pl_CreateTurasDimensionTables",
+								"type": "PipelineReference"
+							},
+							"waitOnCompletion": true
+						}
+					},
+					{
+						"name": "ExecutePl_CreateTaxonomyDimensionTerms",
+						"type": "ExecutePipeline",
+						"dependsOn": [
+							{
+								"activity": "df_CreateRelationships",
+								"dependencyConditions": [
+									"Succeeded"
+								]
+							}
+						],
+						"userProperties": [],
+						"typeProperties": {
+							"pipeline": {
+								"referenceName": "pl_CreateTaxonomyDimensionTerms",
+								"type": "PipelineReference"
+							},
+							"waitOnCompletion": true
+						}
+					},
+					{
+						"name": "ExecuteCreateTaxonomyDimensionTerms",
+						"type": "ExecutePipeline",
+						"dependsOn": [
+							{
+								"activity": "df_MergeTurasDimensions",
+								"dependencyConditions": [
+									"Succeeded"
+								]
+							}
+						],
+						"userProperties": [],
+						"typeProperties": {
+							"pipeline": {
+								"referenceName": "pl_CreateTaxonomyDimensionTerms",
+								"type": "PipelineReference"
+							},
+							"waitOnCompletion": true
+						}
+					},
+					{
+						"name": "ExecuteCreateThesaurus_Dim_Source",
+						"type": "ExecutePipeline",
+						"dependsOn": [
+							{
+								"activity": "df_PortThesaurusTerms",
+								"dependencyConditions": [
+									"Succeeded"
+								]
+							}
+						],
+						"userProperties": [],
+						"typeProperties": {
+							"pipeline": {
+								"referenceName": "CreateThesaurusTerms_Dim_Source",
+								"type": "PipelineReference"
+							},
+							"waitOnCompletion": true
+						}
+					},
+					{
+						"name": "ExecutePl_CopyFromLocalToRelation",
+						"type": "ExecutePipeline",
+						"dependsOn": [
+							{
+								"activity": "df_CreateTerms",
+								"dependencyConditions": [
+									"Succeeded"
+								]
+							}
+						],
+						"userProperties": [],
+						"typeProperties": {
+							"pipeline": {
+								"referenceName": "pl_CreateDimRelationships",
+								"type": "PipelineReference"
+							},
+							"waitOnCompletion": true
+						}
+					},
+					{
+						"name": "TruncateTables",
+						"type": "ExecutePipeline",
+						"dependsOn": [],
+						"userProperties": [],
+						"typeProperties": {
+							"pipeline": {
+								"referenceName": "TruncateTables",
+								"type": "PipelineReference"
+							},
+							"waitOnCompletion": true
+						}
+					}
+				],
+				"folder": {
+					"name": "RunAllDataflows"
+				},
+				"annotations": []
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/pipelines/pl_CreateDimRelationships')]"
+			]
+		}
+	]
+}
