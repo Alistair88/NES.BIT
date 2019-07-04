@@ -1,5 +1,5 @@
 {
-	"name": "pl_RunAllDataflows",
+	"name": "pl_RunAllDataflows_1",
 	"properties": {
 		"description": "Run all PortThesaurus dataflows",
 		"activities": [
@@ -296,26 +296,6 @@
 				"typeProperties": {
 					"pipeline": {
 						"referenceName": "pl_CreateTaxonomyDimensionTerms",
-						"type": "PipelineReference"
-					},
-					"waitOnCompletion": true
-				}
-			},
-			{
-				"name": "ExecuteRunMergePortfolioDimensions",
-				"type": "ExecutePipeline",
-				"dependsOn": [
-					{
-						"activity": "df_MergePortfolioDimensions",
-						"dependencyConditions": [
-							"Succeeded"
-						]
-					}
-				],
-				"userProperties": [],
-				"typeProperties": {
-					"pipeline": {
-						"referenceName": "RunMergePortfolioDimensions-old",
 						"type": "PipelineReference"
 					},
 					"waitOnCompletion": true

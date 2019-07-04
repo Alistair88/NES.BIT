@@ -1,5 +1,5 @@
 {
-	"name": "pipeline5",
+	"name": "pl_RunAllDataflows",
 	"properties": {
 		"description": "Run all PortThesaurus dataflows",
 		"activities": [
