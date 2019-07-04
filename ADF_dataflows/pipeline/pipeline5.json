@@ -262,7 +262,7 @@
 				"userProperties": [],
 				"typeProperties": {
 					"pipeline": {
-						"referenceName": "RunMergePortfolioDimensions",
+						"referenceName": "RunMergePortfolioDimensions-old",
 						"type": "PipelineReference"
 					},
 					"waitOnCompletion": true
