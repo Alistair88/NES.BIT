@@ -1,20 +1,20 @@
 {
-	"name": "RunCreateTerms",
+	"name": "RunPortThesaurus",
 	"properties": {
-		"description": "Run all PortThesaurus dataflows",
+		"description": "Run PortThesaurus dataflows",
 		"activities": [
 			{
-				"name": "df_CreateTerms",
+				"name": "df_PortThesaurusTerms",
 				"type": "ExecuteDataFlow",
 				"dependsOn": [
 					{
-						"activity": "ExecuteCreateTaxonomyTermsSource",
+						"activity": "CreateTermTable",
 						"dependencyConditions": [
 							"Succeeded"
 						]
 					},
 					{
-						"activity": "ExecuteCreateThesaurus_Dim_Source",
+						"activity": "LocalToDboTermType",
 						"dependencyConditions": [
 							"Succeeded"
 						]
@@ -30,33 +30,34 @@
 				"userProperties": [],
 				"typeProperties": {
 					"dataflow": {
-						"referenceName": "df_CreateTerms",
+						"referenceName": "df_PortThesaurusTerms",
 						"type": "DataFlowReference"
 					}
 				}
 			},
 			{
-				"name": "ExecuteCreateTaxonomyTermsSource",
-				"description": "Create the Taxonomy terms source tab using a query.",
+				"name": "LocalToDboTermType",
+				"description": "Create the TermType table on the Azure DB using a query.",
 				"type": "ExecutePipeline",
 				"dependsOn": [],
 				"userProperties": [],
 				"typeProperties": {
 					"pipeline": {
-						"referenceName": "pl_CreateTaxonomyTermsSource",
+						"referenceName": "pl_LocalToTermTypeSource",
 						"type": "PipelineReference"
 					},
 					"waitOnCompletion": true
 				}
 			},
 			{
-				"name": "ExecuteCreateThesaurus_Dim_Source",
+				"name": "CreateTermTable",
+				"description": "Create the term table using a query.",
 				"type": "ExecutePipeline",
 				"dependsOn": [],
 				"userProperties": [],
 				"typeProperties": {
 					"pipeline": {
-						"referenceName": "CreateThesaurusTerms_Dim_Source",
+						"referenceName": "pl_LocalToTermSource",
 						"type": "PipelineReference"
 					},
 					"waitOnCompletion": true
