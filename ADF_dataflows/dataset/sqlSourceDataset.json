@@ -18,6 +18,9 @@
 				"name": "TableName",
 				"type": "String"
 			}
-		]
+		],
+		"typeProperties": {
+			"tableName": "@dataset().SqlTableName"
+		}
 	}
 }
