@@ -1,5 +1,5 @@
 {
-	"name": "pl_CreateDimRelationship",
+	"name": "pl_CreateDimRelationships",
 	"properties": {
 		"description": "Uses a query to create a table for use in the Create Relationships dataflow source table entitled 'Get Dim relationship'",
 		"activities": [

@@ -18,6 +18,12 @@
 						"dependencyConditions": [
 							"Succeeded"
 						]
+					},
+					{
+						"activity": "ExecCreateDimRelationship",
+						"dependencyConditions": [
+							"Succeeded"
+						]
 					}
 				],
 				"policy": {
@@ -55,7 +61,20 @@
 				"userProperties": [],
 				"typeProperties": {
 					"pipeline": {
-						"referenceName": "pl_CreateDimRelationship",
+						"referenceName": "pl_CreateDimRelationships",
+						"type": "PipelineReference"
+					},
+					"waitOnCompletion": true
+				}
+			},
+			{
+				"name": "ExecCreateDimRelationship",
+				"type": "ExecutePipeline",
+				"dependsOn": [],
+				"userProperties": [],
+				"typeProperties": {
+					"pipeline": {
+						"referenceName": "pl_CreateDimRelationships",
 						"type": "PipelineReference"
 					},
 					"waitOnCompletion": true
