@@ -72,7 +72,7 @@
 						]
 					},
 					{
-						"activity": "ExecutePl_CopyFromLocalToRelation",
+						"activity": "ExecCreateDimRelationship",
 						"dependencyConditions": [
 							"Succeeded"
 						]
@@ -342,7 +342,7 @@
 				}
 			},
 			{
-				"name": "ExecutePl_CopyFromLocalToRelation",
+				"name": "ExecCreateDimRelationship",
 				"type": "ExecutePipeline",
 				"dependsOn": [
 					{
