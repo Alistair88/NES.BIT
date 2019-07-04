@@ -1,11 +1,12 @@
 {
-	"name": "pl_CopyFromLocalToRelation",
+	"name": "pl_CreateDimRelationship",
 	"properties": {
 		"description": "Uses a query to create a table for use in the Create Relationships dataflow source table entitled 'Get Dim relationship'",
 		"activities": [
 			{
 				"name": "CreateDimRelationship",
 				"type": "Copy",
+				"dependsOn": [],
 				"policy": {
 					"timeout": "7.00:00:00",
 					"retry": 0,
@@ -54,7 +55,8 @@
 		],
 		"folder": {
 			"name": "CreateRelationships"
-		}
+		},
+		"annotations": []
 	},
 	"type": "Microsoft.DataFactory/factories/pipelines"
 }
