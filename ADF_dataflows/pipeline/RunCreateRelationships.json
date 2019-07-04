@@ -1,0 +1,71 @@
+{
+	"name": "RunCreateRelationships",
+	"properties": {
+		"description": "Run CreateRelationships dataflow\n",
+		"activities": [
+			{
+				"name": "df_CreateRelationships",
+				"type": "ExecuteDataFlow",
+				"dependsOn": [
+					{
+						"activity": "Executepl_CreateTermRelationshipsSource",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					},
+					{
+						"activity": "ExecutePl_CopyFromLocalToRelation",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"policy": {
+					"timeout": "7.00:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"dataflow": {
+						"referenceName": "df_CreateRelationships",
+						"type": "DataFlowReference"
+					}
+				}
+			},
+			{
+				"name": "Executepl_CreateTermRelationshipsSource",
+				"type": "ExecutePipeline",
+				"dependsOn": [],
+				"userProperties": [],
+				"typeProperties": {
+					"pipeline": {
+						"referenceName": "pl_CreateTermRelationshipsSource",
+						"type": "PipelineReference"
+					},
+					"waitOnCompletion": true
+				}
+			},
+			{
+				"name": "ExecutePl_CopyFromLocalToRelation",
+				"type": "ExecutePipeline",
+				"dependsOn": [],
+				"userProperties": [],
+				"typeProperties": {
+					"pipeline": {
+						"referenceName": "pl_CopyFromLocalToRelation",
+						"type": "PipelineReference"
+					},
+					"waitOnCompletion": true
+				}
+			}
+		],
+		"folder": {
+			"name": "RunAllDataflows"
+		},
+		"annotations": []
+	},
+	"type": "Microsoft.DataFactory/factories/pipelines"
+}
