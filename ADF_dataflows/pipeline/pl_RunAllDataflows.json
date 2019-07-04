@@ -95,6 +95,26 @@
 					},
 					"waitOnCompletion": true
 				}
+			},
+			{
+				"name": "ExecRunDeleteTermRelationships",
+				"type": "ExecutePipeline",
+				"dependsOn": [
+					{
+						"activity": "ExecRunPortfolioDims",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"userProperties": [],
+				"typeProperties": {
+					"pipeline": {
+						"referenceName": "RunDeleteTermRelationships",
+						"type": "PipelineReference"
+					},
+					"waitOnCompletion": true
+				}
 			}
 		],
 		"folder": {
