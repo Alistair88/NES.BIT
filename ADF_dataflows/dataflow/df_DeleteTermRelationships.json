@@ -12,8 +12,7 @@
 						"referenceName": "TermRelationshipSink",
 						"type": "DatasetReference"
 					},
-					"name": "TermRelationships",
-					"script": "source(output(\n\t\tRelationshipID as integer,\n\t\tTermXID as integer,\n\t\tTermYID as integer,\n\t\tKindID as integer,\n\t\tDescription as string\n\t),\n\tallowSchemaDrift: false,\n\tvalidateSchema: false,\n\tisolationLevel: 'READ_UNCOMMITTED',\n\tformat: 'table') ~> TermRelationships"
+					"name": "TermRelationships"
 				}
 			],
 			"sinks": [
@@ -22,20 +21,10 @@
 						"referenceName": "TermRelationshipSink",
 						"type": "DatasetReference"
 					},
-					"name": "DeleteSink",
-					"script": "DelIfTermYIDIsNull sink(input(\n\t\tRelationshipID as integer,\n\t\tTermXID as integer,\n\t\tTermYID as integer,\n\t\tKindID as integer,\n\t\tDescription as string\n\t),\n\tallowSchemaDrift: false,\n\tvalidateSchema: false,\n\tformat: 'table',\n\tdeletable:true,\n\tinsertable:false,\n\tupdateable:false,\n\tupsertable:false,\n\tkeys:['RelationshipID']) ~> DeleteSink"
+					"name": "DeleteSink"
 				}
 			],
-			"transformations": [
-				{
-					"name": "DelIfTermXIDIsNull",
-					"script": "TermRelationships alterRow(deleteIf(not(isNull(TermXID)))) ~> DelIfTermXIDIsNull"
-				},
-				{
-					"name": "DelIfTermYIDIsNull",
-					"script": "DelIfTermXIDIsNull alterRow(deleteIf(not(isNull(TermYID)))) ~> DelIfTermYIDIsNull"
-				}
-			]
+			"script": "\n\nsource(output(\n\t\tRelationshipID as integer,\n\t\tTermXID as integer,\n\t\tTermYID as integer,\n\t\tKindID as integer,\n\t\tDescription as string\n\t),\n\tallowSchemaDrift: false,\n\tvalidateSchema: false,\n\tisolationLevel: 'READ_UNCOMMITTED',\n\tformat: 'table') ~> TermRelationships\nTermRelationships alterRow(deleteIf(not(isNull(TermXID)))) ~> DelIfTermXIDIsNotNull\nDelIfTermXIDIsNotNull alterRow(deleteIf(not(isNull(TermYID)))) ~> DelIfTermYIDIsNull\nDelIfTermYIDIsNull sink(input(\n\t\tRelationshipID as integer,\n\t\tTermXID as integer,\n\t\tTermYID as integer,\n\t\tKindID as integer,\n\t\tDescription as string\n\t),\n\tallowSchemaDrift: false,\n\tvalidateSchema: false,\n\tformat: 'table',\n\tdeletable:true,\n\tinsertable:false,\n\tupdateable:false,\n\tupsertable:false,\n\tkeys:['RelationshipID']) ~> DeleteSink"
 		}
 	}
 }
