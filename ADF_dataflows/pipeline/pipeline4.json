@@ -1,0 +1,72 @@
+{
+	"name": "pipeline4",
+	"properties": {
+		"description": "Run all PortThesaurus dataflows",
+		"activities": [
+			{
+				"name": "df_CreateTerms",
+				"type": "ExecuteDataFlow",
+				"dependsOn": [
+					{
+						"activity": "ExecuteCreateTaxonomyTermsSource",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					},
+					{
+						"activity": "ExecuteCreateThesaurus_Dim_Source",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"policy": {
+					"timeout": "7.00:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"dataflow": {
+						"referenceName": "df_CreateTerms",
+						"type": "DataFlowReference"
+					}
+				}
+			},
+			{
+				"name": "ExecuteCreateTaxonomyTermsSource",
+				"description": "Create the Taxonomy terms source tab using a query.",
+				"type": "ExecutePipeline",
+				"dependsOn": [],
+				"userProperties": [],
+				"typeProperties": {
+					"pipeline": {
+						"referenceName": "pl_CreateTaxonomyTermsSource",
+						"type": "PipelineReference"
+					},
+					"waitOnCompletion": true
+				}
+			},
+			{
+				"name": "ExecuteCreateThesaurus_Dim_Source",
+				"type": "ExecutePipeline",
+				"dependsOn": [],
+				"userProperties": [],
+				"typeProperties": {
+					"pipeline": {
+						"referenceName": "CreateThesaurusTerms_Dim_Source",
+						"type": "PipelineReference"
+					},
+					"waitOnCompletion": true
+				}
+			}
+		],
+		"folder": {
+			"name": "RunAllDataflows"
+		},
+		"annotations": []
+	},
+	"type": "Microsoft.DataFactory/factories/pipelines"
+}

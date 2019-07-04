@@ -56,7 +56,7 @@
 				"userProperties": [],
 				"typeProperties": {
 					"dataflow": {
-						"referenceName": "CreateTermsSwappedBranches",
+						"referenceName": "df_CreateTerms",
 						"type": "DataFlowReference"
 					}
 				}
