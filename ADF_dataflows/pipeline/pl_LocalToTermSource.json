@@ -1,5 +1,5 @@
 {
-	"name": "pl_LocalToTermSourceABC",
+	"name": "pl_LocalToTermSource",
 	"properties": {
 		"description": "Copy the term table from local host to an Azure DB",
 		"activities": [
