@@ -25,15 +25,7 @@
 						"type": "SqlSink",
 						"writeBatchSize": 10000
 					},
-					"enableStaging": false,
-					"translator": {
-						"type": "TabularTranslator",
-						"columnMappings": {
-							"DimID": "DimID",
-							"DimName": "DimName",
-							"DimDescription": "DimDescription"
-						}
-					}
+					"enableStaging": false
 				},
 				"inputs": [
 					{
@@ -43,7 +35,7 @@
 				],
 				"outputs": [
 					{
-						"referenceName": "ADFTestingTermTableDELME",
+						"referenceName": "ADFTestingTermTable",
 						"type": "DatasetReference"
 					}
 				]
